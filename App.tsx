@@ -51,7 +51,7 @@ function AppTabs() {
   return (
     <Tabs.Navigator screenOptions={({ route }) => ({
       tabBarIcon: ({ color, size }) => {
-        const icon = route.name === 'Home' ? 'home-outline' : route.name === 'Report' ? 'add-circle' : 'person-circle-outline';
+        const icon = route.name === 'Home' ? 'home-outline' : route.name === 'Report' ? 'camera' : 'person-circle-outline';
         return <Ionicons name={icon as any} size={size} color={color} />;
       },
       tabBarActiveTintColor: '#111',

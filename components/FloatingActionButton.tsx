@@ -1,10 +1,11 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function FloatingActionButton({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable style={styles.fab} onPress={onPress} accessibilityLabel="Create a new report">
-      <Text style={styles.plus}>＋</Text>
+    <Pressable style={styles.fab} onPress={onPress} accessibilityLabel="Open camera to report">
+      <Ionicons name="camera" size={26} color="#fff" />
     </Pressable>
   );
 }
@@ -22,6 +23,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 3
   },
-  plus: { color: '#fff', fontSize: 26, lineHeight: 26, marginTop: -2 }
+  
 });
-

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Issue } from '../types';
-import { createIssueSqlite, listIssues as listIssuesSqlite } from '../lib/sqliteIssues';
+import { createIssueSqlite, listIssues as listIssuesSqlite, ensureSeedIssues } from '../lib/sqliteIssues';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ensureSessionUserId } from '../lib/sqliteAuth';
 
@@ -15,6 +15,8 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
     const run = async () => {
       setLoading(true);
       if (!isSupabaseConfigured) {
+        const uid = await ensureSessionUserId();
+        ensureSeedIssues(uid);
         const list = listIssuesSqlite(sort);
         setData(list as any);
       } else {

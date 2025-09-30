@@ -122,8 +122,8 @@ export default function ReportIssueScreen() {
         {!!address && <Text style={styles.meta}>{address}</Text>}
       </View>
       <View style={[styles.row, { marginTop: 12 }]}>
-        <Button title="Share preview" onPress={onShare} variant="outline" />
-        <Button title="Submit" onPress={onSubmit} disabled={!image || !title || !coords} />
+        <Button title="Share preview" onPress={onShare} variant="outline" style={{ flex: 1 }} />
+        <Button title="Submit" onPress={onSubmit} style={{ flex: 1 }} disabled={!image || !title || !coords} />
       </View>
     </ScrollView>
   );
