@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "CivicVigilance",
+    "slug": "civicvigilance",
+    "scheme": "civicvigilance",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {},
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "react-native-reanimated"
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+export { reverseGeocode } from './location';
+
