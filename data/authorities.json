@@ -1,5 +1,0 @@
-[
-  { "region": "default", "handles": ["@municipal_corp", "@trafficpolice"] },
-  { "region": "ward-42", "handles": ["@ward42office", "@cityroads"] }
-]
-
