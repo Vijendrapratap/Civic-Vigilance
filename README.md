@@ -1,20 +1,21 @@
 CivilVigilance – Mobile App (Expo/React Native)
 
 Overview
-- CivicVigilance turns everyday citizens into community watchdogs. Snap a photo of a civic problem (pothole, garbage, broken streetlight), auto‑tag its location, and share it publicly while notifying the right authorities. Follow issues in a local feed, upvote for priority, and track your own reports.
+- CivicVigilance turns everyday citizens into community watchdogs. Capture a civic issue (pothole, garbage, streetlight, water leak) with the in‑app camera, auto‑tag its precise location in real‑time, and share it publicly while notifying the right authorities. Follow issues in a local feed, upvote for priority, discuss in threads, and track your own reports.
 
 Key Features
-- Simple report flow: take/upload photo → add category → auto location → short description → preview and share.
-- Home feed: trending, newest, and nearby filters with upvotes, comments, and sharing.
-- Social sharing: generate a formatted post and open the native share sheet. For X (Twitter), open the tweet composer with prefilled text; attach the image via the OS share sheet.
-- Profile & settings: view “My Reports”, manage notifications and logout.
-- Authentication: email/password only (no social logins for now).
+- Live capture only: full‑screen camera with shutter, live address, lat/lng and accuracy overlay; simulator fallback image so you can test on iOS Simulator.
+- Report details: category chips, title/description, auto‑fill location; share preview and submit.
+- Reddit‑style feed: action chips for Upvote, Downvote, Comments, Share; cards open the thread; optimistic voting.
+- Threaded comments: nested replies with “Reply” per comment and composer at the bottom (“Join the conversation”).
+- Profile & settings: avatar, joined year, My Reports, Notifications, Privacy/Terms, Logout.
+- Authentication: email/password only (SQLite local auth). Supabase can be enabled later without code changes.
 
 Tech Stack
 - App: Expo (React Native) + TypeScript + React Navigation
-- Auth & DB: SQLite (local-first using expo-sqlite). Supabase (auth, Postgres, storage) can be enabled later without code changes.
-- Location & Media: expo-location, expo-image-picker, expo-sharing
-- Maps: react-native-maps (optional for pin adjustment)
+- Local DB & Auth: expo-sqlite + bcryptjs; session in AsyncStorage
+- Optional cloud: Supabase (auth + Postgres + Storage) behind env flag
+- Sensors & Media: expo-camera (CameraView), expo-location (live watch), expo-sharing
 
 Repository Layout
 - `App.tsx` – app entry with navigation
@@ -29,15 +30,14 @@ Repository Layout
 
 Quick Start
 1) Prereqs
-   - Node 18+, pnpm or npm, Expo CLI
-   - A Supabase project (free tier is fine)
+   - Node 18/20, npm, Expo CLI
+   - Optional: a Supabase project (only if you want cloud mode now)
 
 2) Clone and install
    - `pnpm install` or `npm install`
 
-3) Configure environment
-   - Copy `.env.example` to `.env`
-   - Fill `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+3) Configure environment (optional)
+   - Copy `.env.example` to `.env` and fill `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY` to use Supabase. If omitted, the app uses local SQLite mode automatically.
 
 4) Create database tables
    - In the Supabase SQL editor, paste and run `db/schema.sql` from this repo.
@@ -47,10 +47,15 @@ Quick Start
    - Launch on iOS Simulator, Android Emulator, or a physical device with Expo Go.
 
 How Reporting Works (Flow)
-- Capture: Use in‑app camera or gallery upload.
-- Location: Request permission and auto‑fetch coordinates; reverse geocode to an address.
-- Details: Choose a category (Pothole, Garbage, Streetlight, Water Leak, Other) and enter a short description.
-- Preview & Share: App builds a clear post text including address and a map link. Share via native sheet or open X composer.
+- Stage 1 – Live Capture
+  - In‑app camera (CameraView) with a header overlay: live address, lat/lng (5 dp), and ±accuracy.
+  - Shutter captures a photo. On simulator (no camera), it uses a sample image so you can proceed.
+  - On capture, the latest live coordinates/address are bound to the report.
+- Stage 2 – Details & Share
+  - Add a short title and description; pick a category chip (Pothole, Garbage, Streetlight, Water, Other).
+  - “Use current location” refreshes the coordinates/address; “Retake” returns to capture.
+  - “Share preview” composes a post (text + map link + authority tags) and opens OS share/X composer.
+  - Submit validates: requires photo, title, and coordinates.
 
 Data Model (Supabase)
 - `profiles`: basic user profile linked to auth user id
@@ -73,14 +78,30 @@ Extending the App
 - Moderation: add image/text moderation webhooks before publishing an issue.
 - Authority suggestions: populate `authorities` with local handles and simple geofences; recommend tags based on proximity and category.
 
-Screens Included
-- Auth: Login, Sign Up, Forgot Password
-- Feed: issue list with sorting, post detail with comments
-- Report Issue: camera/gallery, map pin, preview/share
-- Profile: user info, “My Reports”, settings
+Screens (PRD)
+- Auth
+  - Sign Up: email + password (confirm), validation and duplicate email handling (SQLite); in Supabase mode, uses auth API.
+  - Sign In: email + password; local session in AsyncStorage; logout clears session.
+  - Forgot Password: no‑op in SQLite mode; in Supabase mode it sends a reset link with allowed redirect URLs.
+- Home Feed
+  - Sort tabs: Trending (score), Newest (created_at); Nearby reserved for future geo sort.
+  - Card anatomy: title, image, address/description, action bar (Upvote / Downvote / Comments / Share), counts formatted (e.g., 2.9K).
+  - Vote behavior: optimistic. Tap same vote toggles off. In SQLite mode, votes write to `votes`; we recalc counters. In Supabase mode, trigger updates counters.
+  - Share: opens OS share sheet (and/or X composer intent) with composed text.
+- Post Detail (Thread)
+  - Title, meta (address), body, action bar; counts synced with the selected issue.
+  - Threaded comments: nested via `parent_id`. Each comment shows “Reply”; composer says “Reply…” when replying.
+  - Send comment adds to SQLite or Supabase `comments` and updates the view.
+- Report
+  - Live capture → details flow as described above. Submit persists to SQLite or Supabase.
+- Profile
+  - Header: avatar (tap to change), name, Joined YEAR.
+  - Menu: My Reports, Settings, Notifications, Linked Accounts, Privacy Policy, Terms of Service.
+  - Notifications: toggle comments, my report updates, mentions, nearby, email updates (stored locally for now).
+  - Linked Accounts: placeholder (email‑only auth in this build).
 
 Design Notes
-- The folder structure mirrors the reference images you provided. Components are small and reusable; screens own their layout; hooks contain data and session logic; `lib/` centralizes platform services like auth, location, and sharing.
+- The structure mirrors the design references. Components are small and reusable; screens own layout; hooks contain data/session logic; `lib/` centralizes platform services (camera, location, DB, sharing).
 
 Product Scope (from PRD)
 - Onboarding & Authentication
@@ -105,20 +126,31 @@ Design Assets
 - All wireframes and screenshots are under `design/`. Keep future design references and file-structure snapshots in this folder.
 
 UI/UX Notes
-- Updated screens with cleaner typography, rounded cards, and chips for categories.
-- Simplified auth: email + password only; social logins removed from UI and code paths.
+- Feed and detail follow Reddit patterns for familiarity: chips, counts, nested threads.
+- Report emphasizes accuracy: live geo overlay and accuracy, no gallery upload.
+- Profile matches the provided design (avatar, joined, grouped options) and includes logout confirmation.
 
-Demo Mode (no Supabase yet)
-- If `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` are not set, the app runs in Demo Mode:
-  - You can sign up or sign in with any email/password.
-  - Feed shows local demo issues; creating an issue stores it locally (AsyncStorage).
-  - Comments also store locally.
-  - Set the env keys later to switch to real Supabase mode — no code changes needed.
 Local SQLite Mode
-- The app ships with a full local database using `expo-sqlite` so you can run completely offline:
-  - Tables: `users`, `profiles`, `issues`, `votes`, `comments (parent_id for threads)`, `authorities`.
-  - Authentication: email/password with bcryptjs hashing stored in SQLite; session kept in AsyncStorage.
-  - Voting: stored per user in `votes` and aggregated into `issues.upvotes/downvotes`.
-  - Comments: threaded via `comments.parent_id`.
-- Schema is created automatically at first run. See `lib/db.ts` for the SQL.
-- When you later add Supabase env keys, the app switches from SQLite to Supabase transparently.
+- Full local database using `expo-sqlite` so you can run completely offline:
+  - Tables: `users`, `profiles`, `issues`, `votes`, `comments (parent_id)`, `authorities` (see `lib/db.ts`).
+  - Authentication: email/password with bcryptjs hashing (bcryptjs); session id stored in AsyncStorage.
+  - Votes: one per user/issue; counters recalculated and stored in `issues`.
+  - Comments: nested replies via `parent_id`.
+- Switching to Supabase later: add env keys and restart with cache clear; hooks and screens automatically use Supabase paths.
+
+Permissions (why we ask)
+- Camera: to capture evidence of issues.
+- Location (While Using the App): to auto‑tag reports with accurate coordinates and address.
+- Notifications (optional): for future updates when someone comments or your report status changes.
+
+Error Handling & Edge Cases
+- Simulator with no camera → shutter uses a sample image so flows remain testable.
+- Missing GPS fix → shows “Locating…”; you can still submit after manual refresh.
+- Vote toggling is optimistic; on failure UI remains usable; counters correct on next fetch.
+- SQLite unique email guard returns “Email already registered”.
+
+Roadmap
+- Nearby sort using distance, map clustering and heat map.
+- Media moderation flags, spam detection, block/ignore user.
+- Authority handle directory by city/ward with automatic tagging.
+- Push notifications for comment replies and report updates.
