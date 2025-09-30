@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, FlatList } from 'react-native';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Issue } from '../types';
 import IssueCard from '../components/IssueCard';
 import { useAuth } from '../hooks/useAuth';
+import { listUserIssues } from '../lib/sqliteIssues';
 
 export default function MyReportsScreen({ navigation }: any) {
   const { session } = useAuth();
@@ -12,8 +13,13 @@ export default function MyReportsScreen({ navigation }: any) {
   useEffect(() => {
     const load = async () => {
       if (!session?.user?.id) return;
-      const { data } = await supabase.from('issues').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
-      setData((data as any) || []);
+      if (!isSupabaseConfigured) {
+        const all = listUserIssues(Number(session.user.id));
+        setData(all as any);
+      } else {
+        const { data } = await supabase.from('issues').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
+        setData((data as any) || []);
+      }
     };
     load();
   }, [session?.user?.id]);

@@ -7,12 +7,12 @@ Key Features
 - Simple report flow: take/upload photo → add category → auto location → short description → preview and share.
 - Home feed: trending, newest, and nearby filters with upvotes, comments, and sharing.
 - Social sharing: generate a formatted post and open the native share sheet. For X (Twitter), open the tweet composer with prefilled text; attach the image via the OS share sheet.
-- Profile & settings: view “My Reports”, manage notifications and linked accounts, and logout.
-- Authentication: email/password out of the box; Google/Apple/Facebook/Twitter (X) via Supabase OAuth providers.
+- Profile & settings: view “My Reports”, manage notifications and logout.
+- Authentication: email/password only (no social logins for now).
 
 Tech Stack
 - App: Expo (React Native) + TypeScript + React Navigation
-- Auth & DB: Supabase (auth, Postgres, storage)
+- Auth & DB: SQLite (local-first using expo-sqlite). Supabase (auth, Postgres, storage) can be enabled later without code changes.
 - Location & Media: expo-location, expo-image-picker, expo-sharing
 - Maps: react-native-maps (optional for pin adjustment)
 
@@ -42,10 +42,7 @@ Quick Start
 4) Create database tables
    - In the Supabase SQL editor, paste and run `db/schema.sql` from this repo.
 
-5) Enable OAuth providers (optional but recommended)
-   - In Supabase Dashboard → Authentication → Providers, enable Google, Apple, Facebook, and Twitter (X). Add your app package IDs/bundle IDs and redirect URLs per Supabase docs. For Expo development, add `exp://127.0.0.1:19000/--/auth/callback` (or the URL Expo prints) as a redirect.
-
-6) Run the app
+5) Run the app
    - `pnpm expo start` or `npx expo start`
    - Launch on iOS Simulator, Android Emulator, or a physical device with Expo Go.
 
@@ -106,3 +103,22 @@ Product Scope (from PRD)
 
 Design Assets
 - All wireframes and screenshots are under `design/`. Keep future design references and file-structure snapshots in this folder.
+
+UI/UX Notes
+- Updated screens with cleaner typography, rounded cards, and chips for categories.
+- Simplified auth: email + password only; social logins removed from UI and code paths.
+
+Demo Mode (no Supabase yet)
+- If `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` are not set, the app runs in Demo Mode:
+  - You can sign up or sign in with any email/password.
+  - Feed shows local demo issues; creating an issue stores it locally (AsyncStorage).
+  - Comments also store locally.
+  - Set the env keys later to switch to real Supabase mode — no code changes needed.
+Local SQLite Mode
+- The app ships with a full local database using `expo-sqlite` so you can run completely offline:
+  - Tables: `users`, `profiles`, `issues`, `votes`, `comments (parent_id for threads)`, `authorities`.
+  - Authentication: email/password with bcryptjs hashing stored in SQLite; session kept in AsyncStorage.
+  - Voting: stored per user in `votes` and aggregated into `issues.upvotes/downvotes`.
+  - Comments: threaded via `comments.parent_id`.
+- Schema is created automatically at first run. See `lib/db.ts` for the SQL.
+- When you later add Supabase env keys, the app switches from SQLite to Supabase transparently.

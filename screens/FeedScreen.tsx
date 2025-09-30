@@ -30,5 +30,5 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f6f6f6' }
+  container: { flex: 1, backgroundColor: '#f5f6f8' }
 });

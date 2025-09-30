@@ -72,6 +72,7 @@ create table if not exists public.comments (
   id uuid primary key default gen_random_uuid(),
   issue_id uuid not null references public.issues(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  parent_id uuid references public.comments(id) on delete cascade,
   content text not null,
   created_at timestamp with time zone default now()
 );
@@ -79,6 +80,9 @@ create table if not exists public.comments (
 alter table public.comments enable row level security;
 create policy "Comments viewable by everyone" on public.comments for select using (true);
 create policy "Authenticated can add comments" on public.comments for insert with check (auth.role() = 'authenticated');
+
+create index if not exists comments_issue_id_idx on public.comments(issue_id);
+create index if not exists comments_parent_id_idx on public.comments(parent_id);
 
 -- Optional: authorities mapping for suggestion
 create table if not exists public.authorities (

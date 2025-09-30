@@ -9,13 +9,25 @@
     "ios": {
       "supportsTablet": true
     },
-    "android": {},
+    "android": {
+      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
     "web": {
-      "bundler": "metro",
-      "output": "static"
+      "bundler": "metro"
     },
     "plugins": [
-      "react-native-reanimated"
-    ]
+      ["expo-camera"],
+      ["expo-location", {
+        "locationWhenInUsePermission": "CivicVigilance uses your location to tag reports accurately.",
+        "isAndroidForegroundServiceEnabled": true
+      }]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "CivicVigilance needs camera access to capture civic issues.",
+        "NSLocationWhenInUseUsageDescription": "CivicVigilance uses your location to tag reports accurately."
+      }
+    }
   }
 }

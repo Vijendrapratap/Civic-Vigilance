@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
+import TextField from '../components/ui/TextField';
+import Button from '../components/ui/Button';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginScreen({ navigation }: any) {
-  const { signIn, signInWithProvider } = useAuth();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -15,31 +18,30 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
+      <View style={styles.brand}> 
+        <Ionicons name="shield-checkmark" size={24} color="#111" />
+        <Text style={styles.brandText}>CivicVigilance</Text>
+      </View>
       <Text style={styles.title}>Welcome back</Text>
       {!!error && <Text style={styles.error}>{error}</Text>}
-      <TextInput style={styles.input} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-      <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
-      <Button title="Login" onPress={onSubmit} />
+      <TextField label="Email" placeholder="you@example.com" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+      <View style={{ height: 10 }} />
+      <TextField label="Password" placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
+      <View style={{ height: 16 }} />
+      <Button title="Sign in" onPress={onSubmit} />
       <View style={{ height: 8 }} />
       <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>Forgot password?</Text></Pressable>
-      <View style={{ height: 8 }} />
-      <Pressable onPress={() => navigation.navigate('Signup')}><Text style={styles.link}>Create an account</Text></Pressable>
-      <View style={{ height: 24 }} />
-      <Button title="Continue with Google" onPress={() => signInWithProvider('google')} />
-      <View style={{ height: 8 }} />
-      <Button title="Continue with Apple" onPress={() => signInWithProvider('apple')} />
-      <View style={{ height: 8 }} />
-      <Button title="Continue with Facebook" onPress={() => signInWithProvider('facebook')} />
-      <View style={{ height: 8 }} />
-      <Button title="Continue with Twitter (X)" onPress={() => signInWithProvider('twitter')} />
+      <View style={{ height: 12 }} />
+      <Pressable onPress={() => navigation.navigate('Signup')}><Text style={styles.link}>Don’t have an account? Sign up</Text></Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12, backgroundColor: '#fafafa' },
-  title: { fontSize: 22, fontWeight: '700', marginBottom: 12 },
-  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 8, padding: 12 },
+  container: { flex: 1, padding: 20, gap: 12, backgroundColor: '#f7f7f8', justifyContent: 'center' },
+  brand: { position: 'absolute', top: 60, left: 20, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  brandText: { fontWeight: '800', fontSize: 16 },
+  title: { fontSize: 26, fontWeight: '800', marginBottom: 12 },
   link: { color: '#0066cc' },
   error: { color: 'crimson' }
 });
