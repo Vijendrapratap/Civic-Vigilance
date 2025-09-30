@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, ScrollView, Alert, Pressable, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import Constants from 'expo-constants';
+import { Ionicons } from '@expo/vector-icons';
 import { requestLocation, reverseGeocode } from '../lib/location';
 import { composePostText, openTweetComposer, shareImageWithText } from '../lib/sharing';
 import { suggestAuthorities } from '../lib/authorities';
@@ -21,6 +22,8 @@ export default function ReportIssueScreen() {
   const cameraRef = useRef<any>(null);
   const { coords: liveCoords, address: liveAddress, permissionStatus } = useLiveLocation();
   const [stage, setStage] = useState<'capture' | 'details'>('capture');
+  const [facing, setFacing] = useState<'back' | 'front'>('back');
+  const [flash, setFlash] = useState<'off' | 'on'>('off');
   useEffect(() => { if (camPermission && !camPermission.granted) { requestCamPermission(); } }, [camPermission?.status]);
 
   const takeLivePhoto = async () => {
@@ -76,16 +79,24 @@ export default function ReportIssueScreen() {
           )}
         </View>
         {camPermission?.granted ? (
-          <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
+          <CameraView ref={cameraRef} style={{ flex: 1 }} facing={facing} flash={flash} />
         ) : (
           <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}>
             <Button title="Enable Camera" onPress={() => requestCamPermission()} />
           </View>
         )}
         <View style={styles.shutterRow}>
-          <Pressable onPress={takeLivePhoto} style={styles.shutter} accessibilityLabel="Capture photo" />
-          {!Constants.isDevice && <Text style={{ color: '#888', marginTop: 8 }}>Simulator uses a sample image</Text>}
+          <Pressable onPress={() => setFlash((p) => (p === 'off' ? 'on' : 'off'))} style={styles.smallBtn} accessibilityLabel="Toggle flash">
+            <Ionicons name={flash === 'off' ? 'flash-off' : 'flash'} size={22} color="#fff" />
+          </Pressable>
+          <Pressable onPress={takeLivePhoto} style={styles.shutter} accessibilityLabel="Capture photo">
+            <Ionicons name="camera" size={34} color="#111" />
+          </Pressable>
+          <Pressable onPress={() => setFacing((p) => (p === 'back' ? 'front' : 'back'))} style={styles.smallBtn} accessibilityLabel="Flip camera">
+            <Ionicons name="camera-reverse-outline" size={24} color="#fff" />
+          </Pressable>
         </View>
+        {!Constants.isDevice && <Text style={styles.simHint}>Simulator uses a sample image</Text>}
       </View>
     );
   }
@@ -130,6 +141,8 @@ const styles = StyleSheet.create({
   header: { paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, backgroundColor: '#0b1a2a' },
   headerText: { color: '#fff', fontWeight: '800', fontSize: 16 },
   headerMeta: { color: '#c9d3e0', marginTop: 4 },
-  shutterRow: { padding: 16, backgroundColor: '#000', alignItems: 'center' },
-  shutter: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#fff', borderWidth: 8, borderColor: '#e5e5e5' }
+  shutterRow: { position: 'absolute', bottom: 24, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
+  shutter: { width: 88, height: 88, borderRadius: 44, backgroundColor: '#fff', borderWidth: 6, borderColor: '#e5e5e5', alignItems: 'center', justifyContent: 'center' },
+  smallBtn: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center' },
+  simHint: { position: 'absolute', bottom: 8, alignSelf: 'center', color: '#888' }
 });
