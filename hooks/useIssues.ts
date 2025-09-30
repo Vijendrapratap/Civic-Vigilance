@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Issue } from '../types';
 import { createIssueSqlite, listIssues as listIssuesSqlite } from '../lib/sqliteIssues';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ensureSessionUserId } from '../lib/sqliteAuth';
 
 type SortMode = 'trending' | 'newest' | 'nearby';
 
@@ -46,8 +47,7 @@ export async function createIssue(payload: {
   address?: string;
 }) {
   if (!isSupabaseConfigured) {
-    const idStr = await AsyncStorage.getItem('sqlite_session_user_id');
-    const localUserId = idStr ? Number(idStr) : 1;
+    const localUserId = await ensureSessionUserId();
     return await (createIssueSqlite({ user_id: localUserId, ...payload }) as any);
   }
   const { data, error } = await supabase.from('issues').insert(payload).select('*').single();

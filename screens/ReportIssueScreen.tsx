@@ -92,16 +92,25 @@ export default function ReportIssueScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {image && <Image source={{ uri: image }} style={{ width: '100%', height: 240, borderRadius: 12 }} />}
-      <TextInput style={styles.input} placeholder="Short title" value={title} onChangeText={setTitle} />
-      <TextInput style={[styles.input, { height: 110 }]} multiline placeholder="Short description" value={description} onChangeText={setDescription} />
-      <CategoryPicker value={category} onChange={setCategory} />
-      <View style={styles.row}>
-        <Button title="Use current location" onPress={getLocation} variant="outline" />
-        <Button title="Retake" onPress={() => setStage('capture')} variant="outline" />
+      {image && <Image source={{ uri: image }} style={styles.preview} />}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Describe the issue</Text>
+        <TextInput style={styles.input} placeholder="Short title" value={title} onChangeText={setTitle} />
+        <TextInput style={[styles.input, { height: 110 }]} multiline placeholder="Short description" value={description} onChangeText={setDescription} />
       </View>
-      {!!address && <Text style={styles.meta}>{address}</Text>}
-      <View style={styles.row}>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Category</Text>
+        <CategoryPicker value={category} onChange={setCategory} />
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Location</Text>
+        <View style={styles.row}>
+          <Button title="Use current location" onPress={getLocation} variant="outline" />
+          <Button title="Retake" onPress={() => setStage('capture')} variant="outline" />
+        </View>
+        {!!address && <Text style={styles.meta}>{address}</Text>}
+      </View>
+      <View style={[styles.row, { marginTop: 12 }]}>
         <Button title="Share preview" onPress={onShare} variant="outline" />
         <Button title="Submit" onPress={onSubmit} disabled={!image || !title || !coords} />
       </View>
@@ -110,8 +119,11 @@ export default function ReportIssueScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12 },
+  container: { padding: 16, gap: 12, backgroundColor: '#f6f7f9' },
   title: { fontSize: 20, fontWeight: '700' },
+  preview: { width: '100%', height: 240, borderRadius: 16 },
+  card: { backgroundColor: '#fff', padding: 12, borderRadius: 14, gap: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
+  sectionTitle: { fontWeight: '800', fontSize: 14, color: '#111' },
   input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, padding: 12 },
   meta: { color: '#666' },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center' },

@@ -11,6 +11,32 @@ export async function initAuth() {
   // Seed a default user if none exists for demo
 }
 
+// Ensure there is a valid session user id. If none, create a lightweight
+// local account so inserts (issues, comments, votes) have a valid owner.
+export async function ensureSessionUserId(): Promise<number> {
+  const db = getDB();
+  const existing = await AsyncStorage.getItem(SESSION_KEY);
+  if (existing) return Number(existing);
+  // Try to reuse the first user if any
+  const any: any = db.getFirstSync?.('SELECT id FROM users ORDER BY id LIMIT 1');
+  if (any?.id) {
+    await AsyncStorage.setItem(SESSION_KEY, String(any.id));
+    return any.id as number;
+  }
+  // Create an anonymous local user
+  const now = new Date().toISOString();
+  const email = `anonymous@local`;
+  const hash = bcrypt.hashSync('anonymous', 6);
+  db.withTransactionSync?.(() => {
+    db.execSync?.('INSERT INTO users(email, password_hash, created_at) VALUES (?,?,?)', [email, hash, now]);
+    const id = (db.getFirstSync?.('SELECT last_insert_rowid() as id') as any)?.id as number;
+    db.execSync?.('INSERT OR REPLACE INTO profiles(user_id, full_name, created_at) VALUES (?,?,?)', [id, 'Anonymous', now]);
+    AsyncStorage.setItem(SESSION_KEY, String(id));
+  });
+  const out: any = db.getFirstSync?.('SELECT id FROM users WHERE email=?', [email]);
+  return out?.id as number;
+}
+
 export async function signUpLocal(email: string, password: string, fullName?: string): Promise<{ user?: LocalUser; error?: string }> {
   try {
     const db = getDB();
@@ -53,4 +79,3 @@ export async function currentUserLocal(): Promise<LocalUser | null> {
   if (!row) return null;
   return { id: Number(id), email: row.email };
 }
-
