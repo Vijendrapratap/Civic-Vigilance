@@ -14,7 +14,7 @@ Key Features
 Tech Stack
 - App: Expo (React Native) + TypeScript + React Navigation
 - Local DB & Auth: expo-sqlite + bcryptjs; session in AsyncStorage
-- Optional cloud: Supabase (auth + Postgres + Storage) behind env flag
+- Optional cloud: Firebase (Auth + Firestore) or Supabase (Auth + Postgres + Storage), controlled by env flags
 - Sensors & Media: expo-camera (CameraView), expo-location (live watch), expo-sharing
 
 Repository Layout
@@ -37,7 +37,10 @@ Quick Start
    - `pnpm install` or `npm install`
 
 3) Configure environment (optional)
-   - Copy `.env.example` to `.env` and fill `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY` to use Supabase. If omitted, the app uses local SQLite mode automatically.
+   - Copy `.env.example` to `.env`.
+   - To use Firebase (preferred): fill `EXPO_PUBLIC_FIREBASE_*` values from your Firebase project (API key, Project ID, App ID, etc.).
+   - To use Supabase instead: fill `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+   - If neither is set, the app runs in local SQLite mode automatically.
 
 4) Create database tables
    - In the Supabase SQL editor, paste and run `db/schema.sql` from this repo.
@@ -67,8 +70,16 @@ Data Model (Supabase)
 File: db/schema.sql documents these tables and constraints.
 
 Environment Variables
-- `EXPO_PUBLIC_SUPABASE_URL` – your Supabase URL
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY` – your anon key
+- Firebase (preferred if set):
+  - `EXPO_PUBLIC_FIREBASE_API_KEY`
+  - `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`
+  - `EXPO_PUBLIC_FIREBASE_PROJECT_ID`
+  - `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET`
+  - `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+  - `EXPO_PUBLIC_FIREBASE_APP_ID`
+- Supabase:
+  - `EXPO_PUBLIC_SUPABASE_URL`
+  - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
 
 Notes on Social Posting
 - X (Twitter) limits programmatic posting with images for 3rd‑party apps. The app opens the tweet composer with prefilled text and lets users attach the selected image via the OS share sheet. This matches the UX intent without requiring elevated API access.

@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase, isSupabaseConfigured } from './supabase';
+import { isFirebaseConfigured, db as fdb } from './firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export type UserProfile = {
   id: string;
@@ -13,6 +15,12 @@ const PROFILE_KEY = 'demo_profile';
 const PREFS_KEY = 'demo_notification_prefs';
 
 export async function loadProfile(userId: string): Promise<UserProfile> {
+  if (isFirebaseConfigured && fdb) {
+    const ref = doc(fdb, 'profiles', userId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) return { id: userId, ...(snap.data() as any) };
+    return { id: userId, full_name: 'Civic User', avatar_url: null, created_at: new Date().toISOString() };
+  }
   if (!isSupabaseConfigured) {
     const raw = await AsyncStorage.getItem(PROFILE_KEY);
     const parsed: UserProfile | null = raw ? JSON.parse(raw) : null;
@@ -23,6 +31,11 @@ export async function loadProfile(userId: string): Promise<UserProfile> {
 }
 
 export async function saveProfile(p: UserProfile) {
+  if (isFirebaseConfigured && fdb) {
+    const ref = doc(fdb, 'profiles', p.id);
+    await setDoc(ref, { full_name: p.full_name ?? null, avatar_url: p.avatar_url ?? null, created_at: p.created_at || serverTimestamp() }, { merge: true });
+    return p;
+  }
   if (!isSupabaseConfigured) {
     await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(p));
     return p;
@@ -54,4 +67,3 @@ export async function loadPrefs(): Promise<NotificationPrefs> {
 export async function savePrefs(p: NotificationPrefs) {
   await AsyncStorage.setItem(PREFS_KEY, JSON.stringify(p));
 }
-
