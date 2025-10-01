@@ -103,7 +103,13 @@ export default function ReportIssueScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={{ flex: 1 }}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      scrollEventThrottle={16}
+    >
       {image && <Image source={{ uri: image }} style={styles.preview} />}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Describe the issue</Text>
@@ -135,16 +141,18 @@ export default function ReportIssueScreen() {
         </View>
         {!!address && <Text style={styles.meta}>{address}</Text>}
       </View>
-      <View style={[styles.row, { marginTop: 12 }]}>
-        <Button title="Share preview" onPress={onShare} variant="outline" style={{ flex: 1 }} />
-        <Button title="Submit" onPress={onSubmit} style={{ flex: 1 }} disabled={!image || !title || !coords} />
-      </View>
+      <View style={{ height: 140 }} />
     </ScrollView>
+    <View style={styles.footer}>
+      <Button title="Share preview" onPress={onShare} variant="outline" style={{ flex: 1 }} />
+      <Button title="Submit" onPress={onSubmit} style={{ flex: 1 }} disabled={!image || !title || !coords} />
+    </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12, backgroundColor: colors.bg },
+  container: { padding: 16, gap: 12, backgroundColor: colors.bg, paddingBottom: 120 },
   title: { fontSize: 20, fontWeight: '700' },
   preview: { width: '100%', height: 240, borderRadius: 16 },
   card: { backgroundColor: colors.card, padding: 16, borderRadius: 18, gap: 12, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, borderWidth: 1, borderColor: 'rgba(148,163,184,0.12)' },
@@ -158,5 +166,6 @@ const styles = StyleSheet.create({
   shutterRow: { position: 'absolute', bottom: 24, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
   shutter: { width: 88, height: 88, borderRadius: 44, backgroundColor: '#fff', borderWidth: 6, borderColor: '#e5e5e5', alignItems: 'center', justifyContent: 'center' },
   smallBtn: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center' },
-  simHint: { position: 'absolute', bottom: 8, alignSelf: 'center', color: '#888' }
+  simHint: { position: 'absolute', bottom: 8, alignSelf: 'center', color: '#888' },
+  footer: { position: 'absolute', left: 16, right: 16, bottom: 90, flexDirection: 'row', gap: 12 }
 });
