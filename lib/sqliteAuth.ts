@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDB, ensureSchema } from './db';
+import { sha256 } from 'js-sha256';
 
 export type LocalUser = { id: number; email: string };
 
@@ -87,33 +88,15 @@ function toHex(bytes: Uint8Array) {
 }
 
 async function randomBytes(len: number): Promise<Uint8Array> {
-  try {
-    const Random = require('expo-random');
-    if (Random?.getRandomBytesAsync) return await Random.getRandomBytesAsync(len);
-  } catch {}
+  // Pure JS fallback to avoid native module dependency for prototypes.
   const out = new Uint8Array(len);
   for (let i = 0; i < len; i++) out[i] = Math.floor(Math.random() * 256);
   return out;
 }
 
 async function sha256Hex(input: string): Promise<string> {
-  try {
-    const Crypto = require('expo-crypto');
-    if (Crypto?.digestStringAsync) {
-      return await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, input);
-    }
-  } catch {}
-  try {
-    const { sha256 } = require('js-sha256');
-    return sha256(input);
-  } catch {}
-  // Extremely basic fallback (not recommended for prod, but prevents crashes)
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash << 5) - hash + input.charCodeAt(i);
-    hash |= 0;
-  }
-  return toHex(new Uint8Array([hash & 255, (hash >> 8) & 255, (hash >> 16) & 255, (hash >> 24) & 255]));
+  // Use pure JS implementation to avoid native dependencies in Expo Go.
+  return sha256(input);
 }
 
 async function makePasswordHash(password: string) {
