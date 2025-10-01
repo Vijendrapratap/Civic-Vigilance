@@ -16,7 +16,6 @@
     "@react-navigation/native": "^6.1.10",
     "@react-navigation/native-stack": "^6.9.20",
     "@supabase/supabase-js": "^2.45.4",
-    "bcryptjs": "^2.4.3",
     "expo": "^51.0.0",
     "expo-camera": "~15.0.16",
     "expo-constants": "^16.0.2",

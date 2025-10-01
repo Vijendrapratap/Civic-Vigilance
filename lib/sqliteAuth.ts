@@ -82,8 +82,14 @@ export async function currentUserLocal(): Promise<LocalUser | null> {
 }
 
 // --- password helpers (Expo‑friendly: SHA‑256 with random salt) ---
+function toHex(bytes: Uint8Array) {
+  let out = '';
+  for (let i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, '0');
+  return out;
+}
+
 async function makePasswordHash(password: string) {
-  const salt = Buffer.from(await Random.getRandomBytesAsync(16)).toString('hex');
+  const salt = toHex(await Random.getRandomBytesAsync(16));
   const digest = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, `${salt}:${password}`);
   return `sha256$${salt}$${digest}`;
 }
