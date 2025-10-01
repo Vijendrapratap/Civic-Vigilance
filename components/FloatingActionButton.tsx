@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function FloatingActionButton({ onPress }: { onPress: () => void }) {
   return (
     <Pressable style={styles.fab} onPress={onPress} accessibilityLabel="Open camera to report">
-      <Ionicons name="camera" size={26} color="#fff" />
+      <Ionicons name="camera" size={30} color="#0f1826" />
     </Pressable>
   );
 }
@@ -13,15 +13,19 @@ export default function FloatingActionButton({ onPress }: { onPress: () => void 
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 30,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#111',
+    bottom: 26,
+    alignSelf: 'center',
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#00AEEF',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 3
+    shadowColor: '#00AEEF',
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6
   },
   
 });

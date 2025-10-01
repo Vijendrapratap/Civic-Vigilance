@@ -10,6 +10,7 @@ import { createIssue } from '../hooks/useIssues';
 import Button from '../components/ui/Button';
 import CategoryPicker, { CategoryKey } from '../components/CategoryPicker';
 import { useLiveLocation } from '../hooks/useLiveLocation';
+import { colors } from '../lib/theme';
 
 export default function ReportIssueScreen() {
   const [image, setImage] = useState<string | null>(null);
@@ -106,8 +107,21 @@ export default function ReportIssueScreen() {
       {image && <Image source={{ uri: image }} style={styles.preview} />}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Describe the issue</Text>
-        <TextInput style={styles.input} placeholder="Short title" value={title} onChangeText={setTitle} />
-        <TextInput style={[styles.input, { height: 110 }]} multiline placeholder="Short description" value={description} onChangeText={setDescription} />
+        <TextInput
+          style={styles.input}
+          placeholder="Short title"
+          placeholderTextColor={colors.subtext}
+          value={title}
+          onChangeText={setTitle}
+        />
+        <TextInput
+          style={[styles.input, { height: 110 }]}
+          multiline
+          placeholder="Short description"
+          placeholderTextColor={colors.subtext}
+          value={description}
+          onChangeText={setDescription}
+        />
       </View>
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Category</Text>
@@ -116,8 +130,8 @@ export default function ReportIssueScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Location</Text>
         <View style={styles.row}>
-          <Button title="Use current location" onPress={getLocation} variant="outline" />
-          <Button title="Retake" onPress={() => setStage('capture')} variant="outline" />
+          <Button title="Use current location" onPress={getLocation} variant="outline" style={{ flex: 1 }} />
+          <Button title="Retake" onPress={() => setStage('capture')} variant="outline" style={{ flex: 1 }} />
         </View>
         {!!address && <Text style={styles.meta}>{address}</Text>}
       </View>
@@ -130,13 +144,13 @@ export default function ReportIssueScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12, backgroundColor: '#f6f7f9' },
+  container: { padding: 16, gap: 12, backgroundColor: colors.bg },
   title: { fontSize: 20, fontWeight: '700' },
   preview: { width: '100%', height: 240, borderRadius: 16 },
-  card: { backgroundColor: '#fff', padding: 12, borderRadius: 14, gap: 10, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
-  sectionTitle: { fontWeight: '800', fontSize: 14, color: '#111' },
-  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, padding: 12 },
-  meta: { color: '#666' },
+  card: { backgroundColor: colors.card, padding: 16, borderRadius: 18, gap: 12, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, borderWidth: 1, borderColor: 'rgba(148,163,184,0.12)' },
+  sectionTitle: { fontWeight: '800', fontSize: 14, color: colors.text },
+  input: { backgroundColor: 'rgba(15,23,42,0.4)', borderWidth: 1, borderColor: 'rgba(148,163,184,0.35)', borderRadius: 12, padding: 12, color: colors.text },
+  meta: { color: colors.subtext },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   header: { paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, backgroundColor: '#0b1a2a' },
   headerText: { color: '#fff', fontWeight: '800', fontSize: 16 },

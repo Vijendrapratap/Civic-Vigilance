@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Issue } from '../types';
 import { castVote, getUserVote } from '../lib/votes';
 import { composePostText, shareImageWithText, openTweetComposer } from '../lib/sharing';
 import ActionBar from './ActionBar';
+import { colors } from '../lib/theme';
 
 export default function IssueCard({ item, onPress }: { item: Issue; onPress?: () => void }) {
   const [vote, setVote] = useState<-1 | 0 | 1>(0);
@@ -57,11 +57,11 @@ export default function IssueCard({ item, onPress }: { item: Issue; onPress?: ()
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', marginBottom: 14, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
+  card: { backgroundColor: colors.card, borderRadius: 20, overflow: 'hidden', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, borderWidth: 1, borderColor: 'rgba(148, 163, 184, 0.12)' },
   image: { width: '100%', height: 200 },
-  content: { padding: 12 },
-  title: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  meta: { color: '#666' },
+  content: { padding: 16 },
+  title: { fontSize: 16, fontWeight: '800', marginBottom: 6, color: colors.text },
+  meta: { color: colors.subtext },
   row: { flexDirection: 'row', marginTop: 10, gap: 12 },
   stat: { flexDirection: 'row', alignItems: 'center' }
 });

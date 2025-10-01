@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatCount } from '../lib/format';
+import { colors } from '../lib/theme';
 
 type Props = {
   vote: -1 | 0 | 1;
@@ -28,16 +29,15 @@ export default function ActionBar({ vote, upvotes = 0, downvotes = 0, comments =
 function Chip({ icon, label, onPress, active }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress?: () => void; active?: boolean; }) {
   return (
     <Pressable onPress={onPress} style={[styles.chip, active && styles.active]}>
-      <Ionicons name={icon} size={16} color={active ? '#fff' : '#222'} />
+      <Ionicons name={icon} size={16} color={active ? '#fff' : colors.text} />
       <Text style={[styles.text, active && { color: '#fff' }]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 10, marginTop: 10 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f0f2f5' },
-  active: { backgroundColor: '#111' },
-  text: { color: '#222', fontWeight: '600' }
+  row: { flexDirection: 'row', gap: 10, marginTop: 12 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: 'rgba(148, 163, 184, 0.18)' },
+  active: { backgroundColor: colors.primary },
+  text: { color: colors.text, fontWeight: '700' }
 });
-

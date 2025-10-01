@@ -45,12 +45,11 @@ const styles = StyleSheet.create({
   },
   outline: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
+    borderColor: 'rgba(148, 163, 184, 0.35)',
+    backgroundColor: colors.card,
   },
   ghost: {
     backgroundColor: 'transparent',
   },
   text: { color: '#fff', fontWeight: '700', fontSize: 16 },
 });
-

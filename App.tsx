@@ -54,8 +54,17 @@ function AppTabs() {
         const icon = route.name === 'Home' ? 'home-outline' : route.name === 'Report' ? 'camera' : 'person-circle-outline';
         return <Ionicons name={icon as any} size={size} color={color} />;
       },
-      tabBarActiveTintColor: '#111',
-      tabBarInactiveTintColor: '#999',
+      tabBarActiveTintColor: '#00AEEF',
+      tabBarInactiveTintColor: '#8a9ab8',
+      tabBarStyle: {
+        backgroundColor: '#0b1524',
+        borderTopWidth: 0,
+        height: 72,
+        paddingBottom: 10,
+        paddingTop: 10,
+        position: 'absolute'
+      },
+      tabBarLabelStyle: { fontWeight: '700', fontSize: 12 },
     })}>
       <Tabs.Screen name="Home" component={FeedNavigator} options={{ headerShown: false }} />
       <Tabs.Screen name="Report" component={ReportIssueScreen} />
