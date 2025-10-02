@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase, isSupabaseConfigured } from './supabase';
+import { supabase } from './supabase';
 import { isFirebaseConfigured, db as fdb, auth as fauth } from './firebase';
 import { doc, getDoc, runTransaction, increment } from 'firebase/firestore';
+import { getBackend } from './backend';
 
 const VOTES_KEY = 'demo_votes'; // { [issueId: string]: -1 | 0 | 1 }
 
@@ -15,14 +16,14 @@ async function writeVotes(map: Record<string, number>) {
 }
 
 export async function getUserVote(issueId: string): Promise<-1 | 0 | 1> {
-  if (isFirebaseConfigured && fdb) {
+  if (getBackend() === 'firebase' && isFirebaseConfigured && fdb) {
     const uid = fauth?.currentUser?.uid;
     if (!uid) return 0;
     const vref = doc(fdb, 'issue_votes', `${uid}_${issueId}`);
     const snap = await getDoc(vref);
     return ((snap.exists() ? (snap.data() as any).value : 0) ?? 0) as -1 | 0 | 1;
   }
-  if (!isSupabaseConfigured) {
+  if (getBackend() === 'sqlite') {
     const map = await readVotes();
     return ((map[issueId] as any) ?? 0) as -1 | 0 | 1;
   }
@@ -34,7 +35,7 @@ export async function getUserVote(issueId: string): Promise<-1 | 0 | 1> {
 
 export async function castVote(issueId: string, value: -1 | 1): Promise<{ vote: -1 | 0 | 1; upvotes?: number; downvotes?: number; }>
 {
-  if (isFirebaseConfigured && fdb) {
+  if (getBackend() === 'firebase' && isFirebaseConfigured && fdb) {
     const uid = fauth?.currentUser?.uid;
     if (!uid) return { vote: 0 };
     const vref = doc(fdb, 'issue_votes', `${uid}_${issueId}`);
@@ -62,7 +63,7 @@ export async function castVote(issueId: string, value: -1 | 1): Promise<{ vote: 
     // Note: returning counts requires reading the issue; keep lightweight
     return { vote: result };
   }
-  if (!isSupabaseConfigured) {
+  if (getBackend() === 'sqlite') {
     const map = await readVotes();
     const current = (map[issueId] ?? 0) as -1 | 0 | 1;
     const next = current === value ? 0 : value;
