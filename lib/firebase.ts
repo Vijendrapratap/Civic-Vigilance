@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import {
-  initializeAuth,
   getAuth,
   type Auth,
   onAuthStateChanged,
@@ -10,7 +9,6 @@ import {
   sendPasswordResetEmail,
   signOut as fbSignOut,
 } from 'firebase/auth';
-import { getReactNativePersistence } from 'firebase/auth/react-native';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 
@@ -34,12 +32,8 @@ let storage: FirebaseStorage | undefined;
 if (isFirebaseConfigured) {
   const config = { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId } as const;
   app = getApps().length ? getApps()[0]! : initializeApp(config);
-  try {
-    // Ensure React Native persistence in Expo
-    auth = initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
-  } catch (_e) {
-    auth = getAuth(app);
-  }
+  // Use default RN auth; avoid optional react-native subpath to prevent bundler resolution issues
+  auth = getAuth(app);
   db = getFirestore(app);
   storage = getStorage(app);
 } else {
