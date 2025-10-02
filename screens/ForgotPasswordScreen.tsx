@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
+import Button from '../components/ui/Button';
 
 export default function ForgotPasswordScreen() {
   const { resetPassword } = useAuth();
@@ -14,13 +15,15 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Reset password</Text>
       {!!error && <Text style={styles.error}>{error}</Text>}
       {!!message && <Text style={styles.message}>{message}</Text>}
       <TextInput style={styles.input} placeholder="Email" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
       <Button title="Send reset link" onPress={onSubmit} />
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

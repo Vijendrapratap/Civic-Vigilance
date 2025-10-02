@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import TextField from '../components/ui/TextField';
 import Button from '../components/ui/Button';
@@ -17,7 +17,8 @@ export default function LoginScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.brand}> 
         <Ionicons name="shield-checkmark" size={24} color="#111" />
         <Text style={styles.brandText}>CivicVigilance</Text>
@@ -30,10 +31,11 @@ export default function LoginScreen({ navigation }: any) {
       <View style={{ height: 16 }} />
       <Button title="Sign in" onPress={onSubmit} />
       <View style={{ height: 8 }} />
-      <Pressable onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>Forgot password?</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel="Forgot password" onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>Forgot password?</Text></Pressable>
       <View style={{ height: 12 }} />
-      <Pressable onPress={() => navigation.navigate('Signup')}><Text style={styles.link}>Don’t have an account? Sign up</Text></Pressable>
-    </View>
+      <Pressable accessibilityRole="button" accessibilityLabel="Sign up" onPress={() => navigation.navigate('Signup')}><Text style={styles.link}>Don’t have an account? Sign up</Text></Pressable>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

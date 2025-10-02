@@ -6,7 +6,15 @@ export default function SortBar({ value, onChange }: { value: 'trending' | 'newe
   return (
     <View style={styles.wrap}>
       {(['trending', 'newest', 'nearby'] as const).map((k) => (
-        <Pressable key={k} style={[styles.chip, value === k && styles.active]} onPress={() => onChange(k)}>
+        <Pressable
+          key={k}
+          style={[styles.chip, value === k && styles.active]}
+          onPress={() => onChange(k)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: value === k }}
+          accessibilityLabel={`Sort by ${k}`}
+          hitSlop={8}
+        >
           <Text style={value === k ? styles.activeText : styles.text}>{k}</Text>
         </Pressable>
       ))}

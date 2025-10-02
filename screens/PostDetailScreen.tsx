@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView } from 'react-native';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Comment, Issue } from '../types';
 import { getIssueByIdSqlite, listCommentsSqlite, addCommentSqlite, castVoteSqlite, getUserVoteSqlite } from '../lib/sqliteIssues';
 import ActionBar from '../components/ActionBar';
 import { castVote, getUserVote } from '../lib/votes';
 import { useAuth } from '../hooks/useAuth';
+import Button from '../components/ui/Button';
+import { isFirebaseConfigured, db as fdb, auth as fauth } from '../lib/firebase';
+import { doc, getDoc, collection, getDocs, addDoc, query as fsQuery, where, orderBy, serverTimestamp } from 'firebase/firestore';
 
 export default function PostDetailScreen({ route }: any) {
   const { id } = route.params as { id: string };
@@ -21,7 +24,21 @@ export default function PostDetailScreen({ route }: any) {
 
   useEffect(() => {
     const run = async () => {
-      if (!isSupabaseConfigured) {
+      if (isFirebaseConfigured && fdb) {
+        // Issue
+        const iref = doc(fdb, 'issues', String(id));
+        const isnap = await getDoc(iref);
+        if (isnap.exists()) {
+          const data: any = { id: String(id), ...isnap.data() };
+          setIssue(data as Issue);
+          setUp(data?.upvotes ?? 0); setDown(data?.downvotes ?? 0);
+        }
+        // Comments (top-level collection filtered by issue_id)
+        const q = fsQuery(collection(fdb, 'comments'), where('issue_id', '==', String(id)), orderBy('created_at', 'asc'));
+        const csnap = await getDocs(q);
+        const c = csnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+        setComments(c as any);
+      } else if (!isSupabaseConfigured) {
         const i = await getIssueByIdSqlite(Number(id));
         setIssue(i as any);
         const c = await listCommentsSqlite(Number(id));
@@ -45,7 +62,13 @@ export default function PostDetailScreen({ route }: any) {
 
   const addComment = async () => {
     if (!content.trim()) return;
-    if (!isSupabaseConfigured) {
+    if (isFirebaseConfigured && fdb) {
+      const uid = fauth?.currentUser?.uid;
+      if (!uid) return;
+      const payload = { issue_id: String(id), user_id: uid, content, parent_id: replyTo || null, created_at: serverTimestamp() };
+      const ref = await addDoc(collection(fdb, 'comments'), payload as any);
+      setComments((prev) => [...prev, { id: ref.id, ...payload } as any]);
+    } else if (!isSupabaseConfigured) {
       const c = await addCommentSqlite(Number(id), localUserId, content, replyTo ? Number(replyTo) : undefined);
       setComments((prev) => [...prev, c as any]);
     } else {
@@ -113,8 +136,18 @@ export default function PostDetailScreen({ route }: any) {
       <Text style={styles.h2}>Comments</Text>
       <View>{tree}</View>
       <View style={[styles.row, { marginTop: 16 }]}>
-        {replyTo && <Pressable onPress={() => setReplyTo(null)}><Text style={{ color: '#0066cc', marginRight: 8 }}>Cancel reply</Text></Pressable>}
-        <TextInput value={content} onChangeText={setContent} placeholder={replyTo ? 'Reply…' : 'Join the conversation'} style={styles.input} />
+        {replyTo && (
+          <Pressable accessibilityRole="button" accessibilityLabel="Cancel reply" onPress={() => setReplyTo(null)}>
+            <Text style={{ color: '#0066cc', marginRight: 8 }}>Cancel reply</Text>
+          </Pressable>
+        )}
+        <TextInput
+          value={content}
+          onChangeText={setContent}
+          placeholder={replyTo ? 'Reply…' : 'Join the conversation'}
+          style={styles.input}
+          accessibilityLabel={replyTo ? 'Reply' : 'Comment'}
+        />
         <Button title="Send" onPress={addComment} />
       </View>
     </ScrollView>

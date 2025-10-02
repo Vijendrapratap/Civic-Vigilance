@@ -13,7 +13,13 @@ type Props = {
 
 export default function ListItem({ title, subtitle, icon, onPress, right, tint = '#e8f0ed' }: Props) {
   return (
-    <Pressable onPress={onPress} style={styles.wrap}>
+    <Pressable
+      onPress={onPress}
+      style={styles.wrap}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      hitSlop={8}
+    >
       <View style={[styles.iconWrap, { backgroundColor: tint }]}>
         <Ionicons name={icon} size={18} color="#1b2b27" />
       </View>
@@ -33,4 +39,3 @@ const styles = StyleSheet.create({
   title: { color: '#e6f0ec', fontWeight: '700' },
   subtitle: { color: '#9aa0a6', marginTop: 3 }
 });
-

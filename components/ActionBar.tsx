@@ -18,17 +18,24 @@ type Props = {
 export default function ActionBar({ vote, upvotes = 0, downvotes = 0, comments = 0, onUpvote, onDownvote, onComment, onShare }: Props) {
   return (
     <View style={styles.row}>
-      <Chip onPress={onUpvote} active={vote === 1} icon="arrow-up" label={formatCount(upvotes)} />
-      <Chip onPress={onDownvote} active={vote === -1} icon="arrow-down" label={formatCount(downvotes)} />
-      {onComment && <Chip onPress={onComment} icon="chatbubble-outline" label={formatCount(comments)} />}
-      {onShare && <Chip onPress={onShare} icon="share-social-outline" label="Share" />}
+      <Chip onPress={onUpvote} active={vote === 1} icon="arrow-up" label={formatCount(upvotes)} a11yLabel="Upvote" />
+      <Chip onPress={onDownvote} active={vote === -1} icon="arrow-down" label={formatCount(downvotes)} a11yLabel="Downvote" />
+      {onComment && <Chip onPress={onComment} icon="chatbubble-outline" label={formatCount(comments)} a11yLabel="Open comments" />}
+      {onShare && <Chip onPress={onShare} icon="share-social-outline" label="Share" a11yLabel="Share" />}
     </View>
   );
 }
 
-function Chip({ icon, label, onPress, active }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress?: () => void; active?: boolean; }) {
+function Chip({ icon, label, onPress, active, a11yLabel }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress?: () => void; active?: boolean; a11yLabel?: string; }) {
   return (
-    <Pressable onPress={onPress} style={[styles.chip, active && styles.active]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.chip, active && styles.active]}
+      accessibilityRole="button"
+      accessibilityState={{ selected: !!active }}
+      accessibilityLabel={a11yLabel || label}
+      hitSlop={8}
+    >
       <Ionicons name={icon} size={16} color={active ? '#fff' : colors.text} />
       <Text style={[styles.text, active && { color: '#fff' }]}>{label}</Text>
     </Pressable>

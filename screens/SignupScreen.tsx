@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import TextField from '../components/ui/TextField';
 import Button from '../components/ui/Button';
@@ -20,7 +20,8 @@ export default function SignupScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Create account</Text>
       {!!error && <Text style={styles.error}>{error}</Text>}
       {!!message && <Text style={styles.message}>{message}</Text>}
@@ -31,7 +32,8 @@ export default function SignupScreen() {
       <TextField label="Confirm password" placeholder="••••••••" secureTextEntry value={confirm} onChangeText={setConfirm} />
       <View style={{ height: 16 }} />
       <Button title="Sign up" onPress={onSubmit} />
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

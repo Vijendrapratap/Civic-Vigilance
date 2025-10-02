@@ -13,6 +13,7 @@ export default function TextField({ label, errorText, style, ...rest }: Props) {
       <TextInput
         style={[styles.input, style]}
         placeholderTextColor="#9aa0a6"
+        accessibilityLabel={label || (rest.placeholder as string) || undefined}
         {...rest}
       />
       {!!errorText && <Text style={styles.error}>{errorText}</Text>}
@@ -33,4 +34,3 @@ const styles = StyleSheet.create({
   },
   error: { marginTop: 6, color: 'crimson' },
 });
-

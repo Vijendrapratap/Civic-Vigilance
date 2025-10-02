@@ -41,7 +41,13 @@ export default function IssueCard({ item, onPress }: { item: Issue; onPress?: ()
   };
 
   return (
-    <TouchableOpacity onPress={onPress} style={styles.card}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={styles.card}
+      accessibilityRole="button"
+      accessibilityLabel={`Open issue ${item.title}`}
+      hitSlop={6}
+    >
       {item.image_url ? (
         <Image source={{ uri: item.image_url }} style={styles.image} />
       ) : null}
