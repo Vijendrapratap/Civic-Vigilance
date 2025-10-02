@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase, isSupabaseConfigured } from './supabase';
-import { isFirebaseConfigured, db as fdb } from './firebase';
+import { isFirebaseConfigured, db as fdb, storage as fstorage } from './firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { ref as sRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export type UserProfile = {
   id: string;
@@ -32,9 +33,21 @@ export async function loadProfile(userId: string): Promise<UserProfile> {
 
 export async function saveProfile(p: UserProfile) {
   if (isFirebaseConfigured && fdb) {
+    let avatarUrl = p.avatar_url ?? null;
+    // If a local URI was provided, upload to Firebase Storage and use the download URL
+    if (avatarUrl && fstorage && /^(file:|content:|ph:)/i.test(avatarUrl)) {
+      try {
+        const res = await fetch(avatarUrl);
+        const blob = await res.blob();
+        const key = `avatars/${p.id}.jpg`;
+        const dest = sRef(fstorage, key);
+        await uploadBytes(dest, blob, { contentType: blob.type || 'image/jpeg' });
+        avatarUrl = await getDownloadURL(dest);
+      } catch (_e) { /* ignore upload errors, keep local uri */ }
+    }
     const ref = doc(fdb, 'profiles', p.id);
-    await setDoc(ref, { full_name: p.full_name ?? null, avatar_url: p.avatar_url ?? null, created_at: p.created_at || serverTimestamp() }, { merge: true });
-    return p;
+    await setDoc(ref, { full_name: p.full_name ?? null, avatar_url: avatarUrl, created_at: p.created_at || serverTimestamp() }, { merge: true });
+    return { ...p, avatar_url: avatarUrl };
   }
   if (!isSupabaseConfigured) {
     await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(p));

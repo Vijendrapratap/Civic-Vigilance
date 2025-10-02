@@ -12,6 +12,7 @@ import {
   signOut as fbSignOut,
 } from 'firebase/auth/react-native';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 
 const apiKey = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
 const authDomain = process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN;
@@ -25,6 +26,7 @@ export const isFirebaseConfigured = Boolean(apiKey && projectId && appId);
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
+let storage: FirebaseStorage | undefined;
 
 if (isFirebaseConfigured) {
   const config = { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId } as const;
@@ -36,9 +38,9 @@ if (isFirebaseConfigured) {
     auth = getAuth(app);
   }
   db = getFirestore(app);
+  storage = getStorage(app);
 } else {
   console.warn('Firebase env not set. Populate EXPO_PUBLIC_FIREBASE_* in .env to enable auth and data.');
 }
 
-export { app, auth, db, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, fbSignOut };
-
+export { app, auth, db, storage, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, fbSignOut };
