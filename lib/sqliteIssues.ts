@@ -21,7 +21,7 @@ export function listIssues(sort: 'trending' | 'newest' | 'nearby' = 'trending') 
 export function createIssueSqlite(payload: NewIssue) {
   const db = getDB();
   const now = new Date().toISOString();
-  db.execSync?.(`INSERT INTO issues(user_id,title,description,category,image_url,lat,lng,address,created_at)
+  db.runSync?.(`INSERT INTO issues(user_id,title,description,category,image_url,lat,lng,address,created_at)
     VALUES (?,?,?,?,?,?,?,?,?);`, [payload.user_id, payload.title, payload.description || null, payload.category, payload.image_url || null, payload.lat ?? null, payload.lng ?? null, payload.address || null, now]);
   const id = (db.getFirstSync?.('SELECT last_insert_rowid() as id') as any)?.id as number;
   return db.getFirstSync?.('SELECT * FROM issues WHERE id=?', [id]);
@@ -39,7 +39,7 @@ export function ensureSeedIssues(userId: number) {
   ];
   db.withTransactionSync?.(() => {
     for (const s of samples) {
-      db.execSync?.(`INSERT INTO issues(user_id,title,description,category,image_url,lat,lng,address,created_at,upvotes,downvotes) VALUES (?,?,?,?,?,?,?,?,?, ?, ?);`, [s.user_id, s.title, s.description, s.category, s.image_url, s.lat ?? null, s.lng ?? null, s.address || null, now, Math.floor(Math.random()*20)+1, Math.floor(Math.random()*3)]);
+      db.runSync?.(`INSERT INTO issues(user_id,title,description,category,image_url,lat,lng,address,created_at,upvotes,downvotes) VALUES (?,?,?,?,?,?,?,?,?, ?, ?);`, [s.user_id, s.title, s.description ?? null, s.category, s.image_url ?? null, s.lat ?? null, s.lng ?? null, s.address ?? null, now, Math.floor(Math.random()*20)+1, Math.floor(Math.random()*3)]);
     }
   });
 }
@@ -59,7 +59,7 @@ export function listCommentsSqlite(issueId: number) {
 
 export function addCommentSqlite(issueId: number, userId: number, content: string, parentId?: number | null) {
   const now = new Date().toISOString();
-  getDB().execSync?.('INSERT INTO comments(issue_id,user_id,parent_id,content,created_at) VALUES (?,?,?,?,?)', [issueId, userId, parentId ?? null, content, now]);
+  getDB().runSync?.('INSERT INTO comments(issue_id,user_id,parent_id,content,created_at) VALUES (?,?,?,?,?)', [issueId, userId, parentId ?? null, content, now]);
   return getDB().getFirstSync?.('SELECT * FROM comments WHERE id=last_insert_rowid()');
 }
 
@@ -77,15 +77,15 @@ export function castVoteSqlite(issueId: number, userId: number, value: -1 | 1) {
 
   db.withTransactionSync?.(() => {
     if (cur?.id) {
-      if (next === 0) db.execSync?.('DELETE FROM votes WHERE id=?', [cur.id]);
-      else db.execSync?.('UPDATE votes SET value=?, created_at=? WHERE id=?', [next, now, cur.id]);
+      if (next === 0) db.runSync?.('DELETE FROM votes WHERE id=?', [cur.id]);
+      else db.runSync?.('UPDATE votes SET value=?, created_at=? WHERE id=?', [next, now, cur.id]);
     } else {
-      db.execSync?.('INSERT INTO votes(user_id, issue_id, value, created_at) VALUES (?,?,?,?)', [userId, issueId, next, now]);
+      db.runSync?.('INSERT INTO votes(user_id, issue_id, value, created_at) VALUES (?,?,?,?)', [userId, issueId, next, now]);
     }
     // Update counters
     // Recalculate from votes for accuracy
     const counts: any = db.getFirstSync?.('SELECT sum(value=1) as up, sum(value=-1) as down FROM votes WHERE issue_id=?', [issueId]);
-    db.execSync?.('UPDATE issues SET upvotes=?, downvotes=? WHERE id=?', [counts?.up || 0, counts?.down || 0, issueId]);
+    db.runSync?.('UPDATE issues SET upvotes=?, downvotes=? WHERE id=?', [counts?.up || 0, counts?.down || 0, issueId]);
   });
   const issue: any = db.getFirstSync?.('SELECT upvotes, downvotes FROM issues WHERE id=?', [issueId]);
   return { vote: next, upvotes: issue?.upvotes || 0, downvotes: issue?.downvotes || 0 } as any;

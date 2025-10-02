@@ -9,7 +9,7 @@ export const isSupabaseConfigured = Boolean(url && anon);
 let supabase: SupabaseClient | any;
 
 if (isSupabaseConfigured) {
-  supabase = createClient(url, anon, {
+  supabase = createClient(url as string, anon as string, {
     auth: {
       storage: AsyncStorage as any,
       autoRefreshToken: true,
