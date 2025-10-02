@@ -18,6 +18,7 @@ import MyReportsScreen from './screens/MyReportsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 import LinkedAccountsScreen from './screens/LinkedAccountsScreen';
 import PolicyScreen from './screens/PolicyScreen';
+import DebugScreen from './screens/DebugScreen';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
 const RootStack = createNativeStackNavigator();
@@ -43,6 +44,7 @@ function ProfileNavigator() {
       <ProfileStack.Screen name="Notifications" component={NotificationsScreen} />
       <ProfileStack.Screen name="LinkedAccounts" component={LinkedAccountsScreen} options={{ title: 'Linked Accounts' }} />
       <ProfileStack.Screen name="Policy" component={PolicyScreen} options={{ title: 'Policy' }} />
+      <ProfileStack.Screen name="Debug" component={DebugScreen} options={{ title: 'Debug' }} />
     </ProfileStack.Navigator>
   );
 }

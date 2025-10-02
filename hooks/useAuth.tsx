@@ -70,10 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn: async (email, password) => {
       if (isFirebaseConfigured && fbAuth) {
         try { await signInWithEmailAndPassword(fbAuth, email, password); }
-        catch (e: any) { return { error: e?.message || 'Failed to sign in' }; }
+        catch (e: any) { return { error: e?.message || 'Failed to sign in', code: e?.code }; }
       } else if (isSupabaseConfigured) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) return { error: error.message };
+        if (error) return { error: error.message, code: 'supabase_error' };
       } else {
         const res = await signInLocal(email, password);
         if (res.error) return { error: res.error };
@@ -83,10 +83,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp: async (email, password) => {
       if (isFirebaseConfigured && fbAuth) {
         try { await createUserWithEmailAndPassword(fbAuth, email, password); }
-        catch (e: any) { return { error: e?.message || 'Failed to sign up' }; }
+        catch (e: any) { return { error: e?.message || 'Failed to sign up', code: e?.code }; }
       } else if (isSupabaseConfigured) {
         const { error } = await supabase.auth.signUp({ email, password });
-        if (error) return { error: error.message };
+        if (error) return { error: error.message, code: 'supabase_error' };
       } else {
         const res = await signUpLocal(email, password);
         if (res.error) return { error: res.error };
@@ -96,11 +96,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     resetPassword: async (email) => {
       if (isFirebaseConfigured && fbAuth) {
         try { await sendPasswordResetEmail(fbAuth, email); }
-        catch (e: any) { return { error: e?.message || 'Failed to send reset email' }; }
+        catch (e: any) { return { error: e?.message || 'Failed to send reset email', code: e?.code }; }
       } else if (isSupabaseConfigured) {
         const redirectTo = Linking.createURL('auth/callback');
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-        if (error) return { error: error.message };
+        if (error) return { error: error.message, code: 'supabase_error' };
       }
     },
     signOut: async () => {

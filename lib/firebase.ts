@@ -22,6 +22,9 @@ const messagingSenderId = process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID;
 const appId = process.env.EXPO_PUBLIC_FIREBASE_APP_ID;
 
 export const isFirebaseConfigured = Boolean(apiKey && projectId && appId);
+export const firebaseConfigPublic = isFirebaseConfigured
+  ? { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId }
+  : null;
 
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } fr
 import { useAuth } from '../hooks/useAuth';
 import TextField from '../components/ui/TextField';
 import Button from '../components/ui/Button';
+import { getBackend } from '../lib/backend';
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
@@ -11,6 +12,7 @@ export default function SignupScreen() {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const backend = getBackend();
 
   const onSubmit = async () => {
     if (password.length < 6) { setError('Password should be at least 6 characters'); return; }
@@ -23,6 +25,7 @@ export default function SignupScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Create account</Text>
+      <Text style={styles.backend}>Backend: {backend}</Text>
       {!!error && <Text style={styles.error}>{error}</Text>}
       {!!message && <Text style={styles.message}>{message}</Text>}
       <TextField label="Email" placeholder="you@example.com" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
@@ -41,6 +44,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 12, backgroundColor: '#fafafa' },
   title: { fontSize: 22, fontWeight: '700', marginBottom: 12 },
   input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 8, padding: 12 },
+  backend: { color: '#666' },
   error: { color: 'crimson' },
   message: { color: 'green' }
 });

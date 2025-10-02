@@ -56,6 +56,7 @@ export default function ProfileScreen({ navigation }: any) {
       <View style={styles.card}>
         <ListItem icon="document-text-outline" title="My Reports" onPress={() => navigation.navigate('MyReports')} />
         <ListItem icon="settings-outline" title="Settings" onPress={() => navigation.navigate('Settings')} />
+        <ListItem icon="bug-outline" title="Debug Info" onPress={() => navigation.navigate('Debug')} />
       </View>
 
       <View style={styles.card}>

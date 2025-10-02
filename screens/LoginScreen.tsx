@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import TextField from '../components/ui/TextField';
 import Button from '../components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
+import { getBackend } from '../lib/backend';
 
 export default function LoginScreen({ navigation }: any) {
   const { signIn } = useAuth();
@@ -16,6 +17,7 @@ export default function LoginScreen({ navigation }: any) {
     if (res?.error) setError(res.error);
   };
 
+  const backend = getBackend();
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
@@ -24,6 +26,7 @@ export default function LoginScreen({ navigation }: any) {
         <Text style={styles.brandText}>CivicVigilance</Text>
       </View>
       <Text style={styles.title}>Welcome back</Text>
+      <Text style={styles.backend}>Backend: {backend}</Text>
       {!!error && <Text style={styles.error}>{error}</Text>}
       <TextField label="Email" placeholder="you@example.com" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
       <View style={{ height: 10 }} />
@@ -45,5 +48,6 @@ const styles = StyleSheet.create({
   brandText: { fontWeight: '800', fontSize: 16 },
   title: { fontSize: 26, fontWeight: '800', marginBottom: 12 },
   link: { color: '#0066cc' },
+  backend: { color: '#666' },
   error: { color: 'crimson' }
 });
