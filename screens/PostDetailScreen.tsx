@@ -34,10 +34,16 @@ export default function PostDetailScreen({ route }: any) {
           setUp(data?.upvotes ?? 0); setDown(data?.downvotes ?? 0);
         }
         // Comments (top-level collection filtered by issue_id)
-        const q = fsQuery(collection(fdb, 'comments'), where('issue_id', '==', String(id)), orderBy('created_at', 'asc'));
-        const csnap = await getDocs(q);
-        const c = csnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
-        setComments(c as any);
+        try {
+          const q = fsQuery(collection(fdb, 'comments'), where('issue_id', '==', String(id)), orderBy('created_at', 'asc'));
+          const csnap = await getDocs(q);
+          const c = csnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+          setComments(c as any);
+        } catch (_e) {
+          const q2 = fsQuery(collection(fdb, 'comments'), where('issue_id', '==', String(id)));
+          const csnap2 = await getDocs(q2);
+          setComments(csnap2.docs.map(d => ({ id: d.id, ...(d.data() as any) })) as any);
+        }
       } else if (!isSupabaseConfigured) {
         const i = await getIssueByIdSqlite(Number(id));
         setIssue(i as any);
