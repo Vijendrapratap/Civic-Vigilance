@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getBackend } from '../lib/backend';
 
 export default function LoginScreen({ navigation }: any) {
-  const { signIn, signInGuest } = useAuth();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -36,9 +36,7 @@ export default function LoginScreen({ navigation }: any) {
       <View style={{ height: 8 }} />
       <Pressable accessibilityRole="button" accessibilityLabel="Forgot password" onPress={() => navigation.navigate('ForgotPassword')}><Text style={styles.link}>Forgot password?</Text></Pressable>
       <View style={{ height: 12 }} />
-      <Pressable accessibilityRole="button" accessibilityLabel="Sign up" onPress={() => navigation.navigate('Signup')}><Text style={styles.link}>Don’t have an account? Sign up</Text></Pressable>
-      <View style={{ height: 16 }} />
-      {signInGuest && <Button title="Continue as Guest" variant="outline" onPress={() => signInGuest()} />}
+      <Pressable accessibilityRole="button" accessibilityLabel="Sign up" onPress={() => navigation.navigate('Signup')}><Text style={styles.link}>Don't have an account? Sign up</Text></Pressable>
     </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -4,7 +4,36 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, View, Text, StyleSheet } from 'react-native';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorText}>{String(this.state.error)}</Text>
+          <Text style={styles.errorHint}>Check browser console (F12) for details</Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
@@ -79,7 +108,14 @@ function Root() {
   const { session, isLoading } = useAuth();
   const scheme = useColorScheme();
 
-  if (isLoading) return null;
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading Civic Vigilance...</Text>
+        <Text style={styles.loadingHint}>Initializing Firebase...</Text>
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -105,10 +141,59 @@ function AuthNavigator() {
   );
 }
 
+const styles = StyleSheet.create({
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1a1a2e',
+    padding: 20,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ff6b6b',
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  errorHint: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0b1524',
+  },
+  loadingText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#00AEEF',
+    marginBottom: 8,
+  },
+  loadingHint: {
+    fontSize: 14,
+    color: '#8a9ab8',
+  },
+});
+
 export default function App() {
+  console.log('[App] Starting Civic Vigilance...');
+  console.log('[App] Firebase configured:', process.env.EXPO_PUBLIC_FIREBASE_API_KEY ? 'Yes' : 'No');
+  console.log('[App] Backend mode:', process.env.EXPO_PUBLIC_BACKEND_MODE);
+
   return (
-    <AuthProvider>
-      <Root />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Root />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

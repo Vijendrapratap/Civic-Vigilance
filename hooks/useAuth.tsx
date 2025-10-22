@@ -1,9 +1,16 @@
+/**
+ * Authentication Hook - Simplified for Firebase
+ *
+ * Core Functionality:
+ * - Handles user authentication with Firebase
+ * - Manages auth state across the app
+ * - Provides sign in, sign up, and sign out methods
+ *
+ * This hook is optimized for the Civic Vigilance app's core mission:
+ * connecting citizens with civic authorities via GPS-tagged reports.
+ */
+
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Linking from 'expo-linking';
-import { AppState } from 'react-native';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { initAuth, signInLocal, signOutLocal, signUpLocal, currentUserLocal } from '../lib/sqliteAuth';
 import {
   isFirebaseConfigured,
   auth as fbAuth,
@@ -13,132 +20,203 @@ import {
   sendPasswordResetEmail,
   fbSignOut,
 } from '../lib/firebase';
-import { getBackend, setBackendOverride } from '../lib/backend';
 
-type AuthSession = import('@supabase/supabase-js').Session | null;
+// Firebase User Session type (simplified)
+interface User {
+  id: string;
+  email: string | null;
+}
 
-type AuthContextType = {
+interface SimpleSession {
+  user: User;
+}
+
+type AuthSession = SimpleSession | null;
+
+interface AuthContextType {
   session: AuthSession;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: string } | undefined>;
-  signUp: (email: string, password: string) => Promise<{ error?: string } | undefined>;
-  resetPassword: (email: string) => Promise<{ error?: string } | undefined>;
+  signIn: (email: string, password: string) => Promise<{ error?: string; code?: string } | undefined>;
+  signUp: (email: string, password: string) => Promise<{ error?: string; code?: string } | undefined>;
+  resetPassword: (email: string) => Promise<{ error?: string; code?: string } | undefined>;
   signOut: () => Promise<void>;
-  signInGuest?: () => Promise<void>;
-};
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * AuthProvider Component
+ *
+ * Manages authentication state using Firebase Auth.
+ * Listens to auth state changes and updates the session accordingly.
+ *
+ * Why Firebase only:
+ * - Simpler codebase (no SQLite/Supabase complexity)
+ * - Works on web, iOS, and Android
+ * - Built-in security and scalability
+ * - Real-time sync for civic reports
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const init = async () => {
-      const backend = getBackend();
-      if (backend === 'firebase' && fbAuth) {
-        // Firebase: derive a simple session shape from currentUser
-        const user = fbAuth.currentUser;
-        if (user) setSession({ user: { id: user.uid, email: user.email } } as any);
-        setIsLoading(false);
-      } else if (backend === 'supabase') {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-      } else {
-        await initAuth();
-        const user = await currentUserLocal();
-        if (user) setSession({ user } as any);
-      }
-      if (getBackend() !== 'firebase') setIsLoading(false);
-      if (getBackend() === 'sqlite' && process.env.EXPO_PUBLIC_AUTO_GUEST === 'true') {
-        const user = await currentUserLocal();
-        if (!user) {
-          const { ensureSessionUserId } = await import('../lib/sqliteAuth');
-          const id = await ensureSessionUserId();
-          setSession({ user: { id } } as any);
-        }
-      }
-    };
-    init();
-
-    if (getBackend() === 'firebase' && fbAuth) {
-      const unsub = onAuthStateChanged(fbAuth, (u: any) => {
-        if (u) setSession({ user: { id: u.uid, email: u.email } } as any);
-        else setSession(null);
-        setIsLoading(false);
-      });
-      return () => { unsub(); };
-    } else if (getBackend() === 'supabase') {
-      const { data: subscription } = supabase.auth.onAuthStateChange((_event: any, s: any) => setSession(s));
-      const sub = AppState.addEventListener('change', async (state) => { if (state === 'active') await supabase.auth.refreshSession(); });
-      return () => { subscription.subscription.unsubscribe(); sub.remove(); };
+    // Check if Firebase is configured
+    if (!isFirebaseConfigured || !fbAuth) {
+      console.error('Firebase is not configured. Please check your .env file.');
+      setIsLoading(false);
+      return;
     }
+
+    // Set up Firebase auth state listener
+    const unsubscribe = onAuthStateChanged(fbAuth, (firebaseUser) => {
+      if (firebaseUser) {
+        // User is signed in
+        setSession({
+          user: {
+            id: firebaseUser.uid,
+            email: firebaseUser.email,
+          },
+        });
+      } else {
+        // User is signed out
+        setSession(null);
+      }
+      setIsLoading(false);
+    });
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
 
+  /**
+   * Memoized authentication methods
+   *
+   * These methods handle Firebase authentication with proper error handling.
+   * All errors are caught and returned in a user-friendly format.
+   */
   const value = useMemo<AuthContextType>(() => ({
     session,
     isLoading,
-    signIn: async (email, password) => {
-      const backend = getBackend();
-      if (backend === 'firebase' && fbAuth) {
-        try { await signInWithEmailAndPassword(fbAuth, email, password); }
-        catch (e: any) { return { error: e?.message || 'Failed to sign in', code: e?.code }; }
-      } else if (backend === 'supabase') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) return { error: error.message, code: 'supabase_error' };
-      } else {
-        const res = await signInLocal(email, password);
-        if (res.error) return { error: res.error };
-        setSession({ user: res.user } as any);
+
+    /**
+     * Sign in with email and password
+     *
+     * @param email - User's email address
+     * @param password - User's password
+     * @returns Error object if sign in fails, undefined if successful
+     */
+    signIn: async (email: string, password: string) => {
+      if (!fbAuth) {
+        return { error: 'Firebase Auth not initialized', code: 'auth/not-initialized' };
+      }
+
+      try {
+        await signInWithEmailAndPassword(fbAuth, email, password);
+        // Session will be updated by onAuthStateChanged listener
+        return undefined;
+      } catch (error: any) {
+        console.error('[Auth] Sign in error:', error);
+        return {
+          error: error?.message || 'Failed to sign in',
+          code: error?.code || 'auth/unknown-error',
+        };
       }
     },
-    signUp: async (email, password) => {
-      const backend = getBackend();
-      if (backend === 'firebase' && fbAuth) {
-        try { await createUserWithEmailAndPassword(fbAuth, email, password); }
-        catch (e: any) { return { error: e?.message || 'Failed to sign up', code: e?.code }; }
-      } else if (backend === 'supabase') {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) return { error: error.message, code: 'supabase_error' };
-      } else {
-        const res = await signUpLocal(email, password);
-        if (res.error) return { error: res.error };
-        setSession({ user: res.user } as any);
+
+    /**
+     * Sign up with email and password
+     *
+     * @param email - User's email address
+     * @param password - User's password (min 6 characters)
+     * @returns Error object if sign up fails, undefined if successful
+     */
+    signUp: async (email: string, password: string) => {
+      if (!fbAuth) {
+        return { error: 'Firebase Auth not initialized', code: 'auth/not-initialized' };
+      }
+
+      try {
+        await createUserWithEmailAndPassword(fbAuth, email, password);
+        // Session will be updated by onAuthStateChanged listener
+        return undefined;
+      } catch (error: any) {
+        console.error('[Auth] Sign up error:', error);
+        return {
+          error: error?.message || 'Failed to sign up',
+          code: error?.code || 'auth/unknown-error',
+        };
       }
     },
-    resetPassword: async (email) => {
-      const backend = getBackend();
-      if (backend === 'firebase' && fbAuth) {
-        try { await sendPasswordResetEmail(fbAuth, email); }
-        catch (e: any) { return { error: e?.message || 'Failed to send reset email', code: e?.code }; }
-      } else if (backend === 'supabase') {
-        const redirectTo = Linking.createURL('auth/callback');
-        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-        if (error) return { error: error.message, code: 'supabase_error' };
+
+    /**
+     * Send password reset email
+     *
+     * @param email - User's email address
+     * @returns Error object if request fails, undefined if successful
+     */
+    resetPassword: async (email: string) => {
+      if (!fbAuth) {
+        return { error: 'Firebase Auth not initialized', code: 'auth/not-initialized' };
+      }
+
+      try {
+        await sendPasswordResetEmail(fbAuth, email);
+        return undefined;
+      } catch (error: any) {
+        console.error('[Auth] Reset password error:', error);
+        return {
+          error: error?.message || 'Failed to send reset email',
+          code: error?.code || 'auth/unknown-error',
+        };
       }
     },
+
+    /**
+     * Sign out current user
+     */
     signOut: async () => {
-      const backend = getBackend();
-      if (backend === 'firebase' && fbAuth) await fbSignOut(fbAuth);
-      if (backend === 'supabase') await supabase.auth.signOut();
-      await signOutLocal();
-      setBackendOverride(null);
-      setSession(null);
+      if (!fbAuth) {
+        console.error('[Auth] Firebase Auth not initialized');
+        return;
+      }
+
+      try {
+        await fbSignOut(fbAuth);
+        // Session will be cleared by onAuthStateChanged listener
+      } catch (error: any) {
+        console.error('[Auth] Sign out error:', error);
+        // Clear session anyway
+        setSession(null);
+      }
     },
-    signInGuest: async () => {
-      setBackendOverride('sqlite');
-      await initAuth();
-      const { ensureSessionUserId } = await import('../lib/sqliteAuth');
-      const uid = await ensureSessionUserId();
-      setSession({ user: { id: uid, email: 'guest@local' } } as any);
-    }
   }), [session, isLoading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * useAuth Hook
+ *
+ * Access authentication state and methods from any component.
+ * Must be used within an AuthProvider component.
+ *
+ * @example
+ * ```typescript
+ * const { session, signIn, signOut } = useAuth();
+ *
+ * if (session) {
+ *   // User is logged in
+ *   console.log('User ID:', session.user.id);
+ * }
+ * ```
+ */
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider component');
+  }
+
+  return context;
 }

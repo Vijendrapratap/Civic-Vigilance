@@ -37,7 +37,7 @@ export default function IssueCard({ item, onPress }: { item: Issue; onPress?: ()
 
   const onShare = async () => {
     const text = composePostText({ description: item.title + '\n' + (item.address || ''), address: item.address, lat: item.lat, lng: item.lng });
-    if (item.image_url) await shareImageWithText(item.image_url, text); else await openTweetComposer(text);
+    if (item.imageUrl) await shareImageWithText(item.imageUrl, text); else await openTweetComposer(text);
   };
 
   return (
@@ -48,15 +48,15 @@ export default function IssueCard({ item, onPress }: { item: Issue; onPress?: ()
       accessibilityLabel={`Open issue ${item.title}`}
       hitSlop={6}
     >
-      {item.image_url ? (
-        <Image source={{ uri: item.image_url }} style={styles.image} />
+      {item.imageUrl ? (
+        <Image source={{ uri: item.imageUrl }} style={styles.image} />
       ) : null}
       <View style={styles.content}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.meta} numberOfLines={2}>
           {item.address || item.description}
         </Text>
-        <ActionBar vote={vote} upvotes={up} downvotes={down} comments={item.comments_count ?? 0} onUpvote={() => onVote(1)} onDownvote={() => onVote(-1)} onComment={onPress} onShare={onShare} />
+        <ActionBar vote={vote} upvotes={up} downvotes={down} comments={item.commentsCount ?? 0} onUpvote={() => onVote(1)} onDownvote={() => onVote(-1)} onComment={onPress} onShare={onShare} />
       </View>
     </TouchableOpacity>
   );

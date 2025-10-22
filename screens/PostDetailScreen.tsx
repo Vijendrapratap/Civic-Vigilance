@@ -109,9 +109,9 @@ export default function PostDetailScreen({ route }: any) {
     const roots: any[] = [];
     comments.forEach(c => { map.set(c.id, []); });
     comments.forEach(c => {
-      if (c.parent_id) {
-        const arr = map.get(c.parent_id) || [];
-        arr.push(c); map.set(c.parent_id, arr);
+      if (c.parentId) {
+        const arr = map.get(c.parentId) || [];
+        arr.push(c); map.set(c.parentId, arr);
       } else {
         roots.push(c);
       }

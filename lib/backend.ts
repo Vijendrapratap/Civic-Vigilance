@@ -1,27 +1,51 @@
+/**
+ * Backend Configuration - Simplified for Firebase
+ *
+ * The Civic Vigilance app uses Firebase as its primary backend for:
+ * - User authentication (Firebase Auth)
+ * - Database (Firestore)
+ * - File storage (Firebase Storage)
+ * - Server-side logic (Cloud Functions)
+ *
+ * This simplified backend module removes unnecessary complexity
+ * and focuses on the production-ready Firebase implementation.
+ */
+
 import { isFirebaseConfigured } from './firebase';
-import { isSupabaseConfigured } from './supabase';
 
-export type Backend = 'firebase' | 'supabase' | 'sqlite';
+export type Backend = 'firebase' | 'sqlite' | 'supabase';
 
-let override: Backend | null = null;
-
-export function setBackendOverride(mode: Backend | null) {
-  override = mode;
-}
-
+/**
+ * Get the current backend type
+ *
+ * Returns the backend specified in EXPO_PUBLIC_BACKEND_MODE env variable.
+ * Falls back to 'firebase' if not specified.
+ *
+ * @returns Backend type from environment
+ */
 export function getBackend(): Backend {
-  if (override) return override;
-  const mode = (process.env.EXPO_PUBLIC_BACKEND_MODE || 'auto').toLowerCase();
-  if (mode === 'sqlite') return 'sqlite';
-  if (mode === 'firebase') return isFirebaseConfigured ? 'firebase' : 'sqlite';
-  if (mode === 'supabase') return isSupabaseConfigured ? 'supabase' : 'sqlite';
-  // auto (default)
-  if (isFirebaseConfigured) return 'firebase';
-  if (isSupabaseConfigured) return 'supabase';
-  return 'sqlite';
+  const mode = process.env.EXPO_PUBLIC_BACKEND_MODE as Backend;
+  if (mode === 'sqlite' || mode === 'supabase' || mode === 'firebase') {
+    return mode;
+  }
+  console.warn('[Backend] Invalid backend mode, defaulting to firebase');
+  return 'firebase';
 }
 
+/**
+ * Check if using a remote backend
+ *
+ * @returns true - Firebase is always a remote backend
+ */
 export function isRemoteBackend(): boolean {
-  const b = getBackend();
-  return b === 'firebase' || b === 'supabase';
+  return true;
+}
+
+/**
+ * Check if Firebase is properly configured
+ *
+ * @returns true if all required Firebase env variables are set
+ */
+export function isBackendConfigured(): boolean {
+  return isFirebaseConfigured;
 }
