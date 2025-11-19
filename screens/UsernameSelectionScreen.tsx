@@ -17,10 +17,13 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import TextField from '../components/ui/TextField';
 import Button from '../components/ui/Button';
+import { useAuth } from '../hooks/useAuth';
 import {
   generateAnonymousUsername,
   validateUsername,
@@ -28,17 +31,14 @@ import {
   isAnonymousUsername,
 } from '../lib/username';
 
-interface Props {
-  onComplete: (username: string, isAnonymous: boolean) => void;
-  onSkip?: () => void; // For testing/debugging
-}
-
-export default function UsernameSelectionScreen({ onComplete, onSkip }: Props) {
+export default function UsernameSelectionScreen() {
+  const navigation = useNavigation();
+  const { session } = useAuth();
   const [mode, setMode] = useState<'anonymous' | 'custom'>('anonymous');
   const [anonymousUsername, setAnonymousUsername] = useState(generateAnonymousUsername());
   const [customUsername, setCustomUsername] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [keepAnonymous, setKeepAnonymous] = useState(true);
 
   // Regenerate anonymous username when user taps
@@ -57,26 +57,59 @@ export default function UsernameSelectionScreen({ onComplete, onSkip }: Props) {
   }, [customUsername, mode]);
 
   const handleContinue = async () => {
-    if (mode === 'anonymous') {
-      // Use anonymous username
-      onComplete(anonymousUsername, true);
-    } else {
+    const finalUsername = mode === 'anonymous' ? anonymousUsername : customUsername;
+    const isAnonymous = mode === 'anonymous' ? true : keepAnonymous;
+
+    if (mode === 'custom') {
       // Validate custom username
       const validation = validateUsername(customUsername);
       if (!validation.isValid) {
         setValidationError(validation.error || 'Invalid username');
         return;
       }
+    }
 
-      // Check uniqueness (in real implementation, this would call backend)
-      setIsChecking(true);
-      // TODO: Implement actual uniqueness check with Firestore
-      // For now, simulate with delay
+    setIsSaving(true);
+
+    try {
+      // TODO: Save username to Firestore/database
+      // For now, we'll just simulate saving
       await new Promise((resolve) => setTimeout(resolve, 500));
-      setIsChecking(false);
 
-      // If unique, proceed
-      onComplete(customUsername, keepAnonymous);
+      // In production, this would:
+      // 1. Check uniqueness in Firestore
+      // 2. Create/update user profile with username
+      // 3. Set anonymousMode flag
+      // 4. Navigate to main app
+
+      console.log('[UsernameSelection] Username chosen:', {
+        username: finalUsername,
+        anonymousMode: isAnonymous,
+        userId: session?.user?.id,
+      });
+
+      // For now, just show success and let auth flow continue
+      // In production, this would trigger a profile update that
+      // would cause the Root navigator to show AppTabs
+      Alert.alert(
+        'Welcome!',
+        `Your username has been set to: ${finalUsername}`,
+        [
+          {
+            text: 'Continue',
+            onPress: () => {
+              // Navigation will automatically update when session state changes
+              // For now, we'll just go back (in production, profile update
+              // would trigger automatic navigation to AppTabs)
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('[UsernameSelection] Error saving username:', error);
+      Alert.alert('Error', 'Failed to save username. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -192,24 +225,17 @@ export default function UsernameSelectionScreen({ onComplete, onSkip }: Props) {
         </View>
 
         <Button
-          title={isChecking ? 'Checking...' : 'Continue'}
+          title={isSaving ? 'Saving...' : 'Continue'}
           onPress={handleContinue}
           disabled={
-            isChecking ||
+            isSaving ||
             (mode === 'custom' &&
               (customUsername.length < 3 || !!validationError))
           }
         />
 
-        {isChecking && <ActivityIndicator style={{ marginTop: 16 }} />}
-
-        {/* Debug: Skip button (remove in production) */}
-        {onSkip && (
-          <TouchableOpacity onPress={onSkip} style={{ marginTop: 12 }}>
-            <Text style={{ color: '#999', textAlign: 'center' }}>
-              Skip (debug only)
-            </Text>
-          </TouchableOpacity>
+        {isSaving && (
+          <ActivityIndicator style={{ marginTop: 16 }} color="#2563EB" />
         )}
       </ScrollView>
     </KeyboardAvoidingView>

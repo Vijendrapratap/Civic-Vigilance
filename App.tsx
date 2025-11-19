@@ -38,6 +38,7 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
+import UsernameSelectionScreen from './screens/UsernameSelectionScreen';
 import FeedScreen from './screens/FeedScreen';
 import PostDetailScreen from './screens/PostDetailScreen';
 import ReportIssueScreen from './screens/ReportIssueScreen';
@@ -137,6 +138,11 @@ function AuthNavigator() {
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Signup" component={SignupScreen} />
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Reset Password' }} />
+      <AuthStack.Screen
+        name="UsernameSelection"
+        component={UsernameSelectionScreen}
+        options={{ title: 'Choose Your Voice', headerBackVisible: false }}
+      />
     </AuthStack.Navigator>
   );
 }
