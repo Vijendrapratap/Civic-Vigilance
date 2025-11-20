@@ -189,7 +189,7 @@ cp .env.example .env
 ```
 
 **Required API Keys:**
-- 💚 **Supabase**: [supabase.com/dashboard](https://supabase.com/dashboard) - Follow SUPABASE_SETUP.md
+- 💚 **Supabase**: [supabase.com/dashboard](https://supabase.com/dashboard) - Follow [SUPABASE_SETUP.md](documentations/SUPABASE_SETUP.md)
 - 🗺️ **Google Maps**: [console.cloud.google.com](https://console.cloud.google.com)
 - 🐦 **Twitter** (Optional): [developer.twitter.com](https://developer.twitter.com)
 
@@ -213,11 +213,11 @@ Username: TestCitizen_2024
 
 ### 📚 Documentation
 
-- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** - Complete backend setup guide (15 min)
-- **[TESTING.md](TESTING.md)** - Comprehensive testing checklist
-- **[docs/](docs/)** - Additional guides and reference docs
-  - [Backend Architecture](docs/guides/BACKEND.md)
-  - [Frontend Architecture](docs/guides/FRONTEND.md)
+- **[SUPABASE_SETUP.md](documentations/SUPABASE_SETUP.md)** - Complete backend setup guide (15 min)
+- **[TESTING.md](documentations/TESTING.md)** - Comprehensive testing checklist
+- **[Technical Guides](documentations/)** - Architecture and reference docs
+  - [Backend Architecture](documentations/guides/BACKEND.md)
+  - [Frontend Architecture](documentations/guides/FRONTEND.md)
 
 ---
 
@@ -392,7 +392,7 @@ civic-vigilance/
 │   ├── seedData.ts                # Test data (10 issues, 3 users)
 │   └── supabase.ts                # Supabase client
 ├── types/                 # TypeScript types
-├── docs/                  # Technical documentation
+├── documentations/        # All documentation and guides
 └── .env.example           # Environment template
 ```
 
