@@ -211,6 +211,15 @@ Username: TestCitizen_2024
 (See lib/seedData.ts for 10+ pre-loaded issues)
 ```
 
+### 📚 Documentation
+
+- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** - Complete backend setup guide (15 min)
+- **[TESTING.md](TESTING.md)** - Comprehensive testing checklist
+- **[docs/](docs/)** - Additional guides and reference docs
+  - [Backend Architecture](docs/guides/BACKEND.md)
+  - [Frontend Architecture](docs/guides/FRONTEND.md)
+  - [Firebase Setup](docs/setup/firebase/) (Optional/Legacy)
+
 ---
 
 ## 📱 Key Screens
