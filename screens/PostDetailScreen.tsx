@@ -123,8 +123,7 @@ export default function PostDetailScreen({ route }: any) {
   );
 
   const handleShare = useCallback(() => {
-    console.log('[Detail] Share issue:', id);
-    // TODO: Implement native share
+    // TODO: Implement native share functionality
   }, [id]);
 
   const tree = useMemo(() => {

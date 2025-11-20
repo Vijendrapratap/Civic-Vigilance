@@ -84,8 +84,7 @@ function EnhancedIssueCard({ item, onPress, distance }: Props) {
   const formattedDistance = useMemo(() => formatDistance(distance), [distance]);
 
   const handleShare = useCallback(() => {
-    // TODO: Implement share
-    console.log('[Card] Share issue:', item.id);
+    // TODO: Implement native share functionality
   }, [item.id]);
 
   return (

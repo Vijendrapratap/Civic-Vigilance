@@ -141,8 +141,7 @@ export default function ReportIssueScreenV2() {
   };
 
   const handleShareMore = () => {
-    // TODO: Implement native share
-    console.log('[Report] Share issue:', reportData.issueId);
+    // TODO: Implement native share functionality
   };
 
   const handleDone = () => {
