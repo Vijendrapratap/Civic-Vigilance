@@ -1,25 +1,30 @@
 /**
- * Backend Configuration - Simplified for Firebase
+ * Backend Configuration - Multi-Backend Support
  *
- * The Civic Vigilance app uses Firebase as its primary backend for:
- * - User authentication (Firebase Auth)
- * - Database (Firestore)
- * - File storage (Firebase Storage)
- * - Server-side logic (Cloud Functions)
+ * The Civic Vigilance app supports multiple backends:
+ * - **Supabase (RECOMMENDED)**: PostgreSQL + PostGIS, better free tier, unlimited reads
+ * - Firebase (Optional/Legacy): Firestore + Firebase Auth
+ * - SQLite (Development): Local testing without remote backend
  *
- * This simplified backend module removes unnecessary complexity
- * and focuses on the production-ready Firebase implementation.
+ * Set backend via EXPO_PUBLIC_BACKEND_MODE in .env:
+ * - 'supabase' (recommended for production)
+ * - 'firebase' (optional, legacy support)
+ * - 'sqlite' (development only)
+ *
+ * See SUPABASE_SETUP.md for primary backend setup.
+ * See docs/setup/firebase/ for Firebase setup (if needed).
  */
 
 import { isFirebaseConfigured } from './firebase';
+import { isSupabaseConfigured } from './supabase';
 
-export type Backend = 'firebase' | 'sqlite' | 'supabase';
+export type Backend = 'supabase' | 'firebase' | 'sqlite';
 
 /**
  * Get the current backend type
  *
  * Returns the backend specified in EXPO_PUBLIC_BACKEND_MODE env variable.
- * Falls back to 'firebase' if not specified.
+ * Falls back to 'supabase' (recommended) if not specified.
  *
  * @returns Backend type from environment
  */
@@ -28,24 +33,33 @@ export function getBackend(): Backend {
   if (mode === 'sqlite' || mode === 'supabase' || mode === 'firebase') {
     return mode;
   }
-  console.warn('[Backend] Invalid backend mode, defaulting to firebase');
-  return 'firebase';
+  console.warn('[Backend] Invalid backend mode, defaulting to supabase');
+  return 'supabase';
 }
 
 /**
  * Check if using a remote backend
  *
- * @returns true - Firebase is always a remote backend
+ * @returns true if using Supabase or Firebase, false for SQLite
  */
 export function isRemoteBackend(): boolean {
-  return true;
+  const backend = getBackend();
+  return backend === 'supabase' || backend === 'firebase';
 }
 
 /**
- * Check if Firebase is properly configured
+ * Check if the current backend is properly configured
  *
- * @returns true if all required Firebase env variables are set
+ * @returns true if the selected backend has all required env variables set
  */
 export function isBackendConfigured(): boolean {
-  return isFirebaseConfigured;
+  const backend = getBackend();
+  if (backend === 'supabase') {
+    return isSupabaseConfigured;
+  }
+  if (backend === 'firebase') {
+    return isFirebaseConfigured;
+  }
+  // SQLite doesn't need configuration
+  return true;
 }

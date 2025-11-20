@@ -6,7 +6,7 @@ A civic engagement platform that amplifies citizen voices through **social media
 
 <p align="center">
   <img src="https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
-  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" />
+  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" />
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" />
   <img src="https://img.shields.io/badge/Twitter_API-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" />
 </p>
@@ -140,11 +140,11 @@ No internet? No problem.
 └─────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────┐
-│          BACKEND (Firebase)             │
-│  • Firestore: Database                  │
+│         BACKEND (Supabase)              │
+│  • PostgreSQL + PostGIS: Database       │
 │  • Auth: Google Sign-In, Email/Password │
 │  • Storage: Photo uploads               │
-│  • Cloud Functions: Twitter posting     │
+│  • Edge Functions: Twitter posting      │
 └─────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────┐
@@ -157,7 +157,7 @@ No internet? No problem.
 
 **Why These Choices?**
 - ✅ **React Native**: Single codebase for iOS/Android/Web
-- ✅ **Firebase**: Scales automatically, real-time sync
+- ✅ **Supabase**: PostgreSQL power, unlimited reads, better free tier
 - ✅ **TypeScript**: Type safety = fewer bugs
 - ✅ **Expo**: Simplifies builds and deployments
 
@@ -185,11 +185,11 @@ npm install
 
 ```bash
 cp .env.example .env
-# Add your API keys (Firebase, Google Maps, Twitter)
+# Add your API keys (Supabase, Google Maps, Twitter)
 ```
 
 **Required API Keys:**
-- 🔥 **Firebase**: [console.firebase.google.com](https://console.firebase.google.com)
+- 💚 **Supabase**: [supabase.com/dashboard](https://supabase.com/dashboard) - Follow SUPABASE_SETUP.md
 - 🗺️ **Google Maps**: [console.cloud.google.com](https://console.cloud.google.com)
 - 🐦 **Twitter** (Optional): [developer.twitter.com](https://developer.twitter.com)
 
@@ -321,9 +321,9 @@ A Concerned Citizen
 ## 📊 Database Schema (Simplified)
 
 ```typescript
-// Firestore Collections
+// PostgreSQL Tables (via Supabase)
 
-users/{userId}
+users
   ├── username: "TestCitizen_2024"
   ├── email: "test@civic.com"
   ├── twitterConnected: false
@@ -391,7 +391,8 @@ civic-vigilance/
 │   ├── authorityContactManager.ts # Multi-platform contact utilities
 │   ├── geohash.ts                 # GPS ↔ Geohash conversion
 │   ├── seedData.ts                # Test data (10 issues, 3 users)
-│   └── firebase.ts                # Firebase initialization
+│   ├── supabase.ts                # Supabase client (primary)
+│   └── firebase.ts                # Firebase client (optional/legacy)
 ├── types/                 # TypeScript types
 ├── docs/                  # Technical documentation
 └── .env.example           # Environment template
@@ -461,7 +462,7 @@ npm run typecheck  # TypeScript validation
 ### 📅 Phase 4 (Next)
 - Twitter OAuth for "Via My Twitter"
 - Native share functionality
-- Deep linking (Firebase Dynamic Links)
+- Deep linking (Supabase deep links)
 - Analytics dashboard
 
 ### 🚀 Phase 5 (Future)
@@ -510,7 +511,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 Built with ❤️ using:
 - React Native & Expo
-- Firebase
+- Supabase (PostgreSQL + PostGIS)
 - Twitter API v2
 - Google Maps API
 - Unsplash (test images)

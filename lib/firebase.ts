@@ -1,10 +1,17 @@
 /**
- * Firebase Configuration and Initialization
+ * Firebase Configuration and Initialization (OPTIONAL/LEGACY)
  *
- * This module sets up Firebase services for the Civic Vigilance app:
- * - Authentication: User sign in/up/out
- * - Firestore: Real-time database for reports, comments, votes
- * - Storage: Photo uploads for civic reports
+ * ⚠️ NOTE: Supabase is the RECOMMENDED backend for CivicVigilance.
+ * See SUPABASE_SETUP.md for setup instructions.
+ *
+ * Firebase support is maintained for:
+ * - Legacy deployments
+ * - Users who prefer Firebase over Supabase
+ * - Backward compatibility
+ *
+ * If you want to use Firebase instead of Supabase:
+ * 1. Set EXPO_PUBLIC_BACKEND_MODE=firebase in .env
+ * 2. Follow setup guide: docs/setup/firebase/FIREBASE_BACKEND_SETUP.md
  *
  * Environment variables required in .env:
  * - EXPO_PUBLIC_FIREBASE_API_KEY
