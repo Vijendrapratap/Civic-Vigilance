@@ -63,20 +63,57 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
     }
   };
 
+  // Format large numbers (1000 -> 1K, 1000000 -> 1M)
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return String(num);
+  };
+
+  // Format distance with validation
+  const formatDistance = (dist?: number): string => {
+    if (dist === undefined || dist === null || isNaN(dist) || !isFinite(dist)) {
+      return '';
+    }
+    if (dist < 0.1) return '< 0.1 km';
+    if (dist > 999) return '> 999 km';
+    return `${dist.toFixed(1)} km`;
+  };
+
   // Get category emoji
   const categoryEmoji = CATEGORY_EMOJIS[item.category as keyof typeof CATEGORY_EMOJIS] || '⚠️';
 
-  // Calculate time ago
-  const getTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const diffMs = now.getTime() - new Date(date).getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  // Calculate time ago with edge case handling
+  const getTimeAgo = (date: Date | string | undefined | null): string => {
+    if (!date) return 'just now';
 
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+    try {
+      const now = new Date();
+      const itemDate = new Date(date);
+
+      // Check for invalid date
+      if (isNaN(itemDate.getTime())) return 'just now';
+
+      const diffMs = now.getTime() - itemDate.getTime();
+
+      // Handle future dates (clock skew)
+      if (diffMs < 0) return 'just now';
+
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      const diffWeeks = Math.floor(diffMs / 604800000);
+
+      if (diffMins < 1) return 'just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      if (diffWeeks < 4) return `${diffWeeks}w ago`;
+      return `${Math.floor(diffDays / 30)}mo ago`;
+    } catch (error) {
+      console.error('[Card] getTimeAgo error:', error);
+      return 'just now';
+    }
   };
 
   // Get privacy/Twitter indicator
@@ -117,10 +154,10 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
       {/* Metadata Row */}
       <View style={styles.metaRow}>
         {/* Distance (if nearby sort) */}
-        {distance !== undefined && (
+        {distance !== undefined && formatDistance(distance) !== '' && (
           <View style={styles.metaItem}>
             <Ionicons name="location" size={14} color="#6B7280" />
-            <Text style={styles.metaText}>{distance.toFixed(1)} km</Text>
+            <Text style={styles.metaText}>{formatDistance(distance)}</Text>
           </View>
         )}
 
@@ -167,14 +204,14 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
             color={vote === 1 ? '#FF6B3D' : '#6B7280'}
           />
           <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>
-            {upvotes}
+            {formatNumber(upvotes)}
           </Text>
         </Pressable>
 
         {/* Comment Count */}
         <Pressable onPress={onPress} style={styles.actionButton} hitSlop={8}>
           <Ionicons name="chatbubble-outline" size={18} color="#6B7280" />
-          <Text style={styles.actionText}>{item.commentsCount || 0}</Text>
+          <Text style={styles.actionText}>{formatNumber(item.commentsCount || 0)}</Text>
         </Pressable>
 
         {/* Share Button */}

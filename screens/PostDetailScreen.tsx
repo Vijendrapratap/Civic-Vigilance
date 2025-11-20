@@ -106,17 +106,44 @@ export default function PostDetailScreen({ route }: any) {
     } catch { /* ignore */ }
   };
 
-  // Calculate time ago
-  const getTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const diffMs = now.getTime() - new Date(date).getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  // Format large numbers (1000 -> 1K, 1000000 -> 1M)
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return String(num);
+  };
 
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+  // Calculate time ago with edge case handling
+  const getTimeAgo = (date: Date | string | undefined | null): string => {
+    if (!date) return 'just now';
+
+    try {
+      const now = new Date();
+      const itemDate = new Date(date);
+
+      // Check for invalid date
+      if (isNaN(itemDate.getTime())) return 'just now';
+
+      const diffMs = now.getTime() - itemDate.getTime();
+
+      // Handle future dates (clock skew)
+      if (diffMs < 0) return 'just now';
+
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      const diffWeeks = Math.floor(diffMs / 604800000);
+
+      if (diffMins < 1) return 'just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+      if (diffWeeks < 4) return `${diffWeeks}w ago`;
+      return `${Math.floor(diffDays / 30)}mo ago`;
+    } catch (error) {
+      console.error('[Detail] getTimeAgo error:', error);
+      return 'just now';
+    }
   };
 
   // Get privacy/Twitter indicator
@@ -204,9 +231,11 @@ export default function PostDetailScreen({ route }: any) {
       <View style={styles.headerSection}>
         <View style={styles.categoryRow}>
           <Text style={styles.categoryEmoji}>{categoryEmoji}</Text>
-          <Text style={styles.categoryText}>{issue.category.replace(/_/g, ' ')}</Text>
+          <Text style={styles.categoryText}>
+            {issue.category ? issue.category.replace(/_/g, ' ') : 'other'}
+          </Text>
         </View>
-        <Text style={styles.title}>{issue.title}</Text>
+        <Text style={styles.title}>{issue.title || 'Untitled Issue'}</Text>
 
         {/* User Info */}
         <View style={styles.userRow}>
@@ -239,7 +268,7 @@ export default function PostDetailScreen({ route }: any) {
         )}
 
         {/* Description */}
-        <Text style={styles.description}>{issue.description}</Text>
+        <Text style={styles.description}>{issue.description || 'No description provided.'}</Text>
       </View>
 
       {/* Community Impact Section (PRD Section 5.4.2) */}
@@ -248,23 +277,23 @@ export default function PostDetailScreen({ route }: any) {
         <View style={styles.impactRow}>
           <View style={styles.impactItem}>
             <Ionicons name="arrow-up" size={24} color="#FF6B3D" />
-            <Text style={styles.impactValue}>{up}</Text>
+            <Text style={styles.impactValue}>{formatNumber(up)}</Text>
             <Text style={styles.impactLabel}>Upvotes</Text>
           </View>
           <View style={styles.impactItem}>
             <Ionicons name="chatbubble" size={24} color="#2563EB" />
-            <Text style={styles.impactValue}>{comments.length}</Text>
+            <Text style={styles.impactValue}>{formatNumber(comments.length)}</Text>
             <Text style={styles.impactLabel}>Comments</Text>
           </View>
           <View style={styles.impactItem}>
             <Ionicons name="share-social" size={24} color="#34D399" />
-            <Text style={styles.impactValue}>{(issue as any).shares || 0}</Text>
+            <Text style={styles.impactValue}>{formatNumber((issue as any).shares || 0)}</Text>
             <Text style={styles.impactLabel}>Shares</Text>
           </View>
           {tweetUrl && (issue as any).twitterImpressions && (
             <View style={styles.impactItem}>
               <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
-              <Text style={styles.impactValue}>{(issue as any).twitterImpressions}</Text>
+              <Text style={styles.impactValue}>{formatNumber((issue as any).twitterImpressions)}</Text>
               <Text style={styles.impactLabel}>Views</Text>
             </View>
           )}
@@ -301,7 +330,7 @@ export default function PostDetailScreen({ route }: any) {
             size={28}
             color={vote === 1 ? '#FF6B3D' : '#6B7280'}
           />
-          <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>{up}</Text>
+          <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>{formatNumber(up)}</Text>
         </Pressable>
 
         {/* Share Button */}
