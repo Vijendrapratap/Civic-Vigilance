@@ -137,18 +137,37 @@ export interface Report {
   updatedAt: Date;
 }
 
-// Authority database structure (PRD Section 7.3)
+// Social platform contact information
+export interface SocialPlatformHandle {
+  handle?: string; // @handle or username
+  verified: boolean;
+  active: boolean;
+  lastChecked: Date;
+  url?: string; // Full profile URL
+}
+
+// Authority database structure (PRD Section 7.3) - ENHANCED WITH MULTI-PLATFORM
 export interface Authority {
   id: string;
   name: string;
   nameLocal?: string;
 
-  // Twitter
-  twitter: {
-    handle: string;
-    verified: boolean;
-    active: boolean;
-    lastChecked: Date;
+  // Social Media Platforms (multi-platform support for better reach)
+  socialMedia: {
+    twitter?: SocialPlatformHandle;
+    whatsapp?: {
+      number: string; // Format: +91XXXXXXXXXX
+      businessVerified: boolean;
+      active: boolean;
+      lastChecked: Date;
+    };
+    instagram?: SocialPlatformHandle;
+    facebook?: SocialPlatformHandle;
+    telegram?: {
+      handle?: string;
+      chatId?: string;
+      active: boolean;
+    };
   };
 
   // Jurisdiction (geohash-based matching - PRD Section 7.3)
@@ -172,8 +191,17 @@ export interface Authority {
   // Contact info
   contactInfo?: {
     email?: string;
-    phone?: string;
+    phone?: string; // Customer service phone
+    tollFree?: string; // Toll-free helpline
     website?: string;
+    mobileApp?: string; // Link to official app
+  };
+
+  // Response metrics (optional - for displaying authority responsiveness)
+  responseMetrics?: {
+    averageResponseTime?: number; // in hours
+    totalIssuesAddressed?: number;
+    lastActive?: Date;
   };
 
   status: 'active' | 'inactive';

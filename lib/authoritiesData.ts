@@ -35,11 +35,27 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   {
     name: 'BBMP (Bruhat Bengaluru Mahanagara Palike)',
     nameLocal: 'ಬೃಹತ್ ಬೆಂಗಳೂರು ಮಹಾನಗರ ಪಾಲಿಕೆ',
-    twitter: {
-      handle: '@BBMPCOMM',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
+    socialMedia: {
+      twitter: {
+        handle: '@BBMPCOMM',
+        verified: true,
+        active: true,
+        lastChecked: new Date(),
+        url: 'https://twitter.com/BBMPCOMM',
+      },
+      facebook: {
+        handle: 'BBMP.Bengaluru',
+        verified: true,
+        active: true,
+        lastChecked: new Date(),
+        url: 'https://facebook.com/BBMP.Bengaluru',
+      },
+      whatsapp: {
+        number: '+918022660000',
+        businessVerified: true,
+        active: true,
+        lastChecked: new Date(),
+      },
     },
     jurisdiction: {
       type: 'city',
@@ -63,16 +79,47 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
     contactInfo: {
       website: 'https://bbmp.gov.in',
       phone: '080-22660000',
+      tollFree: '1800-425-2368',
+      email: 'commissioner@bbmp.gov.in',
+      mobileApp: 'https://play.google.com/store/apps/details?id=com.bbmp.sarathi',
+    },
+    responseMetrics: {
+      averageResponseTime: 48, // hours
+      totalIssuesAddressed: 12450,
+      lastActive: new Date(),
     },
     status: 'active',
   },
   {
     name: 'Bangalore Traffic Police',
-    twitter: {
-      handle: '@BlrCityTraffic',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
+    socialMedia: {
+      twitter: {
+        handle: '@BlrCityTraffic',
+        verified: true,
+        active: true,
+        lastChecked: new Date(),
+        url: 'https://twitter.com/BlrCityTraffic',
+      },
+      facebook: {
+        handle: 'BangaloreTrafficPolice',
+        verified: true,
+        active: true,
+        lastChecked: new Date(),
+        url: 'https://facebook.com/BangaloreTrafficPolice',
+      },
+      instagram: {
+        handle: '@blrcitytraffic',
+        verified: true,
+        active: true,
+        lastChecked: new Date(),
+        url: 'https://instagram.com/blrcitytraffic',
+      },
+      whatsapp: {
+        number: '+918022868550',
+        businessVerified: true,
+        active: true,
+        lastChecked: new Date(),
+      },
     },
     jurisdiction: {
       type: 'department',
@@ -84,15 +131,35 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
     },
     issueCategories: ['traffic_signal', 'pothole', 'encroachment'],
     priority: 1,
+    contactInfo: {
+      phone: '080-22868550',
+      tollFree: '103',
+      website: 'https://traffic.karnataka.gov.in',
+      email: 'blrtrafficpol@gmail.com',
+    },
+    responseMetrics: {
+      averageResponseTime: 24,
+      totalIssuesAddressed: 8900,
+      lastActive: new Date(),
+    },
     status: 'active',
   },
   {
     name: 'BWSSB (Bangalore Water Supply)',
-    twitter: {
-      handle: '@BWSSB_Official',
-      verified: false,
-      active: true,
-      lastChecked: new Date(),
+    socialMedia: {
+      twitter: {
+        handle: '@BWSSB_Official',
+        verified: false,
+        active: true,
+        lastChecked: new Date(),
+        url: 'https://twitter.com/BWSSB_Official',
+      },
+      whatsapp: {
+        number: '+918025533555',
+        businessVerified: false,
+        active: true,
+        lastChecked: new Date(),
+      },
     },
     jurisdiction: {
       type: 'department',

@@ -103,9 +103,9 @@ export function findAuthorities(
 
   // Add geohash matches
   geohashMatches.forEach((auth) => {
-    if (auth.issueCategories.includes(category)) {
+    if (auth.issueCategories.includes(category) && auth.socialMedia?.twitter?.active) {
       matches.push({
-        handle: auth.twitter.handle,
+        handle: auth.socialMedia.twitter.handle || '',
         name: auth.name,
         confidence: auth.priority === 1 ? 0.9 : 0.7,
         matchReason: 'Geohash + Category match',
@@ -122,10 +122,10 @@ export function findAuthorities(
     );
 
     cityMatches.forEach((auth) => {
-      // Avoid duplicates
-      if (!matches.find((m) => m.handle === auth.twitter.handle)) {
+      // Avoid duplicates and check Twitter is active
+      if (!matches.find((m) => m.handle === auth.socialMedia?.twitter?.handle) && auth.socialMedia?.twitter?.active) {
         matches.push({
-          handle: auth.twitter.handle,
+          handle: auth.socialMedia.twitter.handle || '',
           name: auth.name,
           confidence: auth.priority === 1 ? 0.8 : 0.6,
           matchReason: 'City + Category match',
@@ -143,9 +143,9 @@ export function findAuthorities(
     );
 
     stateMatches.forEach((auth) => {
-      if (!matches.find((m) => m.handle === auth.twitter.handle)) {
+      if (!matches.find((m) => m.handle === auth.socialMedia?.twitter?.handle) && auth.socialMedia?.twitter?.active) {
         matches.push({
-          handle: auth.twitter.handle,
+          handle: auth.socialMedia.twitter.handle || '',
           name: auth.name,
           confidence: auth.priority === 1 ? 0.6 : 0.4,
           matchReason: 'State + Category match',
@@ -163,9 +163,9 @@ export function findAuthorities(
     );
 
     nationalMatches.forEach((auth) => {
-      if (!matches.find((m) => m.handle === auth.twitter.handle)) {
+      if (!matches.find((m) => m.handle === auth.socialMedia?.twitter?.handle) && auth.socialMedia?.twitter?.active) {
         matches.push({
-          handle: auth.twitter.handle,
+          handle: auth.socialMedia.twitter.handle || '',
           name: auth.name,
           confidence: 0.3,
           matchReason: 'National fallback',
@@ -215,7 +215,7 @@ export function getMatchedAuthoritiesWithDetails(
 export function validateAuthorityHandle(handle: string): boolean {
   const normalizedHandle = handle.startsWith('@') ? handle : `@${handle}`;
   return AUTHORITIES_SEED_DATA.some(
-    (auth) => auth.twitter.handle.toLowerCase() === normalizedHandle.toLowerCase()
+    (auth) => auth.socialMedia?.twitter?.handle?.toLowerCase() === normalizedHandle.toLowerCase()
   );
 }
 
@@ -225,6 +225,6 @@ export function validateAuthorityHandle(handle: string): boolean {
 export function getAuthorityByHandle(handle: string) {
   const normalizedHandle = handle.startsWith('@') ? handle : `@${handle}`;
   return AUTHORITIES_SEED_DATA.find(
-    (auth) => auth.twitter.handle.toLowerCase() === normalizedHandle.toLowerCase()
+    (auth) => auth.socialMedia?.twitter?.handle?.toLowerCase() === normalizedHandle.toLowerCase()
   );
 }
