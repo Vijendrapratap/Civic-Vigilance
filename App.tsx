@@ -41,7 +41,8 @@ import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import UsernameSelectionScreen from './screens/UsernameSelectionScreen';
 import FeedScreen from './screens/FeedScreen';
 import PostDetailScreen from './screens/PostDetailScreen';
-import ReportIssueScreen from './screens/ReportIssueScreen';
+// Use new 5-stage reporting flow (PRD Section 5.2)
+import ReportIssueScreen from './screens/ReportIssueScreenV2';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import MyReportsScreen from './screens/MyReportsScreen';

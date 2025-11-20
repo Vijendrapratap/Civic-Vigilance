@@ -22,6 +22,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/ui/Button';
 import { TwitterPostingMethod, CategoryKey } from '../../types';
+import { getAuthorityHandles, getMatchedAuthoritiesWithDetails } from '../../lib/smartAuthorities';
 
 interface Props {
   photos: string[];
@@ -68,17 +69,18 @@ export default function Stage4PreviewScreen({
   const [authorities, setAuthorities] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load suggested authorities based on location + category
+  // Load suggested authorities based on location + category (PRD Section 7.3)
   useEffect(() => {
-    // TODO: Implement smart authority matching (PRD Section 7.3)
-    // For now, use placeholder authorities
-    const suggestedAuthorities = [
-      '@cityauthority',
-      '@KalyanCorp',
-      '@PublicWorks',
-    ];
-    setAuthorities(suggestedAuthorities);
-  }, [coords, category]);
+    const matchedAuthorities = getAuthorityHandles(
+      coords.lat,
+      coords.lng,
+      address,
+      category
+    );
+
+    console.log('[Preview] Matched authorities:', matchedAuthorities);
+    setAuthorities(matchedAuthorities.length > 0 ? matchedAuthorities : ['@mygovindia']);
+  }, [coords, category, address]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
