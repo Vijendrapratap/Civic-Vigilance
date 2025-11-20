@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { Comment, Issue } from '../types';
+import { Comment, IssueWithUserData } from '../types';
 import { getIssueByIdSqlite, listCommentsSqlite, addCommentSqlite, castVoteSqlite, getUserVoteSqlite } from '../lib/sqliteIssues';
 import ActionBar from '../components/ActionBar';
 import { castVote, getUserVote } from '../lib/votes';
@@ -10,11 +10,12 @@ import { useAuth } from '../hooks/useAuth';
 import Button from '../components/ui/Button';
 import { isFirebaseConfigured, db as fdb, auth as fauth } from '../lib/firebase';
 import { doc, getDoc, collection, getDocs, addDoc, query as fsQuery, where, orderBy, serverTimestamp } from 'firebase/firestore';
+import { formatCount, getTimeAgo } from '../lib/format';
 import { CATEGORY_EMOJIS } from '../components/CategoryPicker';
 
 export default function PostDetailScreen({ route }: any) {
   const { id } = route.params as { id: string };
-  const [issue, setIssue] = useState<Issue | null>(null);
+  const [issue, setIssue] = useState<IssueWithUserData | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -68,7 +69,7 @@ export default function PostDetailScreen({ route }: any) {
     } else { getUserVote(id).then(setVote).catch(() => {}); }
   }, [id, localUserId]);
 
-  const addComment = async () => {
+  const addComment = useCallback(async () => {
     if (!content.trim()) return;
     if (isFirebaseConfigured && fdb) {
       const uid = fauth?.currentUser?.uid;
@@ -85,7 +86,7 @@ export default function PostDetailScreen({ route }: any) {
     }
     setContent('');
     setReplyTo(null);
-  };
+  }, [content, id, replyTo, localUserId]);
 
   const onVote = async (val: -1 | 1) => {
     const prev = vote;
@@ -106,65 +107,25 @@ export default function PostDetailScreen({ route }: any) {
     } catch { /* ignore */ }
   };
 
-  // Format large numbers (1000 -> 1K, 1000000 -> 1M)
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return String(num);
-  };
-
-  // Calculate time ago with edge case handling
-  const getTimeAgo = (date: Date | string | undefined | null): string => {
-    if (!date) return 'just now';
-
-    try {
-      const now = new Date();
-      const itemDate = new Date(date);
-
-      // Check for invalid date
-      if (isNaN(itemDate.getTime())) return 'just now';
-
-      const diffMs = now.getTime() - itemDate.getTime();
-
-      // Handle future dates (clock skew)
-      if (diffMs < 0) return 'just now';
-
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-      const diffWeeks = Math.floor(diffMs / 604800000);
-
-      if (diffMins < 1) return 'just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      if (diffWeeks < 4) return `${diffWeeks}w ago`;
-      return `${Math.floor(diffDays / 30)}mo ago`;
-    } catch (error) {
-      console.error('[Detail] getTimeAgo error:', error);
-      return 'just now';
-    }
-  };
-
-  // Get privacy/Twitter indicator
-  const getPrivacyIndicator = () => {
-    const isPostedToTwitter = !!(issue as any)?.tweetUrl || !!(issue as any)?.twitterUrl;
+  // Memoize expensive computations
+  const privacyIndicator = useMemo(() => {
+    if (!issue) return null;
+    const isPostedToTwitter = !!issue.tweetUrl;
     if (isPostedToTwitter) {
       return { icon: 'logo-twitter', text: 'Posted to Twitter', color: '#1DA1F2' };
     }
     return { icon: 'lock-closed', text: 'App Only', color: '#6B7280' };
-  };
+  }, [issue?.tweetUrl]);
 
-  const privacyIndicator = issue ? getPrivacyIndicator() : null;
+  const categoryEmoji = useMemo(() =>
+    issue ? CATEGORY_EMOJIS[issue.category as keyof typeof CATEGORY_EMOJIS] || '⚠️' : '⚠️',
+    [issue?.category]
+  );
 
-  // Get category emoji
-  const categoryEmoji = issue ? CATEGORY_EMOJIS[issue.category as keyof typeof CATEGORY_EMOJIS] || '⚠️' : '⚠️';
-
-  // Share functionality
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     console.log('[Detail] Share issue:', id);
     // TODO: Implement native share
-  };
+  }, [id]);
 
   const tree = useMemo(() => {
     const map = new Map<string, any[]>();
@@ -214,7 +175,7 @@ export default function PostDetailScreen({ route }: any) {
 
   if (!issue) return null;
 
-  const tweetUrl = (issue as any)?.tweetUrl || (issue as any)?.twitterUrl;
+  const tweetUrl = issue.tweetUrl;
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
@@ -241,8 +202,8 @@ export default function PostDetailScreen({ route }: any) {
         <View style={styles.userRow}>
           <Ionicons name="person-circle-outline" size={16} color="#6B7280" />
           <Text style={styles.username}>
-            {(issue as any).anonymousUsername || 'Anonymous_Citizen'}
-            {(issue as any).isVerified && ' ⭐'}
+            {issue.anonymousUsername || 'Anonymous_Citizen'}
+            {issue.isVerified && ' ⭐'}
           </Text>
           <Text style={styles.separator}>•</Text>
           <Ionicons name="time-outline" size={16} color="#6B7280" />
@@ -277,23 +238,23 @@ export default function PostDetailScreen({ route }: any) {
         <View style={styles.impactRow}>
           <View style={styles.impactItem}>
             <Ionicons name="arrow-up" size={24} color="#FF6B3D" />
-            <Text style={styles.impactValue}>{formatNumber(up)}</Text>
+            <Text style={styles.impactValue}>{formatCount(up)}</Text>
             <Text style={styles.impactLabel}>Upvotes</Text>
           </View>
           <View style={styles.impactItem}>
             <Ionicons name="chatbubble" size={24} color="#2563EB" />
-            <Text style={styles.impactValue}>{formatNumber(comments.length)}</Text>
+            <Text style={styles.impactValue}>{formatCount(comments.length)}</Text>
             <Text style={styles.impactLabel}>Comments</Text>
           </View>
           <View style={styles.impactItem}>
             <Ionicons name="share-social" size={24} color="#34D399" />
-            <Text style={styles.impactValue}>{formatNumber((issue as any).shares || 0)}</Text>
+            <Text style={styles.impactValue}>{formatCount(issue.shares || 0)}</Text>
             <Text style={styles.impactLabel}>Shares</Text>
           </View>
-          {tweetUrl && (issue as any).twitterImpressions && (
+          {tweetUrl && issue.metrics?.twitterImpressions && (
             <View style={styles.impactItem}>
               <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
-              <Text style={styles.impactValue}>{formatNumber((issue as any).twitterImpressions)}</Text>
+              <Text style={styles.impactValue}>{formatCount(issue.metrics.twitterImpressions)}</Text>
               <Text style={styles.impactLabel}>Views</Text>
             </View>
           )}
@@ -330,7 +291,7 @@ export default function PostDetailScreen({ route }: any) {
             size={28}
             color={vote === 1 ? '#FF6B3D' : '#6B7280'}
           />
-          <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>{formatNumber(up)}</Text>
+          <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>{formatCount(up)}</Text>
         </Pressable>
 
         {/* Share Button */}

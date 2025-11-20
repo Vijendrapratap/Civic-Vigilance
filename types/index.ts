@@ -277,3 +277,15 @@ export interface PendingTwitterPost {
 
 // Legacy type alias for backwards compatibility
 export type Issue = Report;
+
+// Extended Issue type with optional display properties from joined data
+export interface IssueWithUserData extends Report {
+  isVerified?: boolean; // From user join
+  commentsCount?: number; // Computed field
+  shares?: number; // From metrics or computed
+  upvotes?: number; // From metrics.upvotes
+  downvotes?: number; // From metrics.downvotes
+  imageUrl?: string; // First photo from photos array
+  address?: string; // From location.address
+  createdAt: Date | string; // Can be string from Firestore
+}

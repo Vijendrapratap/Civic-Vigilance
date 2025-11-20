@@ -18,20 +18,21 @@
  * - Comment count + Share button
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, memo } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Issue } from '../types';
+import { IssueWithUserData } from '../types';
 import { castVote, getUserVote } from '../lib/votes';
+import { formatCount, getTimeAgo, formatDistance } from '../lib/format';
 import { CATEGORY_EMOJIS } from './CategoryPicker';
 
 interface Props {
-  item: Issue;
+  item: IssueWithUserData;
   onPress?: () => void;
   distance?: number; // Distance in km (for nearby sort)
 }
 
-export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
+function EnhancedIssueCard({ item, onPress, distance }: Props) {
   const [vote, setVote] = useState<-1 | 0 | 1>(0);
   const [upvotes, setUpvotes] = useState(item.upvotes ?? 0);
 
@@ -39,7 +40,7 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
     getUserVote(item.id).then(setVote).catch(() => {});
   }, [item.id]);
 
-  const onVote = async (val: -1 | 1) => {
+  const onVote = useCallback(async (val: -1 | 1) => {
     const prev = vote;
     // Optimistic update
     if (val === 1) {
@@ -61,73 +62,31 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
       setVote(prev);
       setUpvotes(item.upvotes ?? 0);
     }
-  };
+  }, [vote, upvotes, item.id, item.upvotes]);
 
-  // Format large numbers (1000 -> 1K, 1000000 -> 1M)
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return String(num);
-  };
+  // Memoize expensive computations
+  const categoryEmoji = useMemo(() =>
+    CATEGORY_EMOJIS[item.category as keyof typeof CATEGORY_EMOJIS] || '⚠️',
+    [item.category]
+  );
 
-  // Format distance with validation
-  const formatDistance = (dist?: number): string => {
-    if (dist === undefined || dist === null || isNaN(dist) || !isFinite(dist)) {
-      return '';
-    }
-    if (dist < 0.1) return '< 0.1 km';
-    if (dist > 999) return '> 999 km';
-    return `${dist.toFixed(1)} km`;
-  };
-
-  // Get category emoji
-  const categoryEmoji = CATEGORY_EMOJIS[item.category as keyof typeof CATEGORY_EMOJIS] || '⚠️';
-
-  // Calculate time ago with edge case handling
-  const getTimeAgo = (date: Date | string | undefined | null): string => {
-    if (!date) return 'just now';
-
-    try {
-      const now = new Date();
-      const itemDate = new Date(date);
-
-      // Check for invalid date
-      if (isNaN(itemDate.getTime())) return 'just now';
-
-      const diffMs = now.getTime() - itemDate.getTime();
-
-      // Handle future dates (clock skew)
-      if (diffMs < 0) return 'just now';
-
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-      const diffWeeks = Math.floor(diffMs / 604800000);
-
-      if (diffMins < 1) return 'just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      if (diffWeeks < 4) return `${diffWeeks}w ago`;
-      return `${Math.floor(diffDays / 30)}mo ago`;
-    } catch (error) {
-      console.error('[Card] getTimeAgo error:', error);
-      return 'just now';
-    }
-  };
-
-  // Get privacy/Twitter indicator
-  const getPrivacyIndicator = () => {
-    // Check if issue has twitterUrl or tweetId (means it was posted to Twitter)
-    const isPostedToTwitter = !!(item as any).tweetUrl || !!(item as any).twitterUrl;
+  const privacyIndicator = useMemo(() => {
+    // Check if issue has tweetUrl (means it was posted to Twitter)
+    const isPostedToTwitter = !!item.tweetUrl;
 
     if (isPostedToTwitter) {
       return { icon: 'logo-twitter', text: 'Posted to Twitter', color: '#1DA1F2' };
     }
     return { icon: 'lock-closed', text: 'App Only', color: '#6B7280' };
-  };
+  }, [item.tweetUrl]);
 
-  const privacyIndicator = getPrivacyIndicator();
+  const timeAgo = useMemo(() => getTimeAgo(item.createdAt), [item.createdAt]);
+  const formattedDistance = useMemo(() => formatDistance(distance), [distance]);
+
+  const handleShare = useCallback(() => {
+    // TODO: Implement share
+    console.log('[Card] Share issue:', item.id);
+  }, [item.id]);
 
   return (
     <TouchableOpacity
@@ -154,10 +113,10 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
       {/* Metadata Row */}
       <View style={styles.metaRow}>
         {/* Distance (if nearby sort) */}
-        {distance !== undefined && formatDistance(distance) !== '' && (
+        {distance !== undefined && formattedDistance !== '' && (
           <View style={styles.metaItem}>
             <Ionicons name="location" size={14} color="#6B7280" />
-            <Text style={styles.metaText}>{formatDistance(distance)}</Text>
+            <Text style={styles.metaText}>{formattedDistance}</Text>
           </View>
         )}
 
@@ -174,12 +133,12 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
       <View style={styles.userRow}>
         <Ionicons name="person-circle-outline" size={14} color="#6B7280" />
         <Text style={styles.username}>
-          {(item as any).anonymousUsername || 'Anonymous_Citizen'}
-          {(item as any).isVerified && ' ⭐'}
+          {item.anonymousUsername || 'Anonymous_Citizen'}
+          {item.isVerified && ' ⭐'}
         </Text>
         <Text style={styles.separator}>•</Text>
         <Ionicons name="time-outline" size={14} color="#6B7280" />
-        <Text style={styles.timeAgo}>{getTimeAgo(item.createdAt)}</Text>
+        <Text style={styles.timeAgo}>{timeAgo}</Text>
       </View>
 
       {/* Twitter Indicator */}
@@ -204,22 +163,19 @@ export default function EnhancedIssueCard({ item, onPress, distance }: Props) {
             color={vote === 1 ? '#FF6B3D' : '#6B7280'}
           />
           <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>
-            {formatNumber(upvotes)}
+            {formatCount(upvotes)}
           </Text>
         </Pressable>
 
         {/* Comment Count */}
         <Pressable onPress={onPress} style={styles.actionButton} hitSlop={8}>
           <Ionicons name="chatbubble-outline" size={18} color="#6B7280" />
-          <Text style={styles.actionText}>{formatNumber(item.commentsCount || 0)}</Text>
+          <Text style={styles.actionText}>{formatCount(item.commentsCount || 0)}</Text>
         </Pressable>
 
         {/* Share Button */}
         <Pressable
-          onPress={() => {
-            // TODO: Implement share
-            console.log('[Card] Share issue:', item.id);
-          }}
+          onPress={handleShare}
           style={styles.actionButton}
           hitSlop={8}
         >
@@ -349,3 +305,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+// Export memoized component for better performance
+export default memo(EnhancedIssueCard);
