@@ -218,7 +218,6 @@ Username: TestCitizen_2024
 - **[docs/](docs/)** - Additional guides and reference docs
   - [Backend Architecture](docs/guides/BACKEND.md)
   - [Frontend Architecture](docs/guides/FRONTEND.md)
-  - [Firebase Setup](docs/setup/firebase/) (Optional/Legacy)
 
 ---
 
@@ -391,8 +390,7 @@ civic-vigilance/
 │   ├── authorityContactManager.ts # Multi-platform contact utilities
 │   ├── geohash.ts                 # GPS ↔ Geohash conversion
 │   ├── seedData.ts                # Test data (10 issues, 3 users)
-│   ├── supabase.ts                # Supabase client (primary)
-│   └── firebase.ts                # Firebase client (optional/legacy)
+│   └── supabase.ts                # Supabase client
 ├── types/                 # TypeScript types
 ├── docs/                  # Technical documentation
 └── .env.example           # Environment template
