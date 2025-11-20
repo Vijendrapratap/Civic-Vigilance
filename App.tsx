@@ -114,7 +114,7 @@ function Root() {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Loading Civic Vigilance...</Text>
-        <Text style={styles.loadingHint}>Initializing Firebase...</Text>
+        <Text style={styles.loadingHint}>Initializing backend...</Text>
       </View>
     );
   }
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
 
 export default function App() {
   console.log('[App] Starting Civic Vigilance...');
-  console.log('[App] Firebase configured:', process.env.EXPO_PUBLIC_FIREBASE_API_KEY ? 'Yes' : 'No');
+  console.log('[App] Supabase configured:', process.env.EXPO_PUBLIC_SUPABASE_URL ? 'Yes' : 'No');
   console.log('[App] Backend mode:', process.env.EXPO_PUBLIC_BACKEND_MODE);
 
   return (

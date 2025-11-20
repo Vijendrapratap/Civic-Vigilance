@@ -1,31 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { getBackend } from '../lib/backend';
-import { firebaseConfigPublic, isFirebaseConfigured } from '../lib/firebase';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 export default function DebugScreen() {
   const backend = getBackend();
-  const fb = firebaseConfigPublic;
   const supaUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const supaAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Debug Info</Text>
       <Row k="Backend" v={backend} />
-      <Row k="Firebase configured" v={String(isFirebaseConfigured)} />
-      {fb && (
-        <View style={styles.card}>
-          <Text style={styles.h2}>Firebase</Text>
-          <Row k="projectId" v={fb.projectId || ''} />
-          <Row k="appId" v={fb.appId || ''} />
-          <Row k="authDomain" v={fb.authDomain || ''} />
-          <Row k="storageBucket" v={fb.storageBucket || ''} />
-          <Row k="messagingSenderId" v={fb.messagingSenderId || ''} />
-        </View>
-      )}
+      <Row k="Supabase configured" v={String(isSupabaseConfigured)} />
       <View style={styles.card}>
         <Text style={styles.h2}>Supabase</Text>
-        <Row k="url" v={supaUrl || ''} />
+        <Row k="url" v={supaUrl || '(not set)'} />
+        <Row k="anon key" v={supaAnonKey ? `${supaAnonKey.substring(0, 20)}...` : '(not set)'} />
       </View>
       <Text style={styles.hint}>Note: Restart Expo after changing .env (use cache clear).</Text>
     </ScrollView>
@@ -48,4 +39,3 @@ const styles = StyleSheet.create({
   val: { color: '#111' },
   hint: { color: '#666', marginTop: 12 }
 });
-

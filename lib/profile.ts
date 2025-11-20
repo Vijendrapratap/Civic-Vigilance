@@ -1,9 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
-import { supabase } from './supabase';
-import { isFirebaseConfigured, db as fdb, storage as fstorage } from './firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ref as sRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { getBackend } from './backend';
 
 export type UserProfile = {
@@ -17,52 +14,39 @@ const PROFILE_KEY = 'demo_profile';
 const PREFS_KEY = 'demo_notification_prefs';
 
 export async function loadProfile(userId: string): Promise<UserProfile> {
-  if (getBackend() === 'firebase' && isFirebaseConfigured && fdb) {
-    const ref = doc(fdb, 'profiles', userId);
-    const snap = await getDoc(ref);
-    if (snap.exists()) return { id: userId, ...(snap.data() as any) };
-    return { id: userId, full_name: 'Civic User', avatar_url: null, created_at: new Date().toISOString() };
-  }
   if (getBackend() === 'sqlite') {
     const raw = await AsyncStorage.getItem(PROFILE_KEY);
     const parsed: UserProfile | null = raw ? JSON.parse(raw) : null;
     return parsed || { id: userId, full_name: 'Civic User', avatar_url: null, created_at: new Date().toISOString() };
+  }
+
+  // Supabase backend
+  if (!isSupabaseConfigured) {
+    return { id: userId, full_name: 'Civic User', avatar_url: null, created_at: new Date().toISOString() };
   }
   const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
   return (data as any) || { id: userId };
 }
 
 export async function saveProfile(p: UserProfile) {
-  if (getBackend() === 'firebase' && isFirebaseConfigured && fdb) {
-    let avatarUrl = p.avatar_url ?? null;
-    // If a local URI was provided, upload to Firebase Storage and use the download URL
-    if (avatarUrl && fstorage && /^(file:|content:|ph:)/i.test(avatarUrl)) {
-      try {
-        const res = await fetch(avatarUrl);
-        const blob = await res.blob();
-        const key = `avatars/${p.id}.jpg`;
-        const dest = sRef(fstorage, key);
-        await uploadBytes(dest, blob, { contentType: blob.type || 'image/jpeg' });
-        avatarUrl = await getDownloadURL(dest);
-      } catch (_e) { /* ignore upload errors, keep local uri */ }
-    }
-    const ref = doc(fdb, 'profiles', p.id);
-    await setDoc(ref, { full_name: p.full_name ?? null, avatar_url: avatarUrl, created_at: p.created_at || serverTimestamp() }, { merge: true });
-    return { ...p, avatar_url: avatarUrl };
-  }
   if (getBackend() === 'sqlite') {
     await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(p));
     return p;
   }
+
+  // Supabase backend
+  if (!isSupabaseConfigured) throw new Error('Supabase not configured');
   const { data, error } = await supabase.from('profiles').upsert({ id: p.id, full_name: p.full_name, avatar_url: p.avatar_url }).select('*').single();
-  if (error) throw error; return data as UserProfile;
+  if (error) throw error;
+  return data as UserProfile;
 }
 
 export async function pickAvatar(): Promise<string | null> {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status !== 'granted') return null;
   const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
-  if (res.canceled) return null; return res.assets[0].uri;
+  if (res.canceled) return null;
+  return res.assets[0].uri;
 }
 
 export type NotificationPrefs = {

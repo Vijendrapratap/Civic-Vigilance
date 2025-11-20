@@ -8,8 +8,7 @@ import ActionBar from '../components/ActionBar';
 import { castVote, getUserVote } from '../lib/votes';
 import { useAuth } from '../hooks/useAuth';
 import Button from '../components/ui/Button';
-import { isFirebaseConfigured, db as fdb, auth as fauth } from '../lib/firebase';
-import { doc, getDoc, collection, getDocs, addDoc, query as fsQuery, where, orderBy, serverTimestamp } from 'firebase/firestore';
+import { getBackend } from '../lib/backend';
 import { formatCount, getTimeAgo } from '../lib/format';
 import { CATEGORY_EMOJIS } from '../components/CategoryPicker';
 
@@ -27,33 +26,13 @@ export default function PostDetailScreen({ route }: any) {
 
   useEffect(() => {
     const run = async () => {
-      if (isFirebaseConfigured && fdb) {
-        // Issue
-        const iref = doc(fdb, 'issues', String(id));
-        const isnap = await getDoc(iref);
-        if (isnap.exists()) {
-          const data: any = { id: String(id), ...isnap.data() };
-          setIssue(data as Issue);
-          setUp(data?.upvotes ?? 0); setDown(data?.downvotes ?? 0);
-        }
-        // Comments (top-level collection filtered by issue_id)
-        try {
-          const q = fsQuery(collection(fdb, 'comments'), where('issue_id', '==', String(id)), orderBy('created_at', 'asc'));
-          const csnap = await getDocs(q);
-          const c = csnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
-          setComments(c as any);
-        } catch (_e) {
-          const q2 = fsQuery(collection(fdb, 'comments'), where('issue_id', '==', String(id)));
-          const csnap2 = await getDocs(q2);
-          setComments(csnap2.docs.map(d => ({ id: d.id, ...(d.data() as any) })) as any);
-        }
-      } else if (!isSupabaseConfigured) {
+      if (getBackend() === 'sqlite') {
         const i = await getIssueByIdSqlite(Number(id));
         setIssue(i as any);
         const c = await listCommentsSqlite(Number(id));
         setComments(c as any);
         setUp((i as any)?.upvotes ?? 0); setDown((i as any)?.downvotes ?? 0);
-      } else {
+      } else if (isSupabaseConfigured) {
         const { data } = await supabase.from('issues').select('*').eq('id', id).single();
         setIssue(data as any);
         const { data: c } = await supabase.from('comments').select('*').eq('issue_id', id).order('created_at', { ascending: true });
@@ -71,19 +50,15 @@ export default function PostDetailScreen({ route }: any) {
 
   const addComment = useCallback(async () => {
     if (!content.trim()) return;
-    if (isFirebaseConfigured && fdb) {
-      const uid = fauth?.currentUser?.uid;
-      if (!uid) return;
-      const payload = { issue_id: String(id), user_id: uid, content, parent_id: replyTo || null, created_at: serverTimestamp() };
-      const ref = await addDoc(collection(fdb, 'comments'), payload as any);
-      setComments((prev) => [...prev, { id: ref.id, ...payload } as any]);
-    } else if (!isSupabaseConfigured) {
+
+    if (getBackend() === 'sqlite') {
       const c = await addCommentSqlite(Number(id), localUserId, content, replyTo ? Number(replyTo) : undefined);
       setComments((prev) => [...prev, c as any]);
-    } else {
+    } else if (isSupabaseConfigured) {
       const { data, error } = await supabase.from('comments').insert({ issue_id: id, content, parent_id: replyTo }).select('*').single();
       if (!error && data) setComments((prev) => [...prev, data as any]);
     }
+
     setContent('');
     setReplyTo(null);
   }, [content, id, replyTo, localUserId]);
