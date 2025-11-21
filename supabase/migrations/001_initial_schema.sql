@@ -8,6 +8,9 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Enable pg_trgm extension for text search (needed for geohash matching)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- ============================================================================
 -- CUSTOM TYPES
 -- ============================================================================
