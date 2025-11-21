@@ -12,20 +12,25 @@ export type IssueCategory =
   | 'parks'
   | 'other';
 
-// Twitter posting methods - core feature per PDF
+// Twitter posting methods - core feature per PRD (3-tier privacy system)
 export type TwitterPostingMethod = 'civic_vigilance' | 'personal' | 'none';
 
-// Report status types
-export type ReportStatus = 'reported' | 'acknowledged' | 'in_progress' | 'resolved' | 'failed';
+// Posting status (NOT resolution status - we don't track if authorities fixed issues)
+export type PostingStatus = 'pending' | 'posted' | 'failed';
 
 // Authority types
 export type AuthorityJurisdictionType = 'national' | 'state' | 'city' | 'ward' | 'department';
 
-// User type with complete profile
+// User type with complete profile (aligned with PRD Section 7.2)
 export interface User {
   uid: string;
-  email: string;
-  displayName: string;
+  email?: string; // Optional for anonymous users
+
+  // USERNAME SELECTION - NEW per PRD Section 5.1.1
+  username: string; // Chosen or auto-generated "Anonymous_Citizen_XXXX"
+  anonymousMode: boolean; // If true, hide real identity
+  displayName?: string; // Real name (optional)
+
   photoURL?: string;
   bio?: string;
   city?: string;
@@ -38,25 +43,34 @@ export interface User {
   twitterHandle?: string;
   twitterUserId?: string;
 
-  // Twitter posting preferences
-  defaultTwitterMethod: TwitterPostingMethod;
-  alwaysAskTwitterMethod: boolean;
+  // Privacy & Amplification preferences (PRD Section 5.2 Stage 3)
+  privacyDefault: TwitterPostingMethod; // Default for new reports
+  alwaysAskTwitterMethod: boolean; // Show privacy selection every time
 
-  // Statistics
-  totalReports: number;
-  reportsResolved: number;
-  upvotesReceived: number;
-  commentsReceived: number;
+  // Verification (v1.5 feature - PRD Section 16.5)
+  isVerified: boolean; // ⭐ badge for journalists, RWAs
+  verificationType?: 'journalist' | 'rwa' | 'ngo' | 'official';
 
-  // Settings
-  notificationPreferences: {
-    pushEnabled: boolean;
-    statusUpdates: boolean;
-    comments: boolean;
-    upvoteMilestones: boolean;
-    nearbyTrending: boolean;
-    weeklyDigest: boolean;
-    quietHours?: { start: string; end: string };
+  // Statistics (ENGAGEMENT metrics, NOT resolution - PRD Section 1.2)
+  stats: {
+    totalPosts: number; // "Voices Raised"
+    totalUpvotes: number; // "Community Impact"
+    totalComments: number;
+    totalShares: number; // "Amplification"
+  };
+
+  // Notification Settings (PRD Section 5.7.1)
+  preferences: {
+    notifications: {
+      nearby: boolean; // Issues within 2km
+      comments: boolean; // Comments on my posts
+      upvotes: boolean; // Upvotes on my posts
+      replies: boolean; // Replies to my comments
+      twitter: boolean; // Twitter engagement
+      digest: boolean; // Weekly digest
+      trending: boolean; // Trending issues in city
+      similar: boolean; // Similar issues nearby
+    };
   };
 
   privacySettings: {
@@ -68,7 +82,7 @@ export interface User {
   lastLoginAt: Date;
 }
 
-// Report/Issue type (aligned with PDF spec)
+// Report/Issue type (aligned with PRD Section 7.2)
 export interface Report {
   id: string;
   userId: string;
@@ -77,71 +91,86 @@ export interface Report {
   title: string;
   description?: string;
   category: IssueCategory;
-  imageUrl: string;
+  photos: string[]; // Firebase Storage URLs (up to 3 per PRD 5.2)
 
-  // Location
-  lat: number;
-  lng: number;
-  address: string;
-  accuracy: number; // GPS accuracy in meters
-  ward?: string;
-  zone?: string;
-  city?: string;
-  state?: string;
-  geohash: string;
+  // Location (PRD Section 5.2 Stage 2D - full address required)
+  location: {
+    lat: number;
+    lng: number;
+    address: string; // Full: "Casa Rio Gold Road, Kalyan, Maharashtra, 421204"
+    geohash: string;
+  };
 
-  // Twitter posting - CRITICAL FEATURE
-  twitterMethod: TwitterPostingMethod;
-  twitterPostId?: string;
-  twitterUrl?: string;
-  twitterPostedAt?: Date;
-  twitterPostedFrom?: string; // @handle that posted
+  // Privacy & Amplification (PRD Section 5.2 Stage 3 - THE KEY FEATURE)
+  privacy: TwitterPostingMethod; // 'anonymous' | 'personal' | 'appOnly' in PRD, but we use existing type
+  twitterHandle?: string; // Which handle posted (for display)
+  authorities: string[]; // @handles to tag (PRD Section 5.2 Stage 4B)
 
-  // Tagged authorities
-  authorities: Authority[];
+  // Twitter posting metadata
+  tweetId?: string;
+  tweetUrl?: string;
 
-  // Status
-  status: ReportStatus;
-  statusHistory: StatusHistoryEntry[];
+  // Posting status (NOT resolution - we don't track if authorities fixed it!)
+  status: PostingStatus; // 'pending' | 'posted' | 'failed'
 
-  // Engagement
-  upvotes: number;
-  downvotes: number;
-  commentsCount: number;
-  sharesCount: number;
-  viewsCount: number;
-  followersCount: number;
+  // Anonymous username (PRD Section 5.1.1)
+  anonymousUsername: string; // Display name for this post
 
-  // Twitter engagement (if posted)
-  twitterLikes?: number;
-  twitterRetweets?: number;
-  twitterReplies?: number;
-  twitterViews?: number;
-  lastTwitterSyncAt?: Date;
+  // Engagement metrics (PRD Section 5.3.2 - what we DO measure)
+  metrics: {
+    upvotes: number;
+    downvotes: number;
+    comments: number;
+    shares: number;
+    twitterImpressions?: number; // Fetched via API every 6h
+  };
+
+  // Moderation (PRD Section 5.1 - basic moderation)
+  moderation: {
+    flagged: boolean;
+    reviewed: boolean;
+    status: 'active' | 'hidden' | 'removed';
+  };
 
   // Metadata
   createdAt: Date;
   updatedAt: Date;
-  resolvedAt?: Date;
-  offline: boolean; // was created offline
-  syncedAt?: Date;
 }
 
-// Authority database structure
+// Social platform contact information
+export interface SocialPlatformHandle {
+  handle?: string; // @handle or username
+  verified: boolean;
+  active: boolean;
+  lastChecked: Date;
+  url?: string; // Full profile URL
+}
+
+// Authority database structure (PRD Section 7.3) - ENHANCED WITH MULTI-PLATFORM
 export interface Authority {
   id: string;
   name: string;
   nameLocal?: string;
 
-  // Twitter
-  twitter: {
-    handle: string;
-    verified: boolean;
-    active: boolean;
-    lastChecked: Date;
+  // Social Media Platforms (multi-platform support for better reach)
+  socialMedia: {
+    twitter?: SocialPlatformHandle;
+    whatsapp?: {
+      number: string; // Format: +91XXXXXXXXXX
+      businessVerified: boolean;
+      active: boolean;
+      lastChecked: Date;
+    };
+    instagram?: SocialPlatformHandle;
+    facebook?: SocialPlatformHandle;
+    telegram?: {
+      handle?: string;
+      chatId?: string;
+      active: boolean;
+    };
   };
 
-  // Jurisdiction
+  // Jurisdiction (geohash-based matching - PRD Section 7.3)
   jurisdiction: {
     type: AuthorityJurisdictionType;
     level: number; // 1=national, 2=state, 3=city, 4=ward
@@ -162,36 +191,23 @@ export interface Authority {
   // Contact info
   contactInfo?: {
     email?: string;
-    phone?: string;
+    phone?: string; // Customer service phone
+    tollFree?: string; // Toll-free helpline
     website?: string;
+    mobileApp?: string; // Link to official app
   };
 
-  // Performance metrics
-  metrics: {
-    totalReportsTagged: number;
-    responseRate: number; // 0-1
-    avgResponseTime: number; // seconds
-    resolutionRate: number; // 0-1
-    avgResolutionTime: number; // seconds
-  };
-
-  // Community validation
-  community: {
-    upvotes: number;
-    downvotes: number;
-    reportsHandled: number;
+  // Response metrics (optional - for displaying authority responsiveness)
+  responseMetrics?: {
+    averageResponseTime?: number; // in hours
+    totalIssuesAddressed?: number;
+    lastActive?: Date;
   };
 
   status: 'active' | 'inactive';
   verifiedBy?: string;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface StatusHistoryEntry {
-  status: ReportStatus;
-  timestamp: Date;
-  updatedBy?: string;
 }
 
 export interface Comment {
@@ -221,17 +237,21 @@ export interface Follower {
   createdAt: Date;
 }
 
+// Notification types (PRD Section 5.7.1 - Smart Notifications)
 export interface Notification {
   id: string;
   userId: string;
   type:
-    | 'report_submitted'
-    | 'twitter_post_success'
-    | 'status_update'
-    | 'authority_response'
-    | 'comment'
-    | 'upvote_milestone'
-    | 'resolution_claim';
+    | 'report_submitted' // Your issue is now live
+    | 'twitter_post_success' // Posted to Twitter
+    | 'comment' // Comments on my posts
+    | 'reply' // Replies to my comments
+    | 'upvote_milestone' // Upvotes on my posts
+    | 'nearby_issue' // New issues within 2km
+    | 'trending_issue' // Issues gaining traction
+    | 'similar_issue' // Similar issues nearby
+    | 'twitter_engagement' // Twitter retweets/likes by authorities
+    | 'weekly_digest'; // Weekly summary
   title: string;
   body: string;
   data: Record<string, any>;
@@ -257,4 +277,15 @@ export interface PendingTwitterPost {
 
 // Legacy type alias for backwards compatibility
 export type Issue = Report;
-export type IssueStatus = ReportStatus;
+
+// Extended Issue type with optional display properties from joined data
+export interface IssueWithUserData extends Report {
+  isVerified?: boolean; // From user join
+  commentsCount?: number; // Computed field
+  shares?: number; // From metrics or computed
+  upvotes?: number; // From metrics.upvotes
+  downvotes?: number; // From metrics.downvotes
+  imageUrl?: string; // First photo from photos array
+  address?: string; // From location.address
+  createdAt: Date | string; // Can be string from Firestore
+}

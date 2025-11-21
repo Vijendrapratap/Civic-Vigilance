@@ -38,9 +38,11 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
+import UsernameSelectionScreen from './screens/UsernameSelectionScreen';
 import FeedScreen from './screens/FeedScreen';
 import PostDetailScreen from './screens/PostDetailScreen';
-import ReportIssueScreen from './screens/ReportIssueScreen';
+// Use new 5-stage reporting flow (PRD Section 5.2)
+import ReportIssueScreen from './screens/ReportIssueScreenV2';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import MyReportsScreen from './screens/MyReportsScreen';
@@ -112,7 +114,7 @@ function Root() {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Loading Civic Vigilance...</Text>
-        <Text style={styles.loadingHint}>Initializing Firebase...</Text>
+        <Text style={styles.loadingHint}>Initializing backend...</Text>
       </View>
     );
   }
@@ -137,6 +139,11 @@ function AuthNavigator() {
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Signup" component={SignupScreen} />
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Reset Password' }} />
+      <AuthStack.Screen
+        name="UsernameSelection"
+        component={UsernameSelectionScreen}
+        options={{ title: 'Choose Your Voice', headerBackVisible: false }}
+      />
     </AuthStack.Navigator>
   );
 }
@@ -186,7 +193,7 @@ const styles = StyleSheet.create({
 
 export default function App() {
   console.log('[App] Starting Civic Vigilance...');
-  console.log('[App] Firebase configured:', process.env.EXPO_PUBLIC_FIREBASE_API_KEY ? 'Yes' : 'No');
+  console.log('[App] Supabase configured:', process.env.EXPO_PUBLIC_SUPABASE_URL ? 'Yes' : 'No');
   console.log('[App] Backend mode:', process.env.EXPO_PUBLIC_BACKEND_MODE);
 
   return (

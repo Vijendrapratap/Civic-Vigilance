@@ -1,738 +1,534 @@
-# Civic Vigilance 📱
+# CivicVigilance 🏙️
 
-> **See a pothole? Report it in 30 seconds.**
+> **"We don't fix potholes. We make them impossible to ignore."**
 
-A simple mobile app that lets you report civic problems (potholes, garbage, broken streetlights) by taking a photo. The app automatically notifies the right government officials on Twitter and tracks the issue until it's fixed.
+A civic engagement platform that amplifies citizen voices through **social media pressure**, not resolution tracking.
 
-## What Does This App Do?
-
-**In Simple Terms:**
-1. You see a civic problem (pothole, garbage pile, broken streetlight, etc.)
-2. Open the app and take a photo
-3. The app automatically gets your GPS location
-4. Choose if you want to tweet about it or keep it private
-5. Submit! The app tags the right government authorities on Twitter
-6. Track the issue and see when it gets fixed
-
-Think of it as "Instagram for Civic Problems" - but instead of likes, you get results from authorities.
-
-## Why This App is Different 🌟
-
-### 1. Smart Privacy Options
-You decide how public or private you want to be:
-
-**Option A: Anonymous via @CivicVigilance** (Recommended)
-- ✅ No Twitter account needed
-- ✅ Your identity is protected
-- ✅ Still notifies authorities
-- Perfect for: People who want to help but stay private
-
-**Option B: Tweet from Your Account**
-- ✅ Build your civic reputation
-- ✅ Your followers see your good work
-- ✅ Full credit for making your city better
-- Perfect for: Activists and civic leaders
-
-**Option C: App Only (No Twitter)**
-- ✅ 100% private
-- ✅ Only visible to other app users
-- ⚠️ Authorities won't see it on Twitter
-- Perfect for: Just tracking issues in your neighborhood
-
-### 2. Finds the Right Officials Automatically
-Don't know who to tag? We do!
-
-The app uses your GPS location to automatically find and tag:
-- Your local ward office (e.g., @BBMP_Ward23)
-- City municipal account (e.g., @BBMPCOMM)
-- Relevant departments (e.g., @BlrCityPolice for traffic issues)
-
-**How it works:** GPS → Geohash → Matches your location with government authority database → Tags the right officials
-
-### 3. Works Offline
-No internet? No problem!
-- Take photos and create reports offline
-- Everything saves locally
-- Auto-posts when you get back online
-
-### 4. Community Features
-Like Reddit, but for fixing your city:
-- Upvote important issues to get them noticed
-- Comment and discuss solutions
-- See what's trending in your area
-- Track issues from "Reported" to "Fixed"
-
-## What Can You Report?
-
-The app has 11 categories (with emojis for easy recognition):
-
-| Category | Emoji | Example |
-|----------|-------|---------|
-| Potholes | 🚧 | Deep holes on roads causing accidents |
-| Garbage | 🗑️ | Overflowing bins, illegal dumping |
-| Streetlights | 💡 | Broken or non-functional lights |
-| Drainage | 🌊 | Blocked drains, flooding issues |
-| Water Supply | 💧 | Leaking pipes, no water supply |
-| Sewage | 🚰 | Sewage overflows, open manholes |
-| Traffic Signals | 🚦 | Non-working signals, timing issues |
-| Encroachment | 🚧 | Illegal construction, road blocking |
-| Stray Animals | 🐕 | Animal welfare and safety concerns |
-| Parks | 🌳 | Park maintenance, broken equipment |
-| Other | ⚠️ | Anything else that needs attention |
-
-## Tech Stack (For Developers)
-
-Built with modern, reliable technologies:
-
-- **Mobile App**: React Native (Expo) - Works on iOS, Android, and Web
-- **Database**: Firebase Firestore - Real-time, scalable cloud database
-- **Authentication**: Firebase Auth - Secure user login
-- **Storage**: Firebase Cloud Storage - For photos
-- **Backend Logic**: Firebase Cloud Functions - Server-side operations
-- **Social Integration**: Twitter API v2 - For posting and tagging
-- **Maps**: Google Maps - For location and geocoding
-- **Offline Support**: SQLite - Local database for offline mode
-
-## How to Use the App (User Guide)
-
-### Step 1: Sign Up
-- Open the app
-- Create account with email and password
-- Or sign in with Google (optional)
-
-### Step 2: Report an Issue
-1. **Tap the camera button** (big + icon at bottom)
-2. **Take a photo** of the problem
-   - The app shows your live location at the top
-   - Don't worry about angles - just capture the issue clearly
-3. **Add details**:
-   - Give it a short title (e.g., "Big pothole on MG Road")
-   - Add description if needed
-   - Select category (Pothole, Garbage, etc.)
-4. **Choose privacy level**:
-   - Anonymous via @CivicVigilance (Recommended)
-   - Tweet from your account
-   - Keep it app-only
-5. **Submit!**
-
-The app automatically:
-- Tags your GPS coordinates
-- Finds the right government officials
-- Posts to Twitter (if you chose that option)
-- Saves everything to track progress
-
-### Step 3: Follow and Engage
-- **Upvote** issues you care about (helps prioritize)
-- **Comment** to add information or discuss
-- **Share** on social media to get more attention
-- **Track** status updates: Reported → Acknowledged → In Progress → Resolved
-
-### Step 4: Check Your Impact
-Go to your **Profile** to see:
-- All your reports
-- How many got resolved
-- Your civic contribution score
-- Notifications when authorities respond
+<p align="center">
+  <img src="https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Twitter_API-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" />
+</p>
 
 ---
 
-# Developer Setup Guide 👨‍💻
+## 🎯 What is CivicVigilance?
 
-> **Below this line is for developers who want to run/modify the app**
+A mobile app that lets citizens report civic issues (potholes, garbage, broken infrastructure) and **automatically** notifies authorities through Twitter, WhatsApp, Instagram, Facebook, and other platforms.
 
-## Quick Start (3 Steps)
+Think of it as **"Twitter for Civic Issues"** - but with smart authority tagging, multi-platform reach, and community engagement.
 
-### Step 1: Install Dependencies
+### 🎬 How It Works (30 Seconds)
 
-**What you need:**
-- Node.js 18 or newer ([Download here](https://nodejs.org/))
-- A code editor like VS Code
-- iOS Simulator (Mac only) or Android Studio (any OS)
+```
+1. 📸 See a pothole? Take a photo
+2. 📍 GPS auto-captures location
+3. 🔒 Choose privacy level (Anonymous/Personal/App-Only)
+4. 🤖 AI matches relevant authorities
+5. 🚀 Post to Twitter/WhatsApp/etc OR keep private
+6. 👥 Community upvotes = More pressure
+```
 
-**Install the app:**
+---
+
+## ✨ Key Features
+
+### 🛡️ **3-Tier Privacy System** (Our Core Innovation)
+
+Choose how you want your voice heard:
+
+| Option | Who Posts | Your Identity | Authorities Reach |
+|--------|-----------|---------------|-------------------|
+| **🛡️ Via @CivicVigilance** | Official account | **Protected** | ✅ Twitter + Multi-platform |
+| **👤 Via My Twitter** | Your account | **Public** | ✅ From your profile |
+| **🔒 App Only** | No one | **100% Private** | ❌ Community only |
+
+**Why this matters:** Not everyone feels safe publicly reporting. We protect whistleblowers while maximizing impact.
+
+---
+
+### 🤖 **Smart Authority Matching**
+
+Don't know who to tag? We do.
+
+```
+Your Location (GPS)
+  → Geohash Encoding
+  → Database Query
+  → Match by Category
+  → Top 5 Authorities
+```
+
+**Example:**
+```
+Pothole in Indiranagar, Bangalore
+  ↓
+@BBMPCOMM (City Corporation)
+@BlrCityTraffic (Traffic Police)
+@BWSSB_Official (Water Board)
+```
+
+**Multi-Platform Contacts:**
+- 🐦 Twitter handles
+- 💚 WhatsApp Business numbers
+- 📘 Facebook pages
+- 📧 Email addresses
+- 📞 Helpline numbers
+
+---
+
+### 📱 **Multi-Platform Authority Contact**
+
+Beyond just Twitter tagging:
+
+```
+🐦 Twitter: @BBMPCOMM
+💚 WhatsApp: +91 80226-60000 (Business Verified)
+📘 Facebook: BBMP.Bengaluru (Verified)
+📧 Email: commissioner@bbmp.gov.in
+📞 Toll-Free: 1800-425-2368
+🌐 Website: bbmp.gov.in
+```
+
+**One tap to contact via any platform!**
+
+---
+
+### 🗳️ **Community Amplification**
+
+The more people care, the louder it gets:
+
+- **Upvote** issues to boost visibility
+- **Comment** to add information
+- **Share** on social media
+- **Track** Twitter engagement (views, retweets, replies)
+
+**Community Impact Dashboard:**
+```
+234 Upvotes | 45 Comments | 67 Shares | 12.5K Twitter Views
+```
+
+---
+
+### 📍 **Offline Support**
+
+No internet? No problem.
+
+- Take photos offline
+- Queue reports locally (SQLite)
+- Auto-sync when online
+- Optimistic UI updates
+
+---
+
+### 📊 **11 Issue Categories**
+
+🚧 Potholes • 🗑️ Garbage • 💡 Streetlights • 🌊 Drainage
+💧 Water Supply • 🚰 Sewage • 🚦 Traffic Signals • 🚧 Encroachment
+🐕 Stray Animals • 🌳 Parks • ⚠️ Other
+
+---
+
+## 🏗️ Tech Stack (High-Level)
+
+```
+┌─────────────────────────────────────────┐
+│           FRONTEND (Mobile)             │
+│  React Native + Expo + TypeScript       │
+│  Cross-platform: iOS, Android, Web      │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│         BACKEND (Supabase)              │
+│  • PostgreSQL + PostGIS: Database       │
+│  • Auth: Google Sign-In, Email/Password │
+│  • Storage: Photo uploads               │
+│  • Edge Functions: Twitter posting      │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│       INTEGRATIONS (APIs)               │
+│  • Twitter API v2: Public posting       │
+│  • Google Maps: Geocoding               │
+│  • WhatsApp Business: Direct messaging  │
+└─────────────────────────────────────────┘
+```
+
+**Why These Choices?**
+- ✅ **React Native**: Single codebase for iOS/Android/Web
+- ✅ **Supabase**: PostgreSQL power, unlimited reads, better free tier
+- ✅ **TypeScript**: Type safety = fewer bugs
+- ✅ **Expo**: Simplifies builds and deployments
+
+---
+
+## 🚀 Quick Start (For Developers)
+
+### Prerequisites
+
 ```bash
-# Clone the project
+Node.js 18+
+npm or yarn
+Expo CLI
+```
+
+### 1. Clone & Install
+
+```bash
 git clone https://github.com/Vijendrapratap/Civic-Vigilance.git
 cd Civic-Vigilance
-
-# Install dependencies
 npm install
-
-# Install Expo CLI globally
-npm install -g expo-cli
 ```
 
-### Step 2: Configure Services
+### 2. Configure Environment
 
-You need API keys for these services (all free to start):
-
-1. **Firebase** (Database & Auth) - [Get started](https://console.firebase.google.com/)
-2. **Twitter API** (For posting) - [Apply here](https://developer.twitter.com/)
-3. **Google Maps** (For location) - [Get API key](https://console.cloud.google.com/)
-
-Copy the example environment file:
 ```bash
 cp .env.example .env
+# Add your API keys (Supabase, Google Maps, Twitter)
 ```
 
-Then fill in your API keys in the `.env` file (see detailed setup below).
+**Required API Keys:**
+- 💚 **Supabase**: [supabase.com/dashboard](https://supabase.com/dashboard) - Follow [SUPABASE_SETUP.md](documentations/SUPABASE_SETUP.md)
+- 🗺️ **Google Maps**: [console.cloud.google.com](https://console.cloud.google.com)
+- 🐦 **Twitter** (Optional): [developer.twitter.com](https://developer.twitter.com)
 
-### Step 3: Run the App
+### 3. Run
 
 ```bash
-# Start the development server
 npm start
 
 # Then press:
-# i - for iOS simulator
-# a - for Android emulator
-# w - for web browser
+# 'i' for iOS Simulator
+# 'a' for Android Emulator
+# 'w' for Web Browser
 ```
 
-That's it! The app should now be running.
+**Test Account:**
+```
+Email: test@civic.com
+Username: TestCitizen_2024
+(See lib/seedData.ts for 10+ pre-loaded issues)
+```
+
+### 📚 Documentation
+
+- **[SUPABASE_SETUP.md](documentations/SUPABASE_SETUP.md)** - Complete backend setup guide (15 min)
+- **[TESTING.md](documentations/TESTING.md)** - Comprehensive testing checklist
+- **[Technical Guides](documentations/)** - Architecture and reference docs
+  - [Backend Architecture](documentations/guides/BACKEND.md)
+  - [Frontend Architecture](documentations/guides/FRONTEND.md)
 
 ---
 
-## Detailed Setup Instructions
+## 📱 Key Screens
 
-### Firebase Setup (15 minutes)
+### 1. **Feed Screen** (Home)
+- Sort: Nearby / Newest / Trending
+- Distance calculation (e.g., "2.3 km away")
+- Twitter badges (🐦 Posted / 🔒 App Only)
+- Upvote, Comment, Share buttons
 
-**What is Firebase?** It's Google's backend service - handles database, authentication, and file storage for you.
-
-1. **Create a Firebase project:**
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Click "Add project"
-   - Name it: "civic-vigilance" (or anything you like)
-   - Follow the setup wizard (disable Google Analytics if you want)
-
-2. **Enable required services:**
-
-   **Authentication** (for user login):
-   - In Firebase Console, go to Authentication
-   - Click "Get Started"
-   - Enable "Email/Password"
-   - Enable "Google" (optional but recommended)
-
-   **Firestore Database** (stores reports, comments, etc.):
-   - Go to Firestore Database
-   - Click "Create database"
-   - Choose "Start in test mode" (we'll add security later)
-   - Select a region close to your users
-
-   **Storage** (for photos):
-   - Go to Storage
-   - Click "Get started"
-   - Use default security rules for now
-
-   **Cloud Functions** (optional for now):
-   - Only needed for Twitter posting
-   - Can skip initially and test app without Twitter features
-
-3. **Get your Firebase config:**
-   - Click the gear icon → Project settings
-   - Scroll down to "Your apps"
-   - Click the Web icon `</>`
-   - Copy the config values
-   - Paste them into your `.env` file
-
-### Twitter API Setup (20 minutes)
-
-**What is Twitter API?** Allows the app to post tweets and tag authorities automatically.
-
-**Note:** You can skip this initially and test the app without Twitter features. Choose "App Only" mode when submitting reports.
-
-1. **Apply for Twitter Developer Account:**
-   - Go to [Twitter Developer Portal](https://developer.twitter.com/)
-   - Sign in with your Twitter account
-   - Apply for a developer account (takes 5-10 mins)
-   - Explain: "Building a civic engagement app"
-
-2. **Create a Twitter App:**
-   - After approval, create a new project
-   - Create a new app inside the project
-   - Give it a name: "Civic Vigilance"
-
-3. **Set up OAuth 2.0:**
-   - Go to app settings → User authentication
-   - Click "Set up"
-   - Enable OAuth 2.0
-   - Add callback URL: `civicvigilance://oauth/twitter`
-   - Permissions: Read and Write
-   - Copy the **Client ID** to your `.env` file
-
-### Google Maps Setup (5 minutes)
-
-**What is Google Maps API?** Converts GPS coordinates into readable addresses.
-
-1. **Enable the API:**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project (or use existing)
-   - Go to "APIs & Services" → "Library"
-   - Search and enable:
-     - Maps SDK for Android
-     - Maps SDK for iOS
-     - Geocoding API
-
-2. **Create API Key:**
-   - Go to "APIs & Services" → "Credentials"
-   - Click "Create Credentials" → "API Key"
-   - Copy the key to your `.env` file
-   - **Important:** Restrict the key to only the APIs you enabled
-
-### Environment Configuration
-
-Your `.env` file should look like this:
-
-```bash
-# ============================================
-# Firebase Configuration (REQUIRED)
-# ============================================
-# Get these from Firebase Console → Project Settings → General
-EXPO_PUBLIC_FIREBASE_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXX
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdefgh
-EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
-
-# ============================================
-# Google Maps (REQUIRED)
-# ============================================
-EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXX
-
-# ============================================
-# Twitter API (OPTIONAL - can skip for testing)
-# ============================================
-EXPO_PUBLIC_TWITTER_CLIENT_ID=your_client_id_here
-EXPO_PUBLIC_TWITTER_REDIRECT_URI=civicvigilance://oauth/twitter
-EXPO_PUBLIC_CIVIC_VIGILANCE_TWITTER_HANDLE=@CivicVigilance
-
-# ============================================
-# Backend Settings
-# ============================================
-EXPO_PUBLIC_BACKEND_MODE=firebase
-# Leave this empty for local development:
-EXPO_PUBLIC_API_URL=
+### 2. **5-Stage Reporting Flow**
+```
+Stage 1: 📸 Camera + GPS Overlay
+Stage 2: 📝 Title + Description + Category
+Stage 3: 🔒 Privacy Selection (3 tiers)
+Stage 4: 👀 Preview with Authority Tags
+Stage 5: ✅ Success + View Tweet
 ```
 
-**What each does:**
-- **Firebase keys**: Connect to your database and auth
-- **Google Maps key**: Convert GPS to readable addresses
-- **Twitter keys**: Post tweets (optional for initial testing)
-- **Backend mode**: Set to "firebase" to use cloud database
+### 3. **Issue Detail Screen**
+- Full-size photos (16:9 ratio)
+- **Community Impact** metrics
+- Twitter Amplification Card (if posted publicly)
+- 5-level threaded comments
+- One-tap authority contact
+
+### 4. **Settings Screen**
+- Account (Username, Email)
+- Connected Accounts (Google, Twitter)
+- Privacy Preferences
+- Notification Settings (8 types)
+- Terms of Service + Privacy Policy
 
 ---
 
-## How the App Works (Technical Flow)
+## 🧠 Smart Features
 
-### The 5-Stage Reporting Process
+### Geohash-Based Matching
 
-```
-📸 Capture → 📝 Details → 🔒 Privacy → 👀 Preview → ✅ Submit
-```
-
-### Stage 1: Photo Capture
-**What happens:**
-- Camera opens with live GPS overlay at the top
-- Shows your current address, coordinates, and accuracy
-- Take a photo of the problem
-- GPS location is automatically recorded
-
-**Behind the scenes:**
-- Uses `expo-location` for GPS tracking
-- Reverse geocodes coordinates to readable address
-- If no GPS, shows "Locating..." and waits
-- On iOS Simulator (no camera), uses a sample image
-
-### Stage 2: Add Details
-**What you fill in:**
-- Title: Short description (e.g., "Big pothole on MG Road")
-- Category: Select from 11 options (Pothole, Garbage, etc.)
-- Description: Optional additional info
-
-**Behind the scenes:**
-- Validates required fields (photo, title, location)
-- Location can be refreshed if you moved
-- Photo can be retaken if needed
-
-### Stage 3: Choose Privacy (THE KEY FEATURE)
-**Three options appear:**
-
-| Option | Who Posts | Your Identity | Authorities Notified |
-|--------|-----------|---------------|---------------------|
-| 🛡️ **Via @CivicVigilance** | Official account | Protected | ✅ Yes (on Twitter) |
-| 👤 **Via My Twitter** | Your account | Public | ✅ Yes (from you) |
-| 🔒 **App Only** | No one | 100% Private | ❌ No (app only) |
-
-**Behind the scenes:**
-- Choice is saved in database
-- "Remember my choice" checkbox saves preference
-- Personal Twitter option checks if account is connected
-
-### Stage 4: Preview & Submit
-**What you see:**
-- Formatted tweet preview with:
-  - Emoji + category
-  - Your title and description
-  - GPS coordinates and Google Maps link
-  - Tagged authorities (e.g., @BBMP_Ward23, @BBMPCOMM)
-  - #CivicVigilance hashtag
-
-**Behind the scenes:**
-- `lib/authorities.ts` → `findAuthorities()` runs:
-  1. Converts GPS to geohash (for efficient matching)
-  2. Queries Firestore for authorities at that location
-  3. Filters by issue category
-  4. Returns top 5 most relevant authorities
-- Tweet text is composed with `lib/twitter.ts` → `composeTweetText()`
-- Photo is uploaded to Firebase Storage
-- If offline, queues in `pendingTwitterPosts` collection
-
-### Stage 5: Success!
-**What you see:**
-- Confirmation screen
-- Link to tweet (if posted)
-- "View in Feed" button
-
-**Behind the scenes:**
-- Report saved to Firestore `reports` collection
-- If Twitter enabled:
-  - Cloud Function calls Twitter API v2
-  - Posts from chosen account
-  - Saves tweet ID and URL
-- Report appears in Home Feed for others to see
-- You get notifications when status changes
-
----
-
-## Understanding the Code Structure
-
-### Important Files (For Developers)
-
-```
-📁 screens/
-  └── TwitterOptionsScreen.tsx    ⭐ The screen with 3 privacy options
-
-📁 lib/
-  ├── twitter.ts                  ⭐ Composes tweets, handles OAuth
-  ├── authorities.ts              ⭐ Intelligent authority matching
-  ├── geohash.ts                  📍 GPS → Geohash conversion
-  ├── firebase.ts                 🔥 Firebase initialization
-  └── location.ts                 📍 GPS tracking, geocoding
-
-📁 types/
-  └── index.ts                    📝 All TypeScript types
-
-📁 docs/
-  ├── firestore-schema.md         📊 Database structure explained
-  └── firestore.rules             🔒 Security rules
-
-📁 components/
-  └── ui/                         🎨 Reusable UI components
-```
-
-### Key Algorithms Explained
-
-#### 1. Authority Matching (`lib/authorities.ts`)
-
-**Problem:** How to find the right government officials for any location?
-
-**Solution:**
-```
-User reports pothole at GPS: 12.97160, 77.59456 (Bangalore)
-                    ↓
-Step 1: Convert to Geohash → "tdnu20qr"
-Step 2: Query Firestore authorities where:
-        - geohashes contains "tdnu20"
-        - issueCategories contains "pothole"
-        - status == "active"
-Step 3: Sort by priority:
-        1. Ward offices (most specific)
-        2. City offices
-        3. Departments
-        4. State/National
-Step 4: Return top 5 authorities
-                    ↓
-Result: [@BBMP_Ward23, @BBMPCOMM, @BlrCityPolice]
+```typescript
+GPS: 12.9716°N, 77.5946°E
+  → Geohash: "tdr1"
+  → Query: authorities WHERE geohashes CONTAINS "tdr1"
+  → Filter: issueCategories CONTAINS "pothole"
+  → Result: [@BBMPCOMM, @BlrCityTraffic]
 ```
 
 **Why Geohash?**
-- Converts GPS coordinates to a string
+- Converts GPS to string (e.g., "tdr1x2y3")
 - Nearby locations have similar strings
 - Makes database queries super fast
-- Example: "tdnu20qr" ≈ 38m × 19m area
+- Precision: 4 chars = ~20km area
 
-#### 2. Tweet Composition (`lib/twitter.ts`)
+### Platform-Specific Messaging
 
-Takes report data and formats it perfectly:
+**Twitter (280 char limit):**
+```
+🚨 Deep pothole on 100 Feet Road
+
+📍 Indiranagar, Bangalore
+
+2-foot deep pothole causing accidents...
+
+@BBMPCOMM @BlrCityTraffic #CivicVigilance
+```
+
+**WhatsApp (rich format):**
+```
+🚨 *Deep pothole on 100 Feet Road*
+
+📍 *Location:* Indiranagar, Bangalore, Karnataka
+
+📝 *Details:* 2-foot deep pothole causing accidents...
+
+🏷️ *Category:* Potholes
+
+_Reported via CivicVigilance_
+```
+
+**Email (formal):**
+```
+Dear Sir/Madam,
+
+I would like to report the following civic issue:
+
+**Issue:** Deep pothole on 100 Feet Road
+**Location:** Indiranagar, Bangalore, Karnataka
+**Category:** Potholes
+
+**Description:**
+2-foot deep pothole causing accidents...
+
+Sincerely,
+A Concerned Citizen
+```
+
+---
+
+## 📊 Database Schema (Simplified)
 
 ```typescript
-Input: {
-  category: 'pothole',
-  title: 'Big pothole on MG Road',
-  address: '123 MG Road, Bangalore',
-  lat: 12.97160,
-  lng: 77.59456,
-  authorities: ['@BBMP_Ward23', '@BBMPCOMM']
-}
+// PostgreSQL Tables (via Supabase)
 
-Output tweet:
-"🚧 Pothole reported on Dec 17, 2025, 3:45 PM
+users
+  ├── username: "TestCitizen_2024"
+  ├── email: "test@civic.com"
+  ├── twitterConnected: false
+  └── stats: { totalPosts: 12, totalUpvotes: 245 }
 
-📍 123 MG Road, Bangalore
-🗺 GPS: 12.97160, 77.59456
-https://maps.google.com/?q=12.97160,77.59456
+issues/{issueId}
+  ├── title: "Deep pothole on 100 Feet Road"
+  ├── photos: ["url1", "url2"]
+  ├── location: { lat, lng, address, geohash }
+  ├── privacy: "civic_vigilance" | "personal" | "none"
+  ├── authorities: ["@BBMPCOMM", "@BlrCityTraffic"]
+  ├── tweetUrl: "https://twitter.com/..."
+  └── metrics: { upvotes, comments, shares, twitterImpressions }
 
-@BBMP_Ward23 @BBMPCOMM
+authorities/{authorityId}
+  ├── name: "BBMP"
+  ├── socialMedia: {
+  │     twitter: { handle: "@BBMPCOMM", verified: true }
+  │     whatsapp: { number: "+918022660000" }
+  │     facebook: { handle: "BBMP.Bengaluru" }
+  │   }
+  ├── jurisdiction: { city, state, geohashes: ["tdr1"] }
+  └── issueCategories: ["pothole", "garbage", ...]
 
-Please take immediate action.
-
-Reported by: John Doe via Civic Vigilance
-
-#CivicVigilance"
+comments/{commentId}
+  ├── issueId: "issue123"
+  ├── userId: "user456"
+  ├── text: "I saw this too!"
+  └── parentId: null  // or commentId for nested replies
 ```
-
-### Database Structure (Simplified)
-
-**Think of Firebase Firestore like folders:**
-
-```
-📂 users/
-  └── user123/
-      ├── name: "John Doe"
-      ├── email: "john@email.com"
-      ├── twitterConnected: true
-      └── totalReports: 5
-
-📂 reports/
-  └── report456/
-      ├── title: "Big pothole"
-      ├── imageUrl: "https://..."
-      ├── lat: 12.97160
-      ├── lng: 77.59456
-      ├── twitterMethod: "civic_vigilance"
-      ├── twitterUrl: "https://twitter.com/..."
-      ├── status: "reported"
-      └── upvotes: 23
-
-📂 authorities/
-  └── bbmp_ward23/
-      ├── name: "BBMP Ward 23"
-      ├── handle: "@BBMP_Ward23"
-      ├── geohashes: ["tdnu20", "tdnu21"]
-      └── categories: ["pothole", "garbage", ...]
-
-📂 comments/
-  └── comment789/
-      ├── reportId: "report456"
-      ├── userId: "user123"
-      ├── text: "I saw this too!"
-      └── createdAt: <timestamp>
-```
-
-See `docs/firestore-schema.md` for complete technical documentation.
 
 ---
 
-## Testing
+## 🎨 Design Philosophy
 
-### Manual Testing Checklist
+### Colors (PRD Compliant)
+- **Civic Blue:** `#2563EB` (Primary actions, links)
+- **Vibrant Orange:** `#FF6B3D` (Upvotes, alerts)
+- **Fresh Green:** `#34D399` (Success, shares)
+- **Twitter Blue:** `#1DA1F2` (Twitter features)
+- **Soft White:** `#F4F4F5` (Card backgrounds)
 
-Core Features:
-- [ ] Photo capture with live GPS overlay
-- [ ] Offline report creation and sync queue
-- [ ] Twitter Options Screen displays all 3 methods correctly
-- [ ] Authority geo-matching returns relevant handles
-- [ ] Tweet composition format matches specification
-- [ ] Personal Twitter OAuth connection flow
-- [ ] Report submission to Firestore
-- [ ] Home feed sorting (Trending/Newest)
-- [ ] Upvote/downvote with optimistic updates
-- [ ] Threaded comments with replies
-- [ ] Push notifications for status updates
+### Typography
+- **Titles:** 700 weight, proper line height
+- **Body:** 15-16px, readable spacing
+- **Metadata:** 12-14px, lighter colors
 
-Twitter Posting:
-- [ ] Civic Vigilance method posts from @CivicVigilance account
-- [ ] Personal method posts from user's connected Twitter
-- [ ] None method skips Twitter, saves to Firestore only
-- [ ] Remember choice checkbox saves preference
+### Interactions
+- Optimistic updates (votes, comments)
+- Smooth animations (Animated API)
+- Proper loading states
+- Error boundaries with fallbacks
 
-Authority Matching:
-- [ ] Ward-level authorities matched for Bangalore ward 23
-- [ ] City-level authorities matched for Bangalore
-- [ ] Category-specific filtering (pothole → Roads dept)
-- [ ] Fallback to sample data when Firebase empty
+---
 
-### Run Automated Tests
+## 📦 Project Structure
 
-```bash
-npm test
+```
+civic-vigilance/
+├── screens/               # Main screens (Feed, Report, Detail, Settings)
+├── components/            # Reusable UI components
+├── lib/                   # Core utilities
+│   ├── authoritiesData.ts         # Authority database (16 authorities, 6 cities)
+│   ├── smartAuthorities.ts        # Geohash matching algorithm
+│   ├── authorityContactManager.ts # Multi-platform contact utilities
+│   ├── geohash.ts                 # GPS ↔ Geohash conversion
+│   ├── seedData.ts                # Test data (10 issues, 3 users)
+│   └── supabase.ts                # Supabase client
+├── types/                 # TypeScript types
+├── documentations/        # All documentation and guides
+└── .env.example           # Environment template
 ```
 
-## Troubleshooting
+---
 
-### Common Issues
+## 🧪 Testing
 
-**Issue**: "Twitter OAuth redirect not working"
-- **Solution**: Ensure callback URI matches exactly: `civicvigilance://oauth/twitter` in both Twitter Developer Portal and `.env` file
+### Pre-loaded Test Data
 
-**Issue**: "Authority matching returns no results"
-- **Solution**:
-  - Verify authorities collection is seeded in Firestore
-  - Check geohash indexing on authorities collection
-  - Ensure GPS coordinates are valid (lat: -90 to 90, lng: -180 to 180)
+**Test Account:** `test@civic.com` / `TestCitizen_2024`
 
-**Issue**: "Firebase permission denied"
-- **Solution**:
-  - Deploy latest security rules: `firebase deploy --only firestore:rules`
-  - Check user is authenticated before writing
-  - Verify user owns the report being modified
+**10 Realistic Issues:**
+- Bangalore: Deep pothole, garbage overflow, streetlight, drainage, water supply, park
+- Mumbai: Western Express Highway pothole
+- Delhi: Traffic signal at Connaught Place
+- Chennai: Sewage overflow on Anna Salai
+- All with real photos, GPS, engagement metrics
 
-**Issue**: "Photos not uploading to Firebase Storage"
-- **Solution**:
-  - Check Firebase Storage bucket is created
-  - Verify storage rules allow authenticated writes
-  - Ensure `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET` is set correctly
+**3 Test Users:**
+- TestCitizen_2024 (verified journalist)
+- Anonymous_Citizen_4523 (privacy-focused)
+- CivicActivist_BLR (verified NGO)
 
-**Issue**: "Expo start fails with environment variable errors"
-- **Solution**:
-  - Verify `.env` file exists (copy from `.env.example`)
-  - Restart dev server with cache clear: `expo start -c`
-  - Check all required `EXPO_PUBLIC_*` variables are set
-
-## Deployment
-
-### Deploy to Production
-
-#### Build the App
+### Run Tests
 
 ```bash
-# iOS (requires macOS and Apple Developer account)
-eas build --platform ios
-
-# Android
-eas build --platform android
-
-# Submit to stores
-eas submit --platform ios
-eas submit --platform android
+npm test           # Unit tests
+npm run lint       # Code quality
+npm run typecheck  # TypeScript validation
 ```
 
-#### Deploy Cloud Functions
+---
 
-```bash
-# Deploy all functions
-firebase deploy --only functions
+## 🔒 Legal & Compliance
 
-# Deploy specific function
-firebase deploy --only functions:postTweetFromCivicAccount
+- ✅ **Terms of Service** (`screens/TermsOfServiceScreen.tsx`)
+- ✅ **Privacy Policy** (`screens/PrivacyPolicyScreen.tsx`)
+- ✅ **GDPR Compliant** (user rights: access, delete, export, opt-out)
+- ✅ **App Store Ready** (legal requirements met)
 
-# View logs
-firebase functions:log
-```
+**Key Privacy Points:**
+- NO background location tracking
+- User controls all data sharing
+- Anonymous mode protects identity
+- Data deletion on request
 
-#### Deploy Security Rules
+---
 
-```bash
-# Deploy Firestore rules
-firebase deploy --only firestore:rules
+## 🛣️ Roadmap
 
-# Deploy Storage rules
-firebase deploy --only storage:rules
-```
+### ✅ Phase 1 & 2 (Complete)
+- 5-stage reporting flow
+- 3-tier privacy system
+- Smart authority matching
+- Multi-platform contact
+- Feed with sorting
+- Comprehensive settings
 
-#### Environment Configuration
+### 🔄 Phase 3 (Current)
+- Feed UI enhancements
+- Community Impact dashboard
+- Twitter amplification cards
+- 5-level threaded comments
 
-For production:
-1. Set `EXPO_PUBLIC_BACKEND_MODE=firebase` in `.env`
-2. Configure production Firebase project
-3. Set up @CivicVigilance Twitter credentials in Cloud Functions config
-4. Enable proper CORS and API key restrictions
-5. Configure OAuth redirect URIs for production domain
+### 📅 Phase 4 (Next)
+- Twitter OAuth for "Via My Twitter"
+- Native share functionality
+- Deep linking (Supabase deep links)
+- Analytics dashboard
 
-## Design Architecture
+### 🚀 Phase 5 (Future)
+- WhatsApp Business API integration
+- Push notifications
+- Map view with clustering
+- Gamification (badges, leaderboards)
+- Multi-language support
 
-### Component Structure
-- Small, reusable components in `components/`
-- Screen-level layouts in `screens/`
-- Custom hooks for data and session logic in `hooks/`
-- Platform services centralized in `lib/`
+---
 
-### UI/UX Principles
-- Feed follows Reddit patterns for familiarity (chips, counts, nested threads)
-- Report flow emphasizes GPS accuracy with live overlay
-- Twitter Options Screen uses clear radio buttons and benefit lists
-- Profile matches standard social app patterns
+## 🤝 Contributing
 
-### Offline Support
-- SQLite fallback for offline operation
-- Reports queue in `pendingTwitterPosts` collection
-- Background sync when connectivity restored
-- Optimistic UI updates for votes and comments
+We welcome contributions! Here's how:
 
-## Permissions
+1. **Fork** the repo
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Commit** changes: `git commit -m 'Add amazing feature'`
+4. **Push** to branch: `git push origin feature/amazing-feature`
+5. **Open** a Pull Request
 
-The app requests the following permissions:
+**Code Standards:**
+- TypeScript for type safety
+- ESLint + Prettier for formatting
+- Follow existing patterns
+- Add tests for new features
 
-- **Camera**: Capture evidence photos of civic issues
-- **Location (While Using)**: Auto-tag reports with accurate GPS coordinates
-- **Notifications (Optional)**: Status updates when authorities respond
+---
 
-## Contributing
+## 📞 Support
 
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/my-feature`
-3. Follow existing code style and patterns
-4. Add tests for new features
-5. Update documentation as needed
-6. Commit changes: `git commit -m "Add my feature"`
-7. Push to branch: `git push origin feature/my-feature`
-8. Submit pull request with detailed description
+- **Issues:** [GitHub Issues](https://github.com/Vijendrapratap/Civic-Vigilance/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/Vijendrapratap/Civic-Vigilance/discussions)
+- **Email:** support@civicvigilance.com
+- **Twitter:** [@CivicVigilance](https://twitter.com/CivicVigilance)
 
-## Roadmap
+---
 
-### Phase 1 (Current)
-- ✅ Core reporting flow with GPS capture
-- ✅ Three Twitter posting methods
-- ✅ Intelligent authority geo-matching
-- ✅ Firebase backend integration
-- ✅ Community engagement (upvotes, comments)
+## 📄 License
 
-### Phase 2 (Planned)
-- [ ] Nearby sort using distance calculations
-- [ ] Map view with clustering and heat map
-- [ ] Authority response tracking via Twitter webhooks
-- [ ] Push notifications for status updates
-- [ ] Weekly civic digest emails
+MIT License - see [LICENSE](LICENSE) file for details.
 
-### Phase 3 (Future)
-- [ ] Media moderation with ML content filtering
-- [ ] Spam detection and user blocking
-- [ ] Authority performance dashboard
-- [ ] Gamification (badges, leaderboards)
-- [ ] Multi-language support
+---
 
-## License
+## 🙏 Acknowledgments
 
-MIT License - see LICENSE file for details
-
-## Support
-
-- **Documentation**: See `/docs` folder for detailed specifications
-- **Issues**: https://github.com/Vijendrapratap/Civic-Vigilance/issues
-- **Email**: support@civicvigilance.app
-- **Twitter**: [@CivicVigilance](https://twitter.com/CivicVigilance)
-
-## Acknowledgments
-
-Built with React Native, Expo, Firebase, and Twitter API v2. Designed to empower civic engagement through technology and transparency.
+Built with ❤️ using:
+- React Native & Expo
+- Supabase (PostgreSQL + PostGIS)
+- Twitter API v2
+- Google Maps API
+- Unsplash (test images)
 
 Special thanks to:
-- Government authorities who engage with citizen reports
-- Community contributors and testers
-- Open source maintainers of our dependencies
+- Government authorities who engage with citizens
+- Open source community
+- Early testers and contributors
 
 ---
 
-**Made with ❤️ for better cities and empowered citizens**
+<p align="center">
+  <strong>Made for better cities and empowered citizens</strong><br>
+  🏙️ Report Issues • 📢 Amplify Voices • 🤝 Build Community
+</p>
+
+<p align="center">
+  <a href="#-quick-start-for-developers">Get Started</a> •
+  <a href="#-key-features">Features</a> •
+  <a href="#-tech-stack-high-level">Tech Stack</a> •
+  <a href="#-contributing">Contribute</a>
+</p>

@@ -84,35 +84,78 @@ export function ensureSchema() {
   const db = getDB();
   db.withTransactionSync?.(() => {
     db.execSync?.(`PRAGMA foreign_keys = ON;`);
-    // users & profiles
+
+    // users & profiles (PRD Section 7.2)
     db.execSync?.(`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT NOT NULL UNIQUE,
+      email TEXT UNIQUE,
       password_hash TEXT NOT NULL,
       created_at TEXT NOT NULL
     );`);
+
     db.execSync?.(`CREATE TABLE IF NOT EXISTS profiles (
       user_id INTEGER PRIMARY KEY,
-      full_name TEXT,
+      username TEXT NOT NULL UNIQUE,
+      anonymous_mode INTEGER DEFAULT 1,
+      display_name TEXT,
       avatar_url TEXT,
+      bio TEXT,
+      city TEXT,
+      state TEXT,
+      twitter_connected INTEGER DEFAULT 0,
+      twitter_handle TEXT,
+      privacy_default TEXT DEFAULT 'civic_vigilance',
+      always_ask_twitter_method INTEGER DEFAULT 1,
+      is_verified INTEGER DEFAULT 0,
+      verification_type TEXT,
+      total_posts INTEGER DEFAULT 0,
+      total_upvotes INTEGER DEFAULT 0,
+      total_comments INTEGER DEFAULT 0,
+      total_shares INTEGER DEFAULT 0,
+      notif_nearby INTEGER DEFAULT 1,
+      notif_comments INTEGER DEFAULT 1,
+      notif_upvotes INTEGER DEFAULT 1,
+      notif_twitter INTEGER DEFAULT 1,
       created_at TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     );`);
-    // issues
+
+    // reports/issues (PRD Section 7.2)
     db.execSync?.(`CREATE TABLE IF NOT EXISTS issues (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       title TEXT NOT NULL,
       description TEXT,
       category TEXT NOT NULL,
-      image_url TEXT,
-      lat REAL, lng REAL, address TEXT,
+      photos TEXT DEFAULT '[]',
+      lat REAL NOT NULL,
+      lng REAL NOT NULL,
+      address TEXT NOT NULL,
+      geohash TEXT NOT NULL,
+      privacy TEXT DEFAULT 'civic_vigilance',
+      twitter_handle TEXT,
+      authorities TEXT DEFAULT '[]',
+      tweet_id TEXT,
+      tweet_url TEXT,
+      status TEXT DEFAULT 'pending',
+      anonymous_username TEXT NOT NULL,
       upvotes INTEGER NOT NULL DEFAULT 0,
       downvotes INTEGER NOT NULL DEFAULT 0,
+      comments_count INTEGER DEFAULT 0,
+      shares_count INTEGER DEFAULT 0,
+      twitter_impressions INTEGER,
+      flagged INTEGER DEFAULT 0,
+      reviewed INTEGER DEFAULT 0,
+      moderation_status TEXT DEFAULT 'active',
       created_at TEXT NOT NULL,
+      updated_at TEXT,
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     );`);
+
     db.execSync?.(`CREATE INDEX IF NOT EXISTS idx_issues_created ON issues(created_at DESC);`);
+    db.execSync?.(`CREATE INDEX IF NOT EXISTS idx_issues_category ON issues(category);`);
+    db.execSync?.(`CREATE INDEX IF NOT EXISTS idx_issues_geohash ON issues(geohash);`);
+
     // votes
     db.execSync?.(`CREATE TABLE IF NOT EXISTS votes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -124,25 +167,58 @@ export function ensureSchema() {
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY(issue_id) REFERENCES issues(id) ON DELETE CASCADE
     );`);
-    // comments
+
+    // comments (with nesting up to 5 levels - PRD 5.4)
     db.execSync?.(`CREATE TABLE IF NOT EXISTS comments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       issue_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
       parent_id INTEGER,
       content TEXT NOT NULL,
+      likes INTEGER DEFAULT 0,
+      edited INTEGER DEFAULT 0,
       created_at TEXT NOT NULL,
+      updated_at TEXT,
       FOREIGN KEY(issue_id) REFERENCES issues(id) ON DELETE CASCADE,
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY(parent_id) REFERENCES comments(id) ON DELETE CASCADE
     );`);
+
     db.execSync?.(`CREATE INDEX IF NOT EXISTS idx_comments_issue ON comments(issue_id);`);
-    // authorities (optional)
+    db.execSync?.(`CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);`);
+
+    // authorities (PRD Section 7.3 - geohash-based matching)
     db.execSync?.(`CREATE TABLE IF NOT EXISTS authorities (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      handle TEXT NOT NULL,
-      region TEXT
+      twitter_handle TEXT NOT NULL,
+      jurisdiction_type TEXT,
+      city TEXT,
+      state TEXT,
+      geohashes TEXT DEFAULT '[]',
+      issue_categories TEXT DEFAULT '[]',
+      priority INTEGER DEFAULT 2,
+      status TEXT DEFAULT 'active'
+    );`);
+
+    db.execSync?.(`CREATE INDEX IF NOT EXISTS idx_authorities_city ON authorities(city);`);
+
+    // pending_twitter_posts (offline queue - PRD 7.4)
+    db.execSync?.(`CREATE TABLE IF NOT EXISTS pending_twitter_posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      report_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      method TEXT NOT NULL,
+      tweet_text TEXT NOT NULL,
+      image_url TEXT,
+      authorities TEXT DEFAULT '[]',
+      attempts INTEGER DEFAULT 0,
+      last_attempt_at TEXT,
+      error TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(report_id) REFERENCES issues(id) ON DELETE CASCADE,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
     );`);
   });
 }

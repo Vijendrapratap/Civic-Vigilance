@@ -1,0 +1,230 @@
+/**
+ * Smart Authority Matching Algorithm
+ * PRD Section 7.3 - Authority Matching Algorithm
+ *
+ * Logic Flow:
+ * 1. Parse address to extract city, state, PIN code
+ * 2. Convert GPS to geohash (precision 4 = ~20km)
+ * 3. Query authorities by geohash prefix
+ * 4. Fallback hierarchy: exact → city → state → national
+ * 5. Filter by category compatibility
+ * 6. Sort by priority (1=primary, 2=secondary, 3=fallback)
+ * 7. Return top 3-5 handles
+ */
+
+import { encodeGeohash } from './geohash';
+import { AUTHORITIES_SEED_DATA } from './authoritiesData';
+import { IssueCategory } from '../types';
+
+interface MatchedAuthority {
+  handle: string;
+  name: string;
+  confidence: number; // 0-1 based on match quality
+  matchReason: string; // For debugging
+}
+
+/**
+ * Parse Indian address to extract components
+ * Format: "Casa Rio Gold Road, Kalyan, Maharashtra, 421204, India"
+ */
+function parseAddress(address: string): {
+  city: string | null;
+  state: string | null;
+  pinCode: string | null;
+} {
+  const parts = address.split(',').map((p) => p.trim());
+
+  // Extract PIN code (6 digits)
+  const pinCode = parts.find((p) => /^\d{6}$/.test(p)) || null;
+
+  // Common Indian states
+  const indianStates = [
+    'maharashtra',
+    'karnataka',
+    'delhi',
+    'tamil nadu',
+    'telangana',
+    'andhra pradesh',
+    'gujarat',
+    'rajasthan',
+    'west bengal',
+    'madhya pradesh',
+    'uttar pradesh',
+    'kerala',
+    'punjab',
+    'haryana',
+  ];
+
+  const state =
+    parts.find((p) => indianStates.includes(p.toLowerCase())) || null;
+
+  // City is typically before state
+  const stateIndex = state ? parts.findIndex((p) => p.toLowerCase() === state.toLowerCase()) : -1;
+  const city = stateIndex > 0 ? parts[stateIndex - 1] : parts[0];
+
+  return { city, state, pinCode };
+}
+
+/**
+ * Find authorities based on GPS coordinates, address, and issue category
+ *
+ * @param lat - Latitude
+ * @param lng - Longitude
+ * @param address - Full address string
+ * @param category - Issue category
+ * @returns Array of matched authority handles with confidence scores
+ */
+export function findAuthorities(
+  lat: number,
+  lng: number,
+  address: string,
+  category: IssueCategory
+): MatchedAuthority[] {
+  const matches: MatchedAuthority[] = [];
+
+  // Step 1: Parse address
+  const { city, state, pinCode } = parseAddress(address);
+
+  console.log('[SmartAuthorities] Parsed address:', { city, state, pinCode });
+
+  // Step 2: Convert GPS to geohash (precision 4 for ~20km area)
+  const geohash = encodeGeohash(lat, lng, 4);
+  const geohashPrefix = geohash.substring(0, 4);
+
+  console.log('[SmartAuthorities] Geohash:', geohash, 'Prefix:', geohashPrefix);
+
+  // Step 3: Match authorities by geohash
+  const geohashMatches = AUTHORITIES_SEED_DATA.filter((auth) => {
+    // Check if any of the authority's geohashes match our location
+    return auth.jurisdiction.geohashes.some((authGeohash) =>
+      authGeohash.startsWith(geohashPrefix.substring(0, 3)) // Match first 3 chars (~150km)
+    );
+  });
+
+  // Add geohash matches
+  geohashMatches.forEach((auth) => {
+    if (auth.issueCategories.includes(category) && auth.socialMedia?.twitter?.active) {
+      matches.push({
+        handle: auth.socialMedia.twitter.handle || '',
+        name: auth.name,
+        confidence: auth.priority === 1 ? 0.9 : 0.7,
+        matchReason: 'Geohash + Category match',
+      });
+    }
+  });
+
+  // Step 4: Fallback - Match by city
+  if (city && matches.length < 3) {
+    const cityMatches = AUTHORITIES_SEED_DATA.filter(
+      (auth) =>
+        auth.jurisdiction.city?.toLowerCase() === city.toLowerCase() &&
+        auth.issueCategories.includes(category)
+    );
+
+    cityMatches.forEach((auth) => {
+      // Avoid duplicates and check Twitter is active
+      if (!matches.find((m) => m.handle === auth.socialMedia?.twitter?.handle) && auth.socialMedia?.twitter?.active) {
+        matches.push({
+          handle: auth.socialMedia.twitter.handle || '',
+          name: auth.name,
+          confidence: auth.priority === 1 ? 0.8 : 0.6,
+          matchReason: 'City + Category match',
+        });
+      }
+    });
+  }
+
+  // Step 5: Fallback - Match by state
+  if (state && matches.length < 3) {
+    const stateMatches = AUTHORITIES_SEED_DATA.filter(
+      (auth) =>
+        auth.jurisdiction.state?.toLowerCase() === state.toLowerCase() &&
+        auth.issueCategories.includes(category)
+    );
+
+    stateMatches.forEach((auth) => {
+      if (!matches.find((m) => m.handle === auth.socialMedia?.twitter?.handle) && auth.socialMedia?.twitter?.active) {
+        matches.push({
+          handle: auth.socialMedia.twitter.handle || '',
+          name: auth.name,
+          confidence: auth.priority === 1 ? 0.6 : 0.4,
+          matchReason: 'State + Category match',
+        });
+      }
+    });
+  }
+
+  // Step 6: Fallback - National level (generic)
+  if (matches.length < 2) {
+    const nationalMatches = AUTHORITIES_SEED_DATA.filter(
+      (auth) =>
+        auth.jurisdiction.type === 'national' &&
+        auth.issueCategories.includes(category)
+    );
+
+    nationalMatches.forEach((auth) => {
+      if (!matches.find((m) => m.handle === auth.socialMedia?.twitter?.handle) && auth.socialMedia?.twitter?.active) {
+        matches.push({
+          handle: auth.socialMedia.twitter.handle || '',
+          name: auth.name,
+          confidence: 0.3,
+          matchReason: 'National fallback',
+        });
+      }
+    });
+  }
+
+  // Step 7: Sort by confidence and return top 5
+  const sorted = matches
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 5);
+
+  console.log('[SmartAuthorities] Matched authorities:', sorted);
+
+  return sorted;
+}
+
+/**
+ * Get authority handles only (for tweet composition)
+ */
+export function getAuthorityHandles(
+  lat: number,
+  lng: number,
+  address: string,
+  category: IssueCategory
+): string[] {
+  const authorities = findAuthorities(lat, lng, address, category);
+  return authorities.map((auth) => auth.handle);
+}
+
+/**
+ * Get matched authorities with details
+ */
+export function getMatchedAuthoritiesWithDetails(
+  lat: number,
+  lng: number,
+  address: string,
+  category: IssueCategory
+): MatchedAuthority[] {
+  return findAuthorities(lat, lng, address, category);
+}
+
+/**
+ * Validate if a Twitter handle exists in our database
+ */
+export function validateAuthorityHandle(handle: string): boolean {
+  const normalizedHandle = handle.startsWith('@') ? handle : `@${handle}`;
+  return AUTHORITIES_SEED_DATA.some(
+    (auth) => auth.socialMedia?.twitter?.handle?.toLowerCase() === normalizedHandle.toLowerCase()
+  );
+}
+
+/**
+ * Get authority info by handle
+ */
+export function getAuthorityByHandle(handle: string) {
+  const normalizedHandle = handle.startsWith('@') ? handle : `@${handle}`;
+  return AUTHORITIES_SEED_DATA.find(
+    (auth) => auth.socialMedia?.twitter?.handle?.toLowerCase() === normalizedHandle.toLowerCase()
+  );
+}

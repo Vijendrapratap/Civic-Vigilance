@@ -6,10 +6,9 @@
  * government authority Twitter handles for tagging in reports.
  */
 
-import { db } from './firebase';
-import { collection, query, where, getDocs, limit as firestoreLimit } from 'firebase/firestore';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { Authority, IssueCategory } from '../types';
-import { encodeGeohash, getNeighbors } from './geohash';
+import { encodeGeohash } from './geohash';
 
 /**
  * Category to department mapping (from PDF)
@@ -30,7 +29,7 @@ const CATEGORY_DEPARTMENT_MAP: Record<IssueCategory, string[]> = {
 
 /**
  * Sample authority data for demonstration
- * In production, this would be populated from Firestore
+ * Used as fallback when Supabase is not configured
  */
 const SAMPLE_AUTHORITIES: Partial<Authority>[] = [
   {
@@ -119,54 +118,43 @@ export async function findAuthorities(params: {
     // Step 2: Query database for authorities
     const authorities: Authority[] = [];
 
-    if (db) {
-      // Query Firestore for authorities
-      const authoritiesRef = collection(db, 'authorities');
-
+    if (isSupabaseConfigured) {
+      // Query Supabase for authorities
       // Priority 1: Ward-level match
-      const wardQuery = query(
-        authoritiesRef,
-        where('jurisdiction.geohashes', 'array-contains', geohashPrefix),
-        where('issueCategories', 'array-contains', category),
-        where('status', '==', 'active'),
-        firestoreLimit(5)
-      );
+      const { data: wardData } = await supabase
+        .from('authorities')
+        .select('*')
+        .contains('geohashes', [geohashPrefix])
+        .contains('issue_categories', [category])
+        .eq('status', 'active')
+        .limit(5);
 
-      const wardSnapshot = await getDocs(wardQuery);
-      wardSnapshot.forEach((doc) => {
-        const data = doc.data() as Authority;
-        authorities.push({ ...data, id: doc.id });
-      });
+      if (wardData) {
+        authorities.push(...(wardData as Authority[]));
+      }
 
       // Priority 2: City-level match (if ward not found or need secondary)
       if (city && authorities.length < 3) {
-        const cityQuery = query(
-          authoritiesRef,
-          where('jurisdiction.city', '==', city),
-          where('jurisdiction.type', '==', 'city'),
-          where('issueCategories', 'array-contains', category),
-          where('status', '==', 'active'),
-          firestoreLimit(2)
-        );
+        const { data: cityData } = await supabase
+          .from('authorities')
+          .select('*')
+          .eq('city', city)
+          .eq('jurisdiction_type', 'city')
+          .contains('issue_categories', [category])
+          .eq('status', 'active')
+          .limit(2);
 
-        const citySnapshot = await getDocs(cityQuery);
-        citySnapshot.forEach((doc) => {
-          const data = doc.data() as Authority;
-          if (!authorities.find((a) => a.id === doc.id)) {
-            authorities.push({ ...data, id: doc.id });
-          }
-        });
-      }
-
-      // Priority 3: Department-specific
-      const departments = CATEGORY_DEPARTMENT_MAP[category] || [];
-      if (departments.length > 0 && authorities.length < 5) {
-        // Query by department type - would need additional field in schema
-        // For now, skip or use fallback
+        if (cityData) {
+          cityData.forEach((auth) => {
+            if (!authorities.find((a) => a.id === auth.id)) {
+              authorities.push(auth as Authority);
+            }
+          });
+        }
       }
     }
 
-    // Fallback to sample data if no Firebase or no results
+    // Fallback to sample data if no Supabase or no results
     if (authorities.length === 0) {
       // Use sample data for demonstration
       const matchingAuthorities = SAMPLE_AUTHORITIES.filter((auth) => {
@@ -199,15 +187,16 @@ export function suggestAuthorities(region?: string): string[] {
  * Get authority performance metrics
  */
 export async function getAuthorityMetrics(authorityId: string): Promise<Authority['metrics'] | null> {
-  if (!db) return null;
+  if (!isSupabaseConfigured) return null;
 
   try {
-    const authDoc = await getDocs(query(collection(db, 'authorities'), where('id', '==', authorityId), firestoreLimit(1)));
+    const { data } = await supabase
+      .from('authorities')
+      .select('metrics')
+      .eq('id', authorityId)
+      .single();
 
-    if (authDoc.empty) return null;
-
-    const data = authDoc.docs[0].data() as Authority;
-    return data.metrics;
+    return data?.metrics || null;
   } catch (error) {
     console.error('Error fetching authority metrics:', error);
     return null;
@@ -216,10 +205,10 @@ export async function getAuthorityMetrics(authorityId: string): Promise<Authorit
 
 /**
  * Verify if a Twitter handle is active
- * (Would be implemented in Cloud Functions with actual Twitter API calls)
+ * (Would be implemented in Supabase Edge Functions with actual Twitter API calls)
  */
 export async function verifyTwitterHandle(handle: string): Promise<boolean> {
-  // This should be a Cloud Function call
+  // This should be a Supabase Edge Function call
   try {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL || '';
     const response = await fetch(`${apiUrl}/verifyTwitterHandle`, {
@@ -240,14 +229,14 @@ export async function verifyTwitterHandle(handle: string): Promise<boolean> {
 
 /**
  * Update authority response status when they interact on Twitter
- * (Called from Cloud Functions monitoring Twitter)
+ * (Called from Supabase Edge Functions monitoring Twitter)
  */
 export async function recordAuthorityResponse(params: {
   reportId: string;
   authorityId: string;
   responseType: 'reply' | 'like' | 'retweet';
 }): Promise<void> {
-  // This would update the report in Firestore
-  // Implementation depends on Firebase Cloud Functions
+  // This would update the report in Supabase
+  // Implementation depends on Supabase Edge Functions
   console.log('Authority response recorded:', params);
 }
