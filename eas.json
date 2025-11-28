@@ -26,7 +26,16 @@
         "simulator": false
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_MODE": "supabase"
+        "EXPO_PUBLIC_BACKEND_MODE": "supabase",
+        "EXPO_PUBLIC_TWITTER_CLIENT_ID": "aEhsd0tub3BVeHVtZjVmTmNFNXY6MTpjaQ",
+        "EXPO_PUBLIC_TWITTER_REDIRECT_URI": "civicvigilance://oauth/twitter",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyAmSXkjqIrjTspZ4D884CQiWG_G_mNRif8",
+        "EXPO_PUBLIC_APP_NAME": "Civic Vigilance",
+        "EXPO_PUBLIC_CIVIC_VIGILANCE_TWITTER_HANDLE": "@CivicVigilance",
+        "EXPO_PUBLIC_API_URL": "https://endrnbacxyjpxvgxhpjj.supabase.co/functions/v1",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://endrnbacxyjpxvgxhpjj.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuZHJuYmFjeHlqcHh2Z3hocGpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NjY5NjcsImV4cCI6MjA3OTI0Mjk2N30.gU26yKkEPo9Gykv0BOZxwktH-mSpX3FxkC4rgoV6BYw",
+        "EXPO_PUBLIC_AUTO_GUEST": "false"
       }
     },
     "production": {

@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "CivicVigilance",
+    "name": "Civic Vigilance",
     "slug": "civicvigilance",
     "scheme": "civicvigilance",
     "version": "0.1.0",
     "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
