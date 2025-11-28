@@ -12,6 +12,9 @@ export type IssueCategory =
   | 'parks'
   | 'other';
 
+// Category key type for mapping
+export type CategoryKey = IssueCategory;
+
 // Twitter posting methods - core feature per PRD (3-tier privacy system)
 export type TwitterPostingMethod = 'civic_vigilance' | 'personal' | 'none';
 
@@ -152,8 +155,11 @@ export interface Authority {
   name: string;
   nameLocal?: string;
 
+  // Backward compatibility - direct twitter handle
+  twitter?: string;
+
   // Social Media Platforms (multi-platform support for better reach)
-  socialMedia: {
+  socialMedia?: {
     twitter?: SocialPlatformHandle;
     whatsapp?: {
       number: string; // Format: +91XXXXXXXXXX
@@ -202,6 +208,11 @@ export interface Authority {
     averageResponseTime?: number; // in hours
     totalIssuesAddressed?: number;
     lastActive?: Date;
+  };
+
+  metrics?: {
+    totalIssuesAddressed?: number;
+    averageResponseTime?: number;
   };
 
   status: 'active' | 'inactive';
@@ -279,7 +290,7 @@ export interface PendingTwitterPost {
 export type Issue = Report;
 
 // Extended Issue type with optional display properties from joined data
-export interface IssueWithUserData extends Report {
+export interface IssueWithUserData extends Omit<Report, 'createdAt'> {
   isVerified?: boolean; // From user join
   commentsCount?: number; // Computed field
   shares?: number; // From metrics or computed
@@ -287,5 +298,7 @@ export interface IssueWithUserData extends Report {
   downvotes?: number; // From metrics.downvotes
   imageUrl?: string; // First photo from photos array
   address?: string; // From location.address
-  createdAt: Date | string; // Can be string from Firestore
+  lat?: number; // From location.lat
+  lng?: number; // From location.lng
+  createdAt: Date | string; // Can be string from database
 }

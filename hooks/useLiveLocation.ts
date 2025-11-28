@@ -23,6 +23,6 @@ export function useLiveLocation() {
     return () => { watchSub.current?.remove(); };
   }, []);
 
-  return { coords, address, permissionStatus };
+  return { coords, address, accuracy: coords?.accuracy, permissionStatus };
 }
 

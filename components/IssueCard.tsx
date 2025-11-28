@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import { Issue } from '../types';
+import { IssueWithUserData } from '../types';
 import { castVote, getUserVote } from '../lib/votes';
 import { composePostText, shareImageWithText, openTweetComposer } from '../lib/sharing';
 import ActionBar from './ActionBar';
 import { colors } from '../lib/theme';
 
-export default function IssueCard({ item, onPress }: { item: Issue; onPress?: () => void }) {
+export default function IssueCard({ item, onPress }: { item: IssueWithUserData; onPress?: () => void }) {
   const [vote, setVote] = useState<-1 | 0 | 1>(0);
   const [up, setUp] = useState(item.upvotes ?? 0);
   const [down, setDown] = useState(item.downvotes ?? 0);

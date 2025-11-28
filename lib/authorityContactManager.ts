@@ -158,7 +158,7 @@ export function getAuthorityContactOptions(authority: Authority): ContactOption[
 export function getTwitterHandles(authorities: Authority[]): string[] {
   return authorities
     .filter(auth => auth.socialMedia?.twitter?.active)
-    .map(auth => auth.socialMedia.twitter!.handle || '')
+    .map(auth => auth.socialMedia?.twitter?.handle || '')
     .filter(handle => handle !== '');
 }
 
@@ -168,7 +168,7 @@ export function getTwitterHandles(authorities: Authority[]): string[] {
 export function getWhatsAppNumbers(authorities: Authority[]): string[] {
   return authorities
     .filter(auth => auth.socialMedia?.whatsapp?.active)
-    .map(auth => auth.socialMedia.whatsapp!.number)
+    .map(auth => auth.socialMedia?.whatsapp?.number || '')
     .filter(num => num !== '');
 }
 

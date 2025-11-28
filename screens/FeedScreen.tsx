@@ -87,7 +87,7 @@ export default function FeedScreen() {
         renderItem={({ item }) => (
           <EnhancedIssueCard
             item={item}
-            distance={getDistance(item.lat, item.lng)}
+            distance={getDistance((item as any).lat ?? item.location.lat, (item as any).lng ?? item.location.lng)}
             onPress={() => navigation.navigate('PostDetail', { id: item.id })}
           />
         )}

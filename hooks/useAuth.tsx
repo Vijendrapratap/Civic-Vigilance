@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session: supabaseSession } }) => {
+    supabase.auth.getSession().then(({ data: { session: supabaseSession } }: { data: { session: any } }) => {
       if (supabaseSession) {
         setSession({
           user: {
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Set up Supabase auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, supabaseSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, supabaseSession: any) => {
       if (supabaseSession) {
         // User is signed in
         setSession({

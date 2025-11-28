@@ -36,12 +36,7 @@ const SAMPLE_AUTHORITIES: Partial<Authority>[] = [
     id: 'bbmp_ward_23',
     name: 'BBMP Ward 23 Office',
     nameLocal: 'ಬಿಬಿಎಂಪಿ ವಾರ್ಡ್ 23',
-    twitter: {
-      handle: '@BBMP_Ward23',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@BBMP_Ward23',
     jurisdiction: {
       type: 'ward',
       level: 4,
@@ -58,12 +53,7 @@ const SAMPLE_AUTHORITIES: Partial<Authority>[] = [
   {
     id: 'bbmp_comm',
     name: 'BBMP Official Account',
-    twitter: {
-      handle: '@BBMPCOMM',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@BBMPCOMM',
     jurisdiction: {
       type: 'city',
       level: 3,
@@ -78,12 +68,7 @@ const SAMPLE_AUTHORITIES: Partial<Authority>[] = [
   {
     id: 'blr_city_police',
     name: 'Bangalore Traffic Police',
-    twitter: {
-      handle: '@BlrCityPolice',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@BlrCityPolice',
     jurisdiction: {
       type: 'department',
       level: 3,
@@ -145,7 +130,7 @@ export async function findAuthorities(params: {
           .limit(2);
 
         if (cityData) {
-          cityData.forEach((auth) => {
+          cityData.forEach((auth: any) => {
             if (!authorities.find((a) => a.id === auth.id)) {
               authorities.push(auth as Authority);
             }

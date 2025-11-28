@@ -35,14 +35,8 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   {
     name: 'BBMP (Bruhat Bengaluru Mahanagara Palike)',
     nameLocal: 'ಬೃಹತ್ ಬೆಂಗಳೂರು ಮಹಾನಗರ ಪಾಲಿಕೆ',
+    twitter: '@BBMPCOMM',
     socialMedia: {
-      twitter: {
-        handle: '@BBMPCOMM',
-        verified: true,
-        active: true,
-        lastChecked: new Date(),
-        url: 'https://twitter.com/BBMPCOMM',
-      },
       facebook: {
         handle: 'BBMP.Bengaluru',
         verified: true,
@@ -92,14 +86,8 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'Bangalore Traffic Police',
+    twitter: '@BlrCityTraffic',
     socialMedia: {
-      twitter: {
-        handle: '@BlrCityTraffic',
-        verified: true,
-        active: true,
-        lastChecked: new Date(),
-        url: 'https://twitter.com/BlrCityTraffic',
-      },
       facebook: {
         handle: 'BangaloreTrafficPolice',
         verified: true,
@@ -146,14 +134,8 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'BWSSB (Bangalore Water Supply)',
+    twitter: '@BWSSB_Official',
     socialMedia: {
-      twitter: {
-        handle: '@BWSSB_Official',
-        verified: false,
-        active: true,
-        lastChecked: new Date(),
-        url: 'https://twitter.com/BWSSB_Official',
-      },
       whatsapp: {
         number: '+918025533555',
         businessVerified: false,
@@ -180,12 +162,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   {
     name: 'BMC (Brihanmumbai Municipal Corporation)',
     nameLocal: 'बृहन्मुंबई महानगरपालिका',
-    twitter: {
-      handle: '@mybmc',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@mybmc',
     jurisdiction: {
       type: 'city',
       level: 3,
@@ -213,12 +190,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'Mumbai Traffic Police',
-    twitter: {
-      handle: '@MTPHereToHelp',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@MTPHereToHelp',
     jurisdiction: {
       type: 'department',
       level: 3,
@@ -238,12 +210,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   {
     name: 'Kalyan Dombivli Municipal Corporation',
     nameLocal: 'कल्याण डोंबिवली महानगरपालिका',
-    twitter: {
-      handle: '@kdmc_kalyan',
-      verified: false,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@kdmc_kalyan',
     jurisdiction: {
       type: 'city',
       level: 3,
@@ -272,12 +239,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'Thane Police (Kalyan Division)',
-    twitter: {
-      handle: '@KalyanPolice',
-      verified: false,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@KalyanPolice',
     jurisdiction: {
       type: 'department',
       level: 3,
@@ -296,12 +258,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   // ========================================
   {
     name: 'MCD (Municipal Corporation of Delhi)',
-    twitter: {
-      handle: '@MCD_Delhi',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@MCD_Delhi',
     jurisdiction: {
       type: 'city',
       level: 3,
@@ -328,12 +285,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'Delhi Traffic Police',
-    twitter: {
-      handle: '@dtptraffic',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@dtptraffic',
     jurisdiction: {
       type: 'department',
       level: 3,
@@ -348,12 +300,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'Delhi Jal Board',
-    twitter: {
-      handle: '@DelhiJalBoard',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@DelhiJalBoard',
     jurisdiction: {
       type: 'department',
       level: 3,
@@ -373,12 +320,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   {
     name: 'Greater Chennai Corporation',
     nameLocal: 'பெரும் சென்னை மாநகராட்சி',
-    twitter: {
-      handle: '@chennaicorp',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@chennaicorp',
     jurisdiction: {
       type: 'city',
       level: 3,
@@ -406,12 +348,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'Chennai Traffic Police',
-    twitter: {
-      handle: '@ChennaiTPNews',
-      verified: false,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@ChennaiTPNews',
     jurisdiction: {
       type: 'department',
       level: 3,
@@ -431,12 +368,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   {
     name: 'GHMC (Greater Hyderabad Municipal Corporation)',
     nameLocal: 'గ్రేటర్ హైదరాబాద్ మునిసిపల్ కార్పొరేషన్',
-    twitter: {
-      handle: '@GHMCOnline',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@GHMCOnline',
     jurisdiction: {
       type: 'city',
       level: 3,
@@ -464,12 +396,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   },
   {
     name: 'Hyderabad Traffic Police',
-    twitter: {
-      handle: '@HYDTP',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@HYDTP',
     jurisdiction: {
       type: 'department',
       level: 3,
@@ -488,12 +415,7 @@ export const AUTHORITIES_SEED_DATA: Omit<Authority, 'id' | 'createdAt' | 'update
   // ========================================
   {
     name: 'MyGov India',
-    twitter: {
-      handle: '@mygovindia',
-      verified: true,
-      active: true,
-      lastChecked: new Date(),
-    },
+    twitter: '@mygovindia',
     jurisdiction: {
       type: 'national',
       level: 1,
