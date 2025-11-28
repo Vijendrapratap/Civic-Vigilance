@@ -1,7 +1,46 @@
-node_modules
-.expo
-.expo-shared
-dist
-build
-.DS_Store
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Build outputs
+build/
+*.log
+*.lock
+
+# Environment variables
 .env
+.env.local
+.env.*.local
+twitter-credentials.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Supabase
+.supabase/
+supabase/.temp/
+
+# Testing
+coverage/
+
+# Duplicates and old folders
+Civic-Vigilance/
+
+# Temporary files
+*.tmp
+.cache/
