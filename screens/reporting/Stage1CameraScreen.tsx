@@ -71,7 +71,10 @@ export default function Stage1CameraScreen({ onContinue, onCancel }: Props) {
 
       const res = unsupported
         ? { uri: 'https://picsum.photos/seed/civic/1200/800' }
-        : await cameraRef.current?.takePictureAsync({ quality: 0.7, skipProcessing: true });
+        : await cameraRef.current?.takePictureAsync({
+            quality: 0.92,  // High quality for evidence (92%)
+            skipProcessing: true  // Fast capture
+          });
 
       if (res?.uri) {
         setPhotos([...photos, res.uri]);
@@ -91,8 +94,9 @@ export default function Stage1CameraScreen({ onContinue, onCancel }: Props) {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.7,
+        quality: 0.92,  // High quality for evidence
         allowsEditing: true,
+        allowsMultipleSelection: false,
       });
 
       if (!result.canceled && result.assets[0]) {
