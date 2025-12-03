@@ -8,11 +8,13 @@
  */
 
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../hooks/useAuth';
 import { TwitterPostingMethod, CategoryKey } from '../types';
 import { generateAnonymousUsername } from '../lib/username';
+import { createIssue } from '../hooks/useIssues';
+import { uploadPhotos } from '../lib/storage';
 
 // Import all 5 stage screens
 import Stage1CameraScreen from './reporting/Stage1CameraScreen';
@@ -92,37 +94,63 @@ export default function ReportIssueScreenV2() {
   // Stage 4: Preview -> Submit -> Stage 5: Success
   const handleStage4Submit = async () => {
     try {
-      // TODO: Implement actual submission
-      // 1. Upload photos to Firebase Storage
-      // 2. Create Firestore document
-      // 3. Post to Twitter (if privacy !== 'none')
-      // 4. Queue for offline if network fails
+      console.log('[Report] Starting submission...');
 
-      // Simulate submission
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Validate required fields
+      if (!reportData.title || !reportData.category) {
+        throw new Error('Missing required fields: title or category');
+      }
+
+      // Step 1: Upload photos to Supabase Storage
+      console.log('[Report] Uploading photos...');
+      const photoUrls = await uploadPhotos(reportData.photos, 'issues');
+      console.log('[Report] Photos uploaded:', photoUrls);
+
+      // Step 2: Create issue in database
+      console.log('[Report] Creating issue in database...');
+      const issueData = await createIssue({
+        title: reportData.title,
+        description: reportData.description || '',
+        category: reportData.category,
+        image_url: photoUrls[0], // Database expects single URL, use first photo
+        lat: reportData.coords.lat,
+        lng: reportData.coords.lng,
+        address: reportData.address,
+      });
+
+      console.log('[Report] Issue created:', issueData);
+
+      // Step 3: Post to Twitter (if privacy !== 'none')
+      // TODO: Implement Twitter posting in future update
+      // For now, we just save the issue to the database
+      let tweetUrl: string | undefined;
+      if (reportData.privacy !== 'none') {
+        console.log('[Report] Twitter posting not yet implemented');
+        // Future: Call Twitter API or queue for backend processing
+        tweetUrl = undefined; // Will implement Twitter API later
+      }
 
       // Generate anonymous username for this post
       const anonymousUsername = session?.user
         ? generateAnonymousUsername()
         : 'Anonymous_Citizen_0000';
 
-      // Simulate response
-      const issueId = 'issue_' + Date.now();
-      const tweetUrl =
-        reportData.privacy !== 'none'
-          ? 'https://twitter.com/CivicVigilance/status/123456789'
-          : undefined;
-
+      // Update report data with submission results
       setReportData({
         ...reportData,
-        issueId,
+        issueId: issueData.id,
         tweetUrl,
       });
 
+      console.log('[Report] Submission successful!');
       setCurrentStage(5);
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Report] Submission error:', error);
-      // TODO: Show error alert
+      Alert.alert(
+        'Submission Failed',
+        error.message || 'Failed to submit your report. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 

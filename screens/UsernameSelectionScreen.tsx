@@ -30,6 +30,7 @@ import {
   suggestAlternativeUsernames,
   isAnonymousUsername,
 } from '../lib/username';
+import { saveProfile } from '../lib/profile';
 
 export default function UsernameSelectionScreen() {
   const navigation = useNavigation();
@@ -72,25 +73,28 @@ export default function UsernameSelectionScreen() {
     setIsSaving(true);
 
     try {
-      // TODO: Save username to Firestore/database
-      // For now, we'll just simulate saving
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!session?.user?.id) {
+        throw new Error('No user session found');
+      }
 
-      // In production, this would:
-      // 1. Check uniqueness in Firestore
-      // 2. Create/update user profile with username
-      // 3. Set anonymousMode flag
-      // 4. Navigate to main app
-
-      console.log('[UsernameSelection] Username chosen:', {
+      // Save username to profile
+      console.log('[UsernameSelection] Saving username to profile...', {
         username: finalUsername,
         anonymousMode: isAnonymous,
-        userId: session?.user?.id,
+        userId: session.user.id,
       });
 
-      // For now, just show success and let auth flow continue
-      // In production, this would trigger a profile update that
-      // would cause the Root navigator to show AppTabs
+      // Update user profile with username
+      await saveProfile({
+        id: session.user.id,
+        full_name: finalUsername,
+        // Note: We're storing username in full_name field for now
+        // In future, you might want to add a separate username column
+      });
+
+      console.log('[UsernameSelection] Username saved successfully!');
+
+      // Show success message
       Alert.alert(
         'Welcome!',
         `Your username has been set to: ${finalUsername}`,
@@ -98,16 +102,15 @@ export default function UsernameSelectionScreen() {
           {
             text: 'Continue',
             onPress: () => {
-              // Navigation will automatically update when session state changes
-              // For now, we'll just go back (in production, profile update
-              // would trigger automatic navigation to AppTabs)
+              // Navigate back - the auth state will handle routing to main app
+              navigation.goBack();
             },
           },
         ]
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('[UsernameSelection] Error saving username:', error);
-      Alert.alert('Error', 'Failed to save username. Please try again.');
+      Alert.alert('Error', error.message || 'Failed to save username. Please try again.');
     } finally {
       setIsSaving(false);
     }
