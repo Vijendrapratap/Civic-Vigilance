@@ -34,7 +34,7 @@ import { saveProfile } from '../lib/profile';
 
 export default function UsernameSelectionScreen() {
   const navigation = useNavigation();
-  const { session } = useAuth();
+  const { session, refreshProfile } = useAuth();
   const [mode, setMode] = useState<'anonymous' | 'custom'>('anonymous');
   const [anonymousUsername, setAnonymousUsername] = useState(generateAnonymousUsername());
   const [customUsername, setCustomUsername] = useState('');
@@ -87,12 +87,15 @@ export default function UsernameSelectionScreen() {
       // Update user profile with username
       await saveProfile({
         id: session.user.id,
-        full_name: finalUsername,
+        full_name: finalUsername, // Storing in full_name as per current schema
         // Note: We're storing username in full_name field for now
-        // In future, you might want to add a separate username column
       });
 
-      console.log('[UsernameSelection] Username saved successfully!');
+      console.log('[UsernameSelection] Username saved successfully. Refreshing profile...');
+
+      await refreshProfile();
+
+      console.log('[UsernameSelection] Profile refreshed.');
 
       // Show success message
       Alert.alert(
@@ -102,8 +105,9 @@ export default function UsernameSelectionScreen() {
           {
             text: 'Continue',
             onPress: () => {
-              // Navigate back - the auth state will handle routing to main app
-              navigation.goBack();
+              // Navigate to the main app tabs
+              // @ts-ignore
+              navigation.navigate('AppTabs');
             },
           },
         ]

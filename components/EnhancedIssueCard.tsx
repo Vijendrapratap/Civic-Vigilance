@@ -37,7 +37,7 @@ function EnhancedIssueCard({ item, onPress, distance }: Props) {
   const [upvotes, setUpvotes] = useState(item.upvotes ?? 0);
 
   useEffect(() => {
-    getUserVote(item.id).then(setVote).catch(() => {});
+    getUserVote(item.id).then(setVote).catch(() => { });
   }, [item.id]);
 
   const onVote = useCallback(async (val: -1 | 1) => {
@@ -148,38 +148,53 @@ function EnhancedIssueCard({ item, onPress, distance }: Props) {
         </Text>
       </View>
 
-      {/* Action Bar */}
+      {/* Action Bar - Reddit Style Pills */}
       <View style={styles.actionBar}>
-        {/* Upvote Button */}
-        <Pressable
-          onPress={() => onVote(1)}
-          style={styles.voteButton}
-          hitSlop={8}
-        >
-          <Ionicons
-            name={vote === 1 ? 'arrow-up' : 'arrow-up-outline'}
-            size={24}
-            color={vote === 1 ? '#FF6B3D' : '#6B7280'}
-          />
-          <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>
+        {/* Vote Pill */}
+        <View style={styles.votePill}>
+          <Pressable
+            onPress={() => onVote(1)}
+            style={styles.pillBtn}
+            hitSlop={8}
+          >
+            <Ionicons
+              name={vote === 1 ? 'arrow-up' : 'arrow-up-outline'}
+              size={20}
+              color={vote === 1 ? '#FF4500' : '#E0E0E0'}
+            />
+          </Pressable>
+
+          <Text style={[styles.voteCount, vote !== 0 && styles.voteCountActive]}>
             {formatCount(upvotes)}
           </Text>
+
+          <Pressable
+            onPress={() => onVote(-1)}
+            style={styles.pillBtn}
+            hitSlop={8}
+          >
+            <Ionicons
+              name={vote === -1 ? 'arrow-down' : 'arrow-down-outline'}
+              size={20}
+              color={vote === -1 ? '#7193FF' : '#E0E0E0'}
+            />
+          </Pressable>
+        </View>
+
+        {/* Comment Pill */}
+        <Pressable onPress={onPress} style={styles.pill} hitSlop={8}>
+          <Ionicons name="chatbubble-outline" size={18} color="#E0E0E0" />
+          <Text style={styles.pillText}>{formatCount(item.commentsCount || 0)}</Text>
         </Pressable>
 
-        {/* Comment Count */}
-        <Pressable onPress={onPress} style={styles.actionButton} hitSlop={8}>
-          <Ionicons name="chatbubble-outline" size={18} color="#6B7280" />
-          <Text style={styles.actionText}>{formatCount(item.commentsCount || 0)}</Text>
-        </Pressable>
-
-        {/* Share Button */}
+        {/* Share Pill */}
         <Pressable
           onPress={handleShare}
-          style={styles.actionButton}
+          style={styles.pill}
           hitSlop={8}
         >
-          <Ionicons name="share-outline" size={18} color="#2563EB" />
-          <Text style={styles.actionText}>Share</Text>
+          <Ionicons name="share-outline" size={18} color="#E0E0E0" />
+          <Text style={styles.pillText}>Share</Text>
         </Pressable>
       </View>
     </TouchableOpacity>
@@ -188,50 +203,53 @@ function EnhancedIssueCard({ item, onPress, distance }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F4F4F5', // Soft White per PRD
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-    minHeight: 280,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   categoryEmoji: {
     fontSize: 20,
-    marginRight: 6,
+    marginRight: 8,
   },
   category: {
     fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
-    textTransform: 'capitalize',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#23272F',
+    color: '#111827',
     marginBottom: 12,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   photo: {
     width: '100%',
-    height: 180, // 16:9 ratio approximation
+    height: 200,
     borderRadius: 12,
     marginBottom: 12,
+    backgroundColor: '#F3F4F6',
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
+    marginBottom: 12,
+    gap: 12,
   },
   metaItem: {
     flexDirection: 'row',
@@ -239,69 +257,86 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
   },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 4,
+    marginBottom: 16,
+    gap: 6,
   },
   username: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#4B5563',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
   },
   separator: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#9CA3AF',
-    marginHorizontal: 4,
   },
   timeAgo: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
   },
   privacyRow: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   privacyText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '600',
   },
   actionBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    paddingTop: 12,
+    gap: 8,
   },
-  voteButton: {
+  votePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    backgroundColor: '#27272a', // Dark pill background like image
+    borderRadius: 20,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    gap: 2,
+  },
+  pillBtn: {
+    padding: 6,
   },
   voteCount: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#6B7280',
+    color: '#FFFFFF', // White text on dark pill
+    minWidth: 20,
+    textAlign: 'center',
   },
   voteCountActive: {
-    color: '#FF6B3D', // Vibrant Orange per PRD
+    color: '#FF4500',
   },
-  actionButton: {
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    backgroundColor: '#27272a',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
   },
-  actionText: {
+  pillText: {
     fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#E0E0E0',
   },
 });
 

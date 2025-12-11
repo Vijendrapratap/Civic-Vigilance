@@ -12,26 +12,29 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { User as ProfileUser } from '../types';
 
-// User Session type
-interface User {
+// User Session type (Auth User)
+interface AuthUser {
   id: string;
   email: string | null;
 }
 
 interface SimpleSession {
-  user: User;
+  user: AuthUser;
 }
 
 type AuthSession = SimpleSession | null;
 
 interface AuthContextType {
   session: AuthSession;
+  profile: ProfileUser | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string; code?: string } | undefined>;
-  signUp: (email: string, password: string) => Promise<{ error?: string; code?: string } | undefined>;
+  signUp: (email: string, password: string) => Promise<{ data?: any; error?: string; code?: string }>;
   resetPassword: (email: string) => Promise<{ error?: string; code?: string } | undefined>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +53,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<AuthSession>(null);
+  const [profile, setProfile] = useState<ProfileUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Helper to fetch profile
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('[Auth] Error fetching profile:', error);
+        return null;
+      }
+      return data as ProfileUser;
+    } catch (e) {
+      console.error('[Auth] Exception fetching profile:', e);
+      return null;
+    }
+  };
 
   useEffect(() => {
     // Check if Supabase is configured
@@ -61,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session: supabaseSession } }: { data: { session: any } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: supabaseSession } }: { data: { session: any } }) => {
       if (supabaseSession) {
         setSession({
           user: {
@@ -69,23 +93,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: supabaseSession.user.email ?? null,
           },
         });
+        // Fetch profile
+        const userProfile = await fetchProfile(supabaseSession.user.id);
+        setProfile(userProfile);
       }
       setIsLoading(false);
     });
 
     // Set up Supabase auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, supabaseSession: any) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: any, supabaseSession: any) => {
       if (supabaseSession) {
         // User is signed in
-        setSession({
-          user: {
-            id: supabaseSession.user.id,
-            email: supabaseSession.user.email ?? null,
-          },
+        const authUser = {
+          id: supabaseSession.user.id,
+          email: supabaseSession.user.email ?? null,
+        };
+        setSession({ user: authUser });
+
+        // Only fetch profile if not already loaded or if user changed
+        setProfile(prev => {
+          if (prev?.uid === authUser.id) return prev;
+          // Trigger fetch (async side effect handling in separate Effect would be cleaner, but doing it here for immediacy)
+          fetchProfile(authUser.id).then(p => setProfile(p));
+          return prev;
         });
       } else {
         // User is signed out
         setSession(null);
+        setProfile(null);
       }
     });
 
@@ -101,7 +136,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const value = useMemo<AuthContextType>(() => ({
     session,
+    profile,
     isLoading,
+
+    refreshProfile: async () => {
+      if (session?.user.id) {
+        const p = await fetchProfile(session.user.id);
+        setProfile(p);
+      }
+    },
 
     /**
      * Sign in with email and password
@@ -111,6 +154,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      * @returns Error object if sign in fails, undefined if successful
      */
     signIn: async (email: string, password: string) => {
+      // DUMMY CREDENTIALS CHECK
+      if (email === 'guest@civic.com' && password === 'password123') {
+        console.log('[Auth] Using dummy credentials');
+        const dummyUser = { id: 'dummy-user-123', email: 'guest@civic.com' };
+
+        // Set dummy session
+        setSession({ user: dummyUser });
+
+        // Set dummy profile
+        setProfile({
+          id: dummyUser.id,
+          username: 'Guest_User',
+          full_name: 'Guest User',
+          email: 'guest@civic.com',
+          anonymousMode: false,
+          stats: { totalPosts: 5, totalUpvotes: 34, totalComments: 12, totalShares: 8 },
+          createdAt: new Date(),
+          lastLoginAt: new Date(),
+          googleConnected: false,
+          twitterConnected: false,
+          privacyDefault: 'personal',
+          alwaysAskTwitterMethod: true,
+          isVerified: false,
+          preferences: {
+            notifications: {
+              nearby: false,
+              comments: false,
+              upvotes: false,
+              replies: false,
+              twitter: false,
+              digest: false,
+              trending: false,
+              similar: false
+            }
+          },
+          privacySettings: { profileVisibility: 'public', showLocation: true }
+        } as any); // Cast as any to avoid strict type matching for every single field if some are missing in type definition vs usage
+
+        return undefined;
+      }
+
       if (!isSupabaseConfigured) {
         return { error: 'Supabase Auth not initialized', code: 'auth/not-initialized' };
       }
@@ -149,17 +233,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
 
         if (error) {
           return {
+            data,
             error: error.message || 'Failed to sign up',
             code: error.status?.toString() || 'auth/unknown-error',
           };
         }
 
         // Session will be updated by onAuthStateChange listener
-        return undefined;
+        return { data };
       } catch (error: any) {
         console.error('[Auth] Sign up error:', error);
         return {
@@ -216,9 +301,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('[Auth] Sign out error:', error);
         // Clear session anyway
         setSession(null);
+        setProfile(null);
       }
     },
-  }), [session, isLoading]);
+  }), [session, profile, isLoading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -231,11 +317,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
  *
  * @example
  * ```typescript
- * const { session, signIn, signOut } = useAuth();
+ * const { session, profile, signIn, signOut } = useAuth();
  *
  * if (session) {
  *   // User is logged in
  *   console.log('User ID:', session.user.id);
+ *   console.log('Username:', profile?.username);
  * }
  * ```
  */

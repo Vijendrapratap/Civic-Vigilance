@@ -14,7 +14,8 @@ async function writeVotes(map: Record<string, number>) {
 }
 
 export async function getUserVote(issueId: string): Promise<-1 | 0 | 1> {
-  if (getBackend() === 'sqlite') {
+  // Handle dummy issues or fallback if backend is sqlite
+  if (getBackend() === 'sqlite' || issueId.startsWith('dummy-')) {
     const map = await readVotes();
     return ((map[issueId] as any) ?? 0) as -1 | 0 | 1;
   }
@@ -27,15 +28,16 @@ export async function getUserVote(issueId: string): Promise<-1 | 0 | 1> {
   return ((data?.value as any) ?? 0) as -1 | 0 | 1;
 }
 
-export async function castVote(issueId: string, value: -1 | 1): Promise<{ vote: -1 | 0 | 1; upvotes?: number; downvotes?: number; }>
-{
-  if (getBackend() === 'sqlite') {
+export async function castVote(issueId: string, value: -1 | 1): Promise<{ vote: -1 | 0 | 1; upvotes?: number; downvotes?: number; }> {
+  if (getBackend() === 'sqlite' || issueId.startsWith('dummy-')) {
     const map = await readVotes();
     const current = (map[issueId] ?? 0) as -1 | 0 | 1;
     const next = current === value ? 0 : value;
     map[issueId] = next;
     await writeVotes(map);
-    // We cannot know global counts reliably; let UI adjust locally
+
+    // For dummy issues, we return the vote. The UI handles the count optimistically.
+    // If we wanted to be fancy we'd fetch the base count and adjust, but optimistic is enough.
     return { vote: next };
   }
 

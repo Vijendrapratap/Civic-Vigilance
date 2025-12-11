@@ -26,6 +26,43 @@ export default function PostDetailScreen({ route }: any) {
 
   useEffect(() => {
     const run = async () => {
+      // GUEST MODE CHECK
+      if (id.startsWith('dummy-')) {
+        // Mock data for dummy issues
+        const dummyIssue = {
+          id,
+          userId: 'user-1',
+          title: id === 'dummy-1' ? 'Pothole on Main St causing traffic' : (id === 'dummy-2' ? 'Overflowing Garbage Bin' : 'Broken Streetlight'),
+          description: id === 'dummy-1'
+            ? 'Large pothole in the middle lane causing severe slowdowns during rush hour. Several cars have been damaged.'
+            : 'The garbage bin at the market entrance has been overflowing for 3 days. Foul smell and attracting stray animals.',
+          category: id === 'dummy-1' ? 'pothole' : (id === 'dummy-2' ? 'garbage' : 'streetlight'),
+          imageUrl: id === 'dummy-1'
+            ? 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80&w=800'
+            : (id === 'dummy-2' ? 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=800' : 'https://images.unsplash.com/photo-1555677284-6a6f9716399a?auto=format&fit=crop&q=80&w=800'),
+          address: 'Mumbai, India',
+          privacy: 'personal',
+          metrics: { upvotes: 42, downvotes: 2, comments: 4, shares: 8, twitterImpressions: 1250 },
+          anonymousUsername: 'Citizen_One',
+          createdAt: new Date().toISOString(),
+          isVerified: true,
+          tweetUrl: 'https://twitter.com/CivicVigilance/status/1234567890'
+        };
+
+        const dummyComments = [
+          { id: 'c1', issue_id: id, userId: 'u2', content: 'I saw this too! It\'s getting worse.', createdAt: new Date().toISOString(), anonymousUsername: 'Neighbor_Jane' },
+          { id: 'c2', issue_id: id, userId: 'u3', content: 'Has anyone reported this to the council?', createdAt: new Date().toISOString(), anonymousUsername: 'Concerned_Dad', parentId: null },
+          { id: 'c3', issue_id: id, userId: 'u4', content: 'Yes, I tagged them on Twitter.', createdAt: new Date().toISOString(), anonymousUsername: 'Citizen_One', parentId: 'c2' },
+          { id: 'c4', issue_id: id, userId: 'u5', content: 'Good job!', createdAt: new Date().toISOString(), anonymousUsername: 'Local_Hero', parentId: 'c3' },
+        ];
+
+        setIssue(dummyIssue as any);
+        setComments(dummyComments as any);
+        setUp(dummyIssue.metrics.upvotes);
+        setDown((dummyIssue.metrics as any).downvotes);
+        return;
+      }
+
       if (getBackend() === 'sqlite') {
         const i = await getIssueByIdSqlite(Number(id));
         setIssue(i as any);
@@ -44,8 +81,9 @@ export default function PostDetailScreen({ route }: any) {
   }, [id]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) { try { setVote(getUserVoteSqlite(Number(id), localUserId)); } catch {}
-    } else { getUserVote(id).then(setVote).catch(() => {}); }
+    if (!isSupabaseConfigured) {
+      try { setVote(getUserVoteSqlite(Number(id), localUserId)); } catch { }
+    } else { getUserVote(id).then(setVote).catch(() => { }); }
   }, [id, localUserId]);
 
   const addComment = useCallback(async () => {
@@ -258,20 +296,21 @@ export default function PostDetailScreen({ route }: any) {
 
       {/* Action Bar */}
       <View style={styles.actionBar}>
-        {/* Upvote Button */}
-        <Pressable onPress={() => onVote(1)} style={styles.voteButton} hitSlop={8}>
-          <Ionicons
-            name={vote === 1 ? 'arrow-up' : 'arrow-up-outline'}
-            size={28}
-            color={vote === 1 ? '#FF6B3D' : '#6B7280'}
-          />
-          <Text style={[styles.voteCount, vote === 1 && styles.voteCountActive]}>{formatCount(up)}</Text>
-        </Pressable>
+        {/* Vote Pill */}
+        <View style={styles.votePill}>
+          <Pressable onPress={() => onVote(1)} style={styles.pillBtn} hitSlop={8}>
+            <Ionicons name={vote === 1 ? 'arrow-up' : 'arrow-up-outline'} size={20} color={vote === 1 ? '#FF4500' : '#E0E0E0'} />
+          </Pressable>
+          <Text style={[styles.voteCount, vote !== 0 && styles.voteCountActive]}>{formatCount(up)}</Text>
+          <Pressable onPress={() => onVote(-1)} style={styles.pillBtn} hitSlop={8}>
+            <Ionicons name={vote === -1 ? 'arrow-down' : 'arrow-down-outline'} size={20} color={vote === -1 ? '#7193FF' : '#E0E0E0'} />
+          </Pressable>
+        </View>
 
-        {/* Share Button */}
-        <Pressable onPress={handleShare} style={styles.shareButton} hitSlop={8}>
-          <Ionicons name="share-outline" size={22} color="#2563EB" />
-          <Text style={styles.shareText}>Share</Text>
+        {/* Share Pill */}
+        <Pressable onPress={handleShare} style={styles.pill} hitSlop={8}>
+          <Ionicons name="share-outline" size={18} color="#E0E0E0" />
+          <Text style={styles.pillText}>Share</Text>
         </Pressable>
       </View>
 
@@ -483,41 +522,53 @@ const styles = StyleSheet.create({
   actionBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 8, // Reduced gap for pills
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
-  voteButton: {
+  votePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#27272a', // Dark pill
     borderRadius: 20,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    gap: 2,
+  },
+  pillBtn: {
+    padding: 6,
   },
   voteCount: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#6B7280',
+    color: '#FFFFFF', // White text
+    minWidth: 20,
+    textAlign: 'center',
   },
   voteCountActive: {
-    color: '#FF6B3D',
+    color: '#FF4500',
   },
-  shareButton: {
+  // Reusing generic 'pill' style for Share button
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
+    backgroundColor: '#27272a',
+    borderRadius: 20,
     paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
   },
-  shareText: {
-    fontSize: 16,
+  pillText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#2563EB',
+    color: '#E0E0E0',
   },
+  // Keeping old styles just in case but they won't be used if we update JSX
+  voteButton: { display: 'none' },
+  shareButton: { display: 'none' },
+  shareText: { display: 'none' },
   commentsSection: {
     padding: 16,
   },

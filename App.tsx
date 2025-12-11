@@ -7,8 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme, View, Text, StyleSheet } from 'react-native';
 
 // Error Boundary Component
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
-  constructor(props: {children: React.ReactNode}) {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false, error: null };
   }
@@ -107,7 +107,7 @@ function AppTabs() {
 }
 
 function Root() {
-  const { session, isLoading } = useAuth();
+  const { session, profile, isLoading } = useAuth();
   const scheme = useColorScheme();
 
   if (isLoading) {
@@ -123,7 +123,28 @@ function Root() {
     <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {session ? (
-          <RootStack.Screen name="AppTabs" component={AppTabs} />
+          // If user has a session but no username/full_name (new signup), force UsernameSelection
+          (!profile?.username && !profile?.full_name) ? (
+            <>
+              <RootStack.Screen
+                name="UsernameSelection"
+                component={UsernameSelectionScreen}
+                options={{ title: 'Choose Your Voice', headerBackVisible: false, headerShown: true }}
+              />
+              {/* AppTabs available but secondary */}
+              <RootStack.Screen name="AppTabs" component={AppTabs} />
+            </>
+          ) : (
+            // User has username/profile (returning user), show AppTabs first
+            <>
+              <RootStack.Screen name="AppTabs" component={AppTabs} />
+              <RootStack.Screen
+                name="UsernameSelection"
+                component={UsernameSelectionScreen}
+                options={{ title: 'Choose Your Voice', headerBackVisible: false, headerShown: true }}
+              />
+            </>
+          )
         ) : (
           <RootStack.Screen name="Auth" component={AuthNavigator} />
         )}
@@ -139,11 +160,6 @@ function AuthNavigator() {
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Signup" component={SignupScreen} />
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Reset Password' }} />
-      <AuthStack.Screen
-        name="UsernameSelection"
-        component={UsernameSelectionScreen}
-        options={{ title: 'Choose Your Voice', headerBackVisible: false }}
-      />
     </AuthStack.Navigator>
   );
 }

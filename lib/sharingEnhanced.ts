@@ -128,7 +128,13 @@ export async function shareToInstagram(imageUri: string): Promise<boolean> {
 
     // Copy to cache for sharing
     const filename = imageUri.split('/').pop() || 'civic_issue.jpg';
-    const destPath = `${FileSystem.cacheDirectory}${filename}`;
+    const cacheDir = (FileSystem as any).cacheDirectory;
+
+    if (!cacheDir) {
+      throw new Error('Cache directory not available');
+    }
+
+    const destPath = `${cacheDir}${filename}`;
 
     await FileSystem.copyAsync({
       from: imageUri,

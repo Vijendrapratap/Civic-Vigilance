@@ -33,6 +33,7 @@ export interface User {
   username: string; // Chosen or auto-generated "Anonymous_Citizen_XXXX"
   anonymousMode: boolean; // If true, hide real identity
   displayName?: string; // Real name (optional)
+  full_name?: string; // DB field often used for display name/username in this codebase
 
   photoURL?: string;
   bio?: string;
@@ -253,16 +254,16 @@ export interface Notification {
   id: string;
   userId: string;
   type:
-    | 'report_submitted' // Your issue is now live
-    | 'twitter_post_success' // Posted to Twitter
-    | 'comment' // Comments on my posts
-    | 'reply' // Replies to my comments
-    | 'upvote_milestone' // Upvotes on my posts
-    | 'nearby_issue' // New issues within 2km
-    | 'trending_issue' // Issues gaining traction
-    | 'similar_issue' // Similar issues nearby
-    | 'twitter_engagement' // Twitter retweets/likes by authorities
-    | 'weekly_digest'; // Weekly summary
+  | 'report_submitted' // Your issue is now live
+  | 'twitter_post_success' // Posted to Twitter
+  | 'comment' // Comments on my posts
+  | 'reply' // Replies to my comments
+  | 'upvote_milestone' // Upvotes on my posts
+  | 'nearby_issue' // New issues within 2km
+  | 'trending_issue' // Issues gaining traction
+  | 'similar_issue' // Similar issues nearby
+  | 'twitter_engagement' // Twitter retweets/likes by authorities
+  | 'weekly_digest'; // Weekly summary
   title: string;
   body: string;
   data: Record<string, any>;
