@@ -29,13 +29,52 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
+import { Colors, Spacing, Typography, BorderRadius } from '../constants/DesignSystem';
+
+// ...
+
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12 },
-  title: { fontSize: 20, fontWeight: '800' },
-  h2: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
-  card: { padding: 12, borderRadius: 12, backgroundColor: '#f2f4f8' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-  key: { color: '#333', fontWeight: '600' },
-  val: { color: '#111' },
-  hint: { color: '#666', marginTop: 12 }
+  container: {
+    padding: Spacing.md,
+    gap: Spacing.md,
+    backgroundColor: Colors.background,
+    minHeight: '100%'
+  },
+  title: {
+    ...Typography.h2,
+    color: Colors.textMain
+  },
+  h2: {
+    ...Typography.h3,
+    color: Colors.textMain,
+    marginBottom: Spacing.sm
+  },
+  card: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.xs
+  },
+  key: {
+    ...Typography.bodySm,
+    fontWeight: '600',
+    color: Colors.textSecondary
+  },
+  val: {
+    ...Typography.bodySm,
+    color: Colors.textMain,
+    flexShrink: 1,
+    textAlign: 'right'
+  },
+  hint: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    marginTop: Spacing.md
+  }
 });

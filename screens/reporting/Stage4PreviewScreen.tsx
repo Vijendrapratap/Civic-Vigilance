@@ -146,19 +146,30 @@ export default function Stage4PreviewScreen({
             {/* Tweet Header */}
             <View style={styles.tweetHeader}>
               <View style={styles.tweetAvatar}>
-                <Ionicons name="shield-checkmark" size={24} color="#1DA1F2" />
+                {privacy === 'civic_vigilance' ? (
+                  <View style={styles.avatarPlaceholder}>
+                    <Ionicons name="shield-checkmark" size={20} color="#fff" />
+                  </View>
+                ) : (
+                  <View style={[styles.avatarPlaceholder, { backgroundColor: '#6B7280' }]}>
+                    <Ionicons name="person" size={20} color="#fff" />
+                  </View>
+                )}
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.tweetUserRow}>
-                  <Text style={styles.tweetUsername}>
-                    {privacy === 'civic_vigilance' ? '@CivicVigilance' : 'Your Twitter'}
+                  <Text style={styles.tweetDisplayName}>
+                    {privacy === 'civic_vigilance' ? 'Civic Vigilance' : 'Your Name'}
                   </Text>
                   {privacy === 'civic_vigilance' && (
-                    <Ionicons name="checkmark-circle" size={16} color="#1DA1F2" />
+                    <Ionicons name="checkmark-circle" size={14} color="#1DA1F2" style={{ marginLeft: 2 }} />
                   )}
+                  <Text style={styles.tweetHandle}>
+                    {privacy === 'civic_vigilance' ? '@CivicVigilance' : '@your_handle'} · Now
+                  </Text>
                 </View>
-                <Text style={styles.tweetTime}>Now</Text>
               </View>
+              <Ionicons name="logo-twitter" size={20} color="#1DA1F2" />
             </View>
 
             {/* Tweet Body */}
@@ -166,17 +177,28 @@ export default function Stage4PreviewScreen({
 
             {/* Photo Preview */}
             {photos.length > 0 && (
-              <View style={styles.tweetPhotos}>
-                {photos.slice(0, 2).map((photo, index) => (
-                  <Image key={index} source={{ uri: photo }} style={styles.tweetPhoto} />
+              <View style={styles.tweetMediaContainer}>
+                {photos.slice(0, 4).map((photo, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: photo }}
+                    style={[
+                      styles.tweetPhoto,
+                      photos.length === 1 ? styles.tweetPhotoSingle : styles.tweetPhotoGrid
+                    ]}
+                    resizeMode="cover"
+                  />
                 ))}
-                {photos.length > 2 && (
-                  <View style={styles.morePhotos}>
-                    <Text style={styles.morePhotosText}>+{photos.length - 2}</Text>
-                  </View>
-                )}
               </View>
             )}
+
+            {/* Tweet Actions Mock */}
+            <View style={styles.tweetActions}>
+              <Ionicons name="chatbubble-outline" size={18} color="#657786" />
+              <Ionicons name="repeat-outline" size={18} color="#657786" />
+              <Ionicons name="heart-outline" size={18} color="#657786" />
+              <Ionicons name="share-outline" size={18} color="#657786" />
+            </View>
           </View>
 
           <Text style={styles.privacyNote}>
@@ -324,66 +346,76 @@ const styles = StyleSheet.create({
   },
   tweetCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E1E8ED',
   },
   tweetHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
   tweetAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#DBEAFE',
+    marginRight: 10,
+  },
+  avatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#1DA1F2',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
   },
   tweetUserRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    flexWrap: 'wrap',
   },
-  tweetUsername: {
+  tweetDisplayName: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#23272F',
+    color: '#14171A',
+    marginRight: 2,
   },
-  tweetTime: {
-    fontSize: 13,
-    color: '#6B7280',
+  tweetHandle: {
+    fontSize: 14,
+    color: '#657786',
+    marginLeft: 4,
   },
   tweetText: {
-    fontSize: 14,
-    color: '#23272F',
+    fontSize: 15,
+    color: '#14171A',
     lineHeight: 20,
     marginBottom: 12,
   },
-  tweetPhotos: {
+  tweetMediaContainer: {
     flexDirection: 'row',
-    gap: 8,
     flexWrap: 'wrap',
+    gap: 4,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 12,
   },
   tweetPhoto: {
+    // Base style shared by single and grid photos
+    backgroundColor: '#E1E8ED',
+  },
+  tweetPhotoSingle: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+  },
+  tweetPhotoGrid: {
     width: '48%',
-    height: 150,
-    borderRadius: 12,
+    height: 120,
+    borderRadius: 8,
   },
-  morePhotos: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 12,
-    padding: 8,
-  },
-  morePhotosText: {
-    color: '#fff',
-    fontWeight: '700',
+  tweetActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    marginTop: 4,
   },
   privacyNote: {
     fontSize: 13,

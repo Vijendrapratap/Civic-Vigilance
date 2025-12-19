@@ -201,55 +201,47 @@ function EnhancedIssueCard({ item, onPress, distance }: Props) {
   );
 }
 
+import { Colors, Typography, Spacing, Shadows, BorderRadius, Layout } from '../constants/DesignSystem';
+
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
+    ...Layout.card,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.surface, // Explicit surface
   },
   titleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'center', // Fix alignment
+    marginBottom: Spacing.sm,
   },
   categoryEmoji: {
     fontSize: 20,
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   category: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
+    ...Typography.caption,
+    fontWeight: '700',
+    color: Colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 12,
-    lineHeight: 24,
+    ...Typography.h3,
+    marginBottom: Spacing.md,
+    lineHeight: 28, // Better line height for titles
   },
   photo: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: '#F3F4F6',
+    borderRadius: BorderRadius.md, // 12px
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.background,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
+    marginBottom: Spacing.md,
+    gap: Spacing.md,
   },
   metaItem: {
     flexDirection: 'row',
@@ -257,59 +249,61 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: 13,
-    color: '#6B7280',
+    ...Typography.bodySm,
+    color: Colors.textSecondary,
   },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     gap: 6,
   },
   username: {
-    fontSize: 13,
+    ...Typography.bodySm,
     fontWeight: '600',
-    color: '#374151',
+    color: Colors.textMain,
   },
   separator: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: Colors.textMuted,
   },
   timeAgo: {
-    fontSize: 13,
-    color: '#6B7280',
+    ...Typography.bodySm,
+    color: Colors.textMuted,
   },
   privacyRow: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    top: Spacing.md,
+    right: Spacing.md,
+    backgroundColor: Colors.glass, // Glassmorphism indicator
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.pill,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: 'rgba(255,255,255,0.5)',
   },
   privacyText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   actionBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   votePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#27272a', // Dark pill background like image
-    borderRadius: 20,
+    backgroundColor: Colors.background, // Lighter background for action pills
+    borderRadius: BorderRadius.pill,
     paddingHorizontal: 4,
     paddingVertical: 4,
     gap: 2,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   pillBtn: {
     padding: 6,
@@ -317,26 +311,28 @@ const styles = StyleSheet.create({
   voteCount: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF', // White text on dark pill
+    color: Colors.textMain, // Dark text on light pill (Modern look)
     minWidth: 20,
     textAlign: 'center',
   },
   voteCountActive: {
-    color: '#FF4500',
+    color: Colors.primary, // Blue for active upvote
   },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#27272a',
-    borderRadius: 20,
-    paddingHorizontal: 16,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 10,
     gap: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   pillText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
   },
 });
 

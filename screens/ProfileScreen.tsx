@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Pressable, Alert, ScrollView } from 'react-native';
+import { Colors, Typography, Spacing } from '../constants/DesignSystem';
 import { useAuth } from '../hooks/useAuth';
 import ListItem from '../components/ListItem';
 import Button from '../components/ui/Button';
@@ -18,9 +19,11 @@ export default function ProfileScreen({ navigation }: any) {
     const run = async () => {
       const p = await loadProfile(userId);
       setName(p.full_name || 'Civic User');
-      setAvatar(p.avatar_url || null);
-      const y = (p.created_at ? new Date(p.created_at) : new Date()).getFullYear();
-      setJoined(String(y));
+      // @ts-ignore - profile typing mismatch legacy fix
+      setAvatar(p.photoURL || p.avatar_url || null);
+      // @ts-ignore
+      const year = (p.createdAt || p.created_at || new Date()).getFullYear();
+      setJoined(String(year));
     };
     run();
   }, [userId]);
@@ -28,8 +31,10 @@ export default function ProfileScreen({ navigation }: any) {
   const onChangeAvatar = async () => {
     const uri = await pickAvatar();
     if (!uri) return;
-    const updated = await saveProfile({ id: userId, full_name: name, avatar_url: uri });
-    setAvatar(updated.avatar_url || uri);
+    // @ts-ignore
+    const updated = await saveProfile({ id: userId, full_name: name, photoURL: uri });
+    // @ts-ignore
+    setAvatar(updated.photoURL || updated.avatar_url || uri);
   };
 
   const onLogout = () => {
@@ -76,12 +81,48 @@ export default function ProfileScreen({ navigation }: any) {
   );
 }
 
+// ... styles begin
+
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#0b1210' },
-  pageTitle: { color: '#e6f0ec', textAlign: 'center', fontSize: 18, fontWeight: '800', marginBottom: 10 },
-  avatar: { width: 120, height: 120, borderRadius: 60, alignSelf: 'center', backgroundColor: '#ddd' },
-  avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  name: { color: '#e6f0ec', textAlign: 'center', fontSize: 22, fontWeight: '800', marginTop: 16 },
-  joined: { color: '#9aa0a6', textAlign: 'center', marginTop: 4 },
-  card: { backgroundColor: 'transparent', marginTop: 16 },
+  container: {
+    padding: Spacing.md,
+    backgroundColor: Colors.background,
+    paddingBottom: 100, // Space for floating tab bar
+  },
+  pageTitle: {
+    ...Typography.h2,
+    color: Colors.textMain,
+    textAlign: 'center',
+    marginBottom: Spacing.md
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignSelf: 'center',
+    backgroundColor: Colors.surface,
+    borderWidth: 4,
+    borderColor: Colors.border,
+  },
+  avatarFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surface
+  },
+  name: {
+    ...Typography.h3,
+    color: Colors.textMain,
+    textAlign: 'center',
+    marginTop: Spacing.md
+  },
+  joined: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    marginTop: 4
+  },
+  card: {
+    backgroundColor: 'transparent',
+    marginTop: Spacing.md
+  },
 });

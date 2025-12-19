@@ -15,8 +15,25 @@ export default function PolicyScreen({ route }: any) {
   );
 }
 
+import { Colors, Spacing, Typography } from '../constants/DesignSystem';
+
+// ...
+
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 12 },
-  title: { fontSize: 20, fontWeight: '800' },
-  text: { color: '#444', lineHeight: 20 }
+  container: {
+    padding: Spacing.md,
+    gap: Spacing.md,
+    backgroundColor: Colors.background,
+    minHeight: '100%'
+  },
+  title: {
+    ...Typography.h2,
+    color: Colors.textMain,
+    marginBottom: Spacing.sm
+  },
+  text: {
+    ...Typography.bodySm,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm
+  }
 });

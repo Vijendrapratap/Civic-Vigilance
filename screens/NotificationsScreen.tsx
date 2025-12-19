@@ -35,10 +35,33 @@ function Row({ label, value, onValueChange }: { label: string; value: boolean; o
   );
 }
 
+import { Colors, Spacing, Typography } from '../constants/DesignSystem';
+
+// ...
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  title: { fontSize: 18, fontWeight: '800', marginBottom: 10 },
-  row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
-  hint: { color: '#666', marginTop: 12 }
+  container: {
+    flex: 1,
+    padding: Spacing.md,
+    gap: Spacing.md,
+    backgroundColor: Colors.background
+  },
+  title: {
+    ...Typography.h3,
+    color: Colors.textMain,
+    marginBottom: Spacing.sm
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border
+  },
+  hint: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    marginTop: Spacing.md
+  }
 });
 

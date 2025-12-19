@@ -13,37 +13,46 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { saveProfile } from '../lib/profile';
+import { useAuth } from '../hooks/useAuth';
 
 export default function SettingsScreen() {
   const navigation = useNavigation<any>();
 
-  // Mock user data (replace with actual user state)
-  const [user, setUser] = useState({
-    username: 'TestCitizen_2024',
-    email: 'test@civic.com',
-    anonymousMode: false,
-    twitterConnected: false,
-    privacyDefault: 'civic_vigilance' as 'civic_vigilance' | 'personal' | 'none',
-    notifications: {
-      nearby: true,
-      comments: true,
-      upvotes: true,
-      replies: true,
-      twitter: false,
-      digest: true,
-      trending: false,
-      similar: true,
-    },
-    profileVisibility: 'public' as 'public' | 'private',
-    showLocation: true,
-  });
+  /* REAL BACKEND INTEGRATION */
+  const { profile, signOut, refreshProfile } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const toggleNotification = (key: keyof typeof user.notifications) => {
-    setUser({
-      ...user,
-      notifications: {
-        ...user.notifications,
-        [key]: !user.notifications[key],
+  // If no profile yet (loading), show safe defaults or loading spinner
+  if (!profile) return null;
+
+  const handleUpdate = async (updates: Partial<typeof profile>) => {
+    setIsSaving(true);
+    try {
+      if (!profile.uid) return;
+      // We use 'id' in backend payload, but 'uid' in local User type. 
+      // saveProfile expects UserProfile which has intersection.
+      // We pass { ...updates, id: profile.uid } to satisfy UserProfile expectation.
+      await saveProfile({ ...updates, id: profile.uid } as any);
+      await refreshProfile();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleNotification = async (key: keyof typeof profile.preferences.notifications) => {
+    const current = profile.preferences.notifications[key];
+    const updatedNotifications = {
+      ...profile.preferences.notifications,
+      [key]: !current,
+    };
+
+    await handleUpdate({
+      preferences: {
+        ...profile.preferences,
+        notifications: updatedNotifications,
       },
     });
   };
@@ -57,9 +66,9 @@ export default function SettingsScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-            // TODO: Implement logout logic
-            console.log('[Settings] Logout');
+          onPress: async () => {
+            await signOut();
+            // Navigation to Auth handled by App.tsx logic
           },
         },
       ]
@@ -69,15 +78,14 @@ export default function SettingsScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
-      'This action cannot be undone. All your reports, comments, and data will be permanently deleted.',
+      'This action cannot be undone. All your reports and data will be permanently deleted.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            // TODO: Implement account deletion
-            console.log('[Settings] Delete account');
+            Alert.alert('Contact Support', 'Please email support@civicvigilance.com to process account deletion securely.');
           },
         },
       ]
@@ -105,7 +113,7 @@ export default function SettingsScreen() {
               <Ionicons name="person-outline" size={22} color="#4B5563" />
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Username</Text>
-                <Text style={styles.settingValue}>{user.username}</Text>
+                <Text style={styles.settingValue}>@{profile.username}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -116,7 +124,7 @@ export default function SettingsScreen() {
               <Ionicons name="mail-outline" size={22} color="#4B5563" />
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Email</Text>
-                <Text style={styles.settingValue}>{user.email}</Text>
+                <Text style={styles.settingValue}>{profile.email || 'Verified'}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -131,8 +139,8 @@ export default function SettingsScreen() {
               </View>
             </View>
             <Switch
-              value={user.anonymousMode}
-              onValueChange={(val) => setUser({ ...user, anonymousMode: val })}
+              value={profile.anonymousMode}
+              onValueChange={(val) => handleUpdate({ anonymousMode: val })}
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
           </View>
@@ -142,17 +150,7 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connected Accounts</Text>
 
-          <TouchableOpacity style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="logo-google" size={22} color="#EA4335" />
-              <View style={styles.settingText}>
-                <Text style={styles.settingLabel}>Google</Text>
-                <Text style={styles.settingConnected}>Connected</Text>
-              </View>
-            </View>
-            <Ionicons name="checkmark-circle" size={24} color="#34D399" />
-          </TouchableOpacity>
-
+          {/* Twitter only for MVP */}
           <TouchableOpacity
             style={styles.settingRow}
             onPress={() => console.log('Connect Twitter')}
@@ -162,7 +160,7 @@ export default function SettingsScreen() {
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Twitter</Text>
                 <Text style={styles.settingDisconnected}>
-                  {user.twitterConnected ? 'Connected' : 'Not Connected'}
+                  {profile.twitterConnected ? 'Connected' : 'Not Connected'}
                 </Text>
               </View>
             </View>
@@ -180,9 +178,9 @@ export default function SettingsScreen() {
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Default Privacy</Text>
                 <Text style={styles.settingValue}>
-                  {user.privacyDefault === 'civic_vigilance' && 'Via @CivicVigilance'}
-                  {user.privacyDefault === 'personal' && 'Via My Twitter'}
-                  {user.privacyDefault === 'none' && 'App Only'}
+                  {profile.privacyDefault === 'civic_vigilance' && 'Via @CivicVigilance'}
+                  {profile.privacyDefault === 'personal' && 'Via My Twitter'}
+                  {profile.privacyDefault === 'none' && 'App Only'}
                 </Text>
               </View>
             </View>
@@ -194,18 +192,24 @@ export default function SettingsScreen() {
               <Ionicons name="eye-outline" size={22} color="#4B5563" />
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Profile Visibility</Text>
-                <Text style={styles.settingValue}>{user.profileVisibility}</Text>
+                <Text style={styles.settingValue}>{profile.privacySettings.profileVisibility}</Text>
               </View>
             </View>
             <Switch
-              value={user.profileVisibility === 'public'}
+              value={profile.privacySettings.profileVisibility === 'public'}
               onValueChange={(val) =>
-                setUser({ ...user, profileVisibility: val ? 'public' : 'private' })
+                handleUpdate({
+                  privacySettings: {
+                    ...profile.privacySettings,
+                    profileVisibility: val ? 'public' : 'private'
+                  }
+                })
               }
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
           </View>
 
+          {/* Show Location */}
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
               <Ionicons name="location-outline" size={22} color="#4B5563" />
@@ -215,11 +219,19 @@ export default function SettingsScreen() {
               </View>
             </View>
             <Switch
-              value={user.showLocation}
-              onValueChange={(val) => setUser({ ...user, showLocation: val })}
+              value={profile.privacySettings.showLocation}
+              onValueChange={(val) =>
+                handleUpdate({
+                  privacySettings: {
+                    ...profile.privacySettings,
+                    showLocation: val
+                  }
+                })
+              }
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
           </View>
+
         </View>
 
         {/* Notifications */}
@@ -235,7 +247,7 @@ export default function SettingsScreen() {
               </View>
             </View>
             <Switch
-              value={user.notifications.nearby}
+              value={profile.preferences?.notifications?.nearby ?? true}
               onValueChange={() => toggleNotification('nearby')}
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
@@ -250,7 +262,7 @@ export default function SettingsScreen() {
               </View>
             </View>
             <Switch
-              value={user.notifications.comments}
+              value={profile.preferences?.notifications?.comments ?? true}
               onValueChange={() => toggleNotification('comments')}
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
@@ -265,23 +277,8 @@ export default function SettingsScreen() {
               </View>
             </View>
             <Switch
-              value={user.notifications.upvotes}
+              value={profile.preferences?.notifications?.upvotes ?? true}
               onValueChange={() => toggleNotification('upvotes')}
-              trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
-            />
-          </View>
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="return-down-forward-outline" size={22} color="#4B5563" />
-              <View style={styles.settingText}>
-                <Text style={styles.settingLabel}>Replies</Text>
-                <Text style={styles.settingSubtext}>To your comments</Text>
-              </View>
-            </View>
-            <Switch
-              value={user.notifications.replies}
-              onValueChange={() => toggleNotification('replies')}
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
           </View>
@@ -295,7 +292,7 @@ export default function SettingsScreen() {
               </View>
             </View>
             <Switch
-              value={user.notifications.twitter}
+              value={profile.preferences?.notifications?.twitter ?? false}
               onValueChange={() => toggleNotification('twitter')}
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
@@ -310,41 +307,12 @@ export default function SettingsScreen() {
               </View>
             </View>
             <Switch
-              value={user.notifications.digest}
+              value={profile.preferences?.notifications?.digest ?? true}
               onValueChange={() => toggleNotification('digest')}
               trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
             />
           </View>
 
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="flame-outline" size={22} color="#4B5563" />
-              <View style={styles.settingText}>
-                <Text style={styles.settingLabel}>Trending Issues</Text>
-                <Text style={styles.settingSubtext}>In your city</Text>
-              </View>
-            </View>
-            <Switch
-              value={user.notifications.trending}
-              onValueChange={() => toggleNotification('trending')}
-              trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
-            />
-          </View>
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingLeft}>
-              <Ionicons name="duplicate-outline" size={22} color="#4B5563" />
-              <View style={styles.settingText}>
-                <Text style={styles.settingLabel}>Similar Issues</Text>
-                <Text style={styles.settingSubtext}>Nearby similar reports</Text>
-              </View>
-            </View>
-            <Switch
-              value={user.notifications.similar}
-              onValueChange={() => toggleNotification('similar')}
-              trackColor={{ false: '#D1D5DB', true: '#2563EB' }}
-            />
-          </View>
         </View>
 
         {/* About & Legal */}
@@ -409,60 +377,69 @@ export default function SettingsScreen() {
   );
 }
 
+import { Colors, Shadows, Spacing, Typography, BorderRadius } from '../constants/DesignSystem';
+
+// ... (rest of code)
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
+    ...Shadows.sm,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#23272F',
+    ...Typography.h3,
+    color: Colors.textMain,
   },
   content: {
     flex: 1,
   },
   section: {
-    marginTop: 24,
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 8,
+    marginTop: Spacing.lg,
+    backgroundColor: Colors.surface,
+    paddingVertical: Spacing.sm,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: Colors.border,
   },
   sectionTitle: {
-    fontSize: 14,
+    ...Typography.caption,
     fontWeight: '700',
-    color: '#6B7280',
+    color: Colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: Colors.background,
   },
   settingRowDanger: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#FEE2E2',
+    borderBottomColor: '#FEE2E2', // Keep distinct danger tint
+    backgroundColor: '#FEF2F2', // Subtle red bg for danger (optional)
   },
   settingLeft: {
     flexDirection: 'row',
@@ -476,32 +453,32 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#23272F',
+    color: Colors.textMain,
   },
   settingLabelDanger: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#DC2626',
+    color: Colors.error,
   },
   settingValue: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...Typography.bodySm,
+    color: Colors.textSecondary,
     marginTop: 2,
   },
   settingSubtext: {
-    fontSize: 13,
-    color: '#9CA3AF',
+    ...Typography.caption,
+    color: Colors.textMuted,
     marginTop: 2,
   },
   settingConnected: {
     fontSize: 14,
-    color: '#059669',
+    color: Colors.success,
     marginTop: 2,
     fontWeight: '500',
   },
   settingDisconnected: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: Colors.textMuted,
     marginTop: 2,
   },
 });

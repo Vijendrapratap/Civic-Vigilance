@@ -76,10 +76,28 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
       const isGuest = session?.user?.email === 'guest@civic.com';
 
       if (isGuest) {
-        // Return dummy data for visualization
+        // Return sorted dummy data for visualization
         console.log('[useIssues] Serving dummy data for Guest Mode');
         await new Promise(r => setTimeout(r, 500)); // Fake network delay
-        setData(DUMMY_ISSUES);
+
+        // Clone to avoid mutating sorting reference
+        let sortedIssues = [...DUMMY_ISSUES];
+
+        if (sort === 'newest') {
+          sortedIssues.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        } else if (sort === 'trending') {
+          sortedIssues.sort((a, b) => (b.metrics?.upvotes || 0) - (a.metrics?.upvotes || 0));
+        } else if (sort === 'nearby' && coords) {
+          // Sort by mock distance (simply using the order they are defined as a proxy for now, 
+          // or could implement haversine if we wanted to be super fancy with dummy data)
+          sortedIssues.sort((a, b) => {
+            // Mock: Assume dummy-1 (Main St) is closest
+            if (a.id === 'dummy-1') return -1;
+            return 1;
+          });
+        }
+
+        setData(sortedIssues);
         setLoading(false);
         return;
       }
@@ -90,14 +108,20 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
         const list = listIssuesSqlite(sort);
         setData(list as any);
       } else if (getBackend() === 'supabase' && isSupabaseConfigured) {
-        let query = supabase.from('issues').select('*');
+        let query = supabase.from('reports').select('*'); // Updated to 'reports' table per schema v2
+
         if (sort === 'newest') {
           query = query.order('created_at', { ascending: false });
         } else if (sort === 'trending') {
-          query = query.order('score', { ascending: false, nullsFirst: false });
-        } else {
-          // nearby: left as-is for demo
+          query = query.order('upvotes', { ascending: false });
+        } else if (sort === 'nearby' && coords) {
+          // Geoquery: Using geohash prefix match (PRD 5.3.1)
+          // Note: Real geohash query needs an RPC function or library logic, 
+          // for MVP we fetch recent and client-side filter or use Supabase PostGIS if enabled.
+          // Falling back to simple recency for simple nearby demo if RPC missing.
+          query = query.order('created_at', { ascending: false });
         }
+
         const { data, error } = await query.limit(100);
         if (!error && data) setData(data as any);
       }

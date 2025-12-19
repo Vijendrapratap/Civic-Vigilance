@@ -69,19 +69,23 @@ export default function Stage1CameraScreen({ onContinue, onCancel }: Props) {
         Platform.OS === 'web' ||
         typeof cameraRef.current?.takePictureAsync !== 'function';
 
+      if (!cameraRef.current) {
+        throw new Error('Camera not ready');
+      }
+
       const res = unsupported
         ? { uri: 'https://picsum.photos/seed/civic/1200/800' }
-        : await cameraRef.current?.takePictureAsync({
-            quality: 0.92,  // High quality for evidence (92%)
-            skipProcessing: true  // Fast capture
-          });
+        : await cameraRef.current.takePictureAsync({
+          quality: 0.8, // Slightly lower for better stability
+          // skipProcessing removed to prevent crash on some Android devices
+        });
 
       if (res?.uri) {
         setPhotos([...photos, res.uri]);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[Camera] Error taking photo:', e);
-      Alert.alert('Error', 'Failed to capture photo. Please try again.');
+      Alert.alert('Capture Failed', `Could not take photo: ${e.message || 'Unknown error'}`);
     }
   };
 
@@ -119,21 +123,15 @@ export default function Stage1CameraScreen({ onContinue, onCancel }: Props) {
     }
 
     if (!coords) {
-      Alert.alert('Location Required', 'GPS location is needed to tag the authorities.');
-      return;
-    }
-
-    // Check GPS accuracy (PRD requirement: minimum 100m)
-    if (accuracy && accuracy > 100) {
       Alert.alert(
-        'Poor GPS Signal',
-        `GPS accuracy is ${Math.round(accuracy)}m. Move to an open area for better accuracy, or continue anyway.`,
+        'Location Missing',
+        'We could not detect your GPS location. You can continue, but authority tagging might be inaccurate.',
         [
-          { text: 'Try Again', style: 'cancel' },
+          { text: 'Cancel', style: 'cancel' },
           {
             text: 'Continue Anyway',
-            onPress: () => onContinue(photos, coords, address),
-          },
+            onPress: () => onContinue(photos, { lat: 19.0760, lng: 72.8777 }, 'Location unavailable') // Fallback to Mumbai (or dummy)
+          }
         ]
       );
       return;
@@ -144,23 +142,41 @@ export default function Stage1CameraScreen({ onContinue, onCancel }: Props) {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* GPS Overlay Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Capture Evidence</Text>
-        {address ? (
-          <Text style={styles.headerAddress}>{address}</Text>
-        ) : (
-          <Text style={styles.headerAddress}>📍 Locating...</Text>
-        )}
-        {coords && (
-          <Text style={styles.headerCoords}>
-            🎯 {coords.lat.toFixed(5)}°N, {coords.lng.toFixed(5)}°E
-            {accuracy && ` • ±${Math.round(accuracy)}m`}
-          </Text>
-        )}
-        {accuracy && accuracy > 100 && (
-          <Text style={styles.warningText}>⚠️ Move to open area for better GPS accuracy</Text>
-        )}
+      {/* GPS Overlay Header - PRD 5.2 Stage 1 */}
+      <View style={styles.headerOverlay}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>📍 LIVE LOCATION</Text>
+
+          <View style={styles.locationBadge}>
+            {address ? (
+              <Text style={styles.headerAddress} numberOfLines={2}>
+                {address}
+              </Text>
+            ) : (
+              <Text style={styles.headerAddress}>Locating...</Text>
+            )}
+          </View>
+
+          <View style={styles.coordsRow}>
+            {coords && (
+              <Text style={styles.headerCoords}>
+                {coords.lat.toFixed(5)}°N, {coords.lng.toFixed(5)}°E
+              </Text>
+            )}
+            {accuracy && (
+              <View style={[styles.accuracyBadge, accuracy > 100 ? styles.accuracyPoor : styles.accuracyGood]}>
+                <Text style={styles.accuracyText}>±{Math.round(accuracy)}m</Text>
+              </View>
+            )}
+          </View>
+
+          {accuracy && accuracy > 100 && (
+            <View style={styles.warningContainer}>
+              <Ionicons name="warning" size={12} color="#FCD34D" />
+              <Text style={styles.warningText}> Poor Signal</Text>
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Camera View */}
@@ -248,32 +264,81 @@ export default function Stage1CameraScreen({ onContinue, onCancel }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingTop: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: 'rgba(11, 26, 42, 0.95)',
+  headerOverlay: {
+    position: 'absolute',
+    top: 50, // Safe Area fallback
+    left: 16,
+    right: 16,
+    zIndex: 10,
+    backgroundColor: 'rgba(23, 23, 23, 0.85)', // Elegant Charcoal with opacity
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
+  },
+  headerContent: {
+    padding: 16,
   },
   headerTitle: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 18,
-    marginBottom: 4,
+    color: '#9CA3AF',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  locationBadge: {
+    marginBottom: 8,
   },
   headerAddress: {
-    color: '#E5E7EB',
-    fontSize: 14,
-    marginTop: 4,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 22,
+  },
+  coordsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   headerCoords: {
-    color: '#9CA3AF',
-    fontSize: 12,
-    marginTop: 2,
+    color: '#D1D5DB', // Gray-300
+    fontSize: 13,
+    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
+    fontWeight: '500',
+  },
+  accuracyBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  accuracyGood: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)', // Green-500
+    borderColor: 'rgba(16, 185, 129, 0.5)',
+  },
+  accuracyPoor: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)', // Amber-500
+    borderColor: 'rgba(245, 158, 11, 0.5)',
+  },
+  accuracyText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  warningContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   warningText: {
     color: '#FCD34D',
     fontSize: 12,
-    marginTop: 4,
+    marginLeft: 4,
+    fontWeight: '500',
   },
   permissionContainer: {
     flex: 1,

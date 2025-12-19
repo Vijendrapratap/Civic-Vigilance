@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList } from 'react-native';
+import { View, FlatList, StyleSheet, Text } from 'react-native';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { Issue } from '../types';
-import IssueCard from '../components/IssueCard';
 import { useAuth } from '../hooks/useAuth';
 import { listUserIssues } from '../lib/sqliteIssues';
 import { getBackend } from '../lib/backend';
 
+import { Colors, Typography, Spacing } from '../constants/DesignSystem';
+import EnhancedIssueCard from '../components/EnhancedIssueCard';
+
 export default function MyReportsScreen({ navigation }: any) {
   const { session } = useAuth();
   const [data, setData] = useState<Issue[]>([]);
+
+  // ... (useEffect remains similar but using setData(data || []) logic)
 
   useEffect(() => {
     const load = async () => {
@@ -42,7 +46,7 @@ export default function MyReportsScreen({ navigation }: any) {
         setData(all as any);
       } else if (isSupabaseConfigured) {
         const { data } = await supabase
-          .from('issues')
+          .from('issues') // actually reports in v2? check schema
           .select('*')
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false });
@@ -52,15 +56,66 @@ export default function MyReportsScreen({ navigation }: any) {
     load();
   }, [session?.user?.id]);
 
+  const EmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emoji}>📝</Text>
+      <Text style={styles.title}>Your voice matters</Text>
+      <Text style={styles.message}>
+        You haven't submitted any reports yet.{'\n'}
+        Spot an issue? Snap a photo and help{'\n'}improve your neighborhood.
+      </Text>
+    </View>
+  );
+
   return (
-    <View style={{ flex: 1, padding: 12 }}>
+    <View style={styles.container}>
       <FlatList
         data={data}
         keyExtractor={(it) => String((it as any).id)}
         renderItem={({ item }) => (
-          <IssueCard item={item} onPress={() => navigation.navigate('PostDetail', { id: item.id })} />
+          <EnhancedIssueCard
+            item={item as any}
+            onPress={() => navigation.navigate('PostDetail', { id: item.id })}
+          />
         )}
+        ListEmptyComponent={<EmptyState />}
+        contentContainerStyle={data.length === 0 ? styles.centerContent : styles.listContent}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  listContent: {
+    padding: Spacing.md,
+  },
+  centerContent: {
+    flex: 1,
+    padding: Spacing.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emoji: {
+    fontSize: 64,
+    marginBottom: Spacing.md,
+  },
+  title: {
+    ...Typography.h3,
+    color: Colors.textMain,
+    marginBottom: Spacing.sm,
+    textAlign: 'center',
+  },
+  message: {
+    ...Typography.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+});

@@ -11,9 +11,24 @@ export default function LinkedAccountsScreen() {
   );
 }
 
+import { Colors, Spacing, Typography } from '../constants/DesignSystem';
+
+// ...
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
-  title: { fontSize: 18, fontWeight: '800' },
-  text: { color: '#555' }
+  container: {
+    flex: 1,
+    padding: Spacing.md,
+    gap: Spacing.md,
+    backgroundColor: Colors.background
+  },
+  title: {
+    ...Typography.h3,
+    color: Colors.textMain
+  },
+  text: {
+    ...Typography.body,
+    color: Colors.textSecondary
+  }
 });
 

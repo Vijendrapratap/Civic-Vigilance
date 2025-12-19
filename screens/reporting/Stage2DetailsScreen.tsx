@@ -51,6 +51,7 @@ export default function Stage2DetailsScreen({
   const [category, setCategory] = useState<CategoryKey>('pothole');
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState(initialAddress);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   const handleContinue = () => {
     if (!title.trim()) {
@@ -155,12 +156,29 @@ export default function Stage2DetailsScreen({
 
         {/* Location Confirmation Section */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>📍 Location Confirmation</Text>
+          <View style={styles.cardHeader}>
+            <Text style={styles.sectionTitle}>📍 Location Confirmation</Text>
+            <Pressable onPress={() => setIsEditingAddress(!isEditingAddress)}>
+              <Text style={styles.editLink}>{isEditingAddress ? 'Done' : 'Edit'}</Text>
+            </Pressable>
+          </View>
+
           <View style={styles.locationBox}>
-            <Text style={styles.addressText}>{address}</Text>
+            {isEditingAddress ? (
+              <TextInput
+                style={[styles.input, styles.addressInput]}
+                value={address}
+                onChangeText={setAddress}
+                multiline
+              />
+            ) : (
+              <Text style={styles.addressText}>{address}</Text>
+            )}
+
             <Text style={styles.coordsText}>
               {coords.lat.toFixed(5)}°N, {coords.lng.toFixed(5)}°E
             </Text>
+
             {/* TODO: Add map preview in v1.5 */}
             <Pressable style={styles.mapLink}>
               <Ionicons name="map-outline" size={16} color="#2563EB" />
@@ -303,5 +321,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: -2 },
+  },
+  editLink: {
+    fontSize: 14,
+    color: '#2563EB',
+    fontWeight: '600',
+  },
+  addressInput: {
+    backgroundColor: '#fff',
+    marginBottom: 8,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#23272F',
   },
 });

@@ -4,11 +4,11 @@ import * as Location from 'expo-location';
 import Header from '../components/Header';
 import SortBar from '../components/SortBar';
 import EnhancedIssueCard from '../components/EnhancedIssueCard';
-import FloatingActionButton from '../components/FloatingActionButton';
 import { useIssues } from '../hooks/useIssues';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '../lib/theme';
 import { calculateDistance } from '../lib/geohash';
+import { Colors, Typography } from '../constants/DesignSystem';
 
 export default function FeedScreen() {
   const [sort, setSort] = useState<'trending' | 'newest' | 'nearby'>('nearby'); // Changed to 'nearby' per PRD 5.3.1
@@ -93,7 +93,6 @@ export default function FeedScreen() {
         )}
         ListEmptyComponent={<EmptyState />}
       />
-      <FloatingActionButton onPress={() => navigation.navigate('Report' as never)} />
     </SafeAreaView>
   );
 }
@@ -101,7 +100,7 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg
+    backgroundColor: Colors.background, // F9FAFB per Design System
   },
   emptyState: {
     flex: 1,
@@ -115,16 +114,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#23272F',
+    ...Typography.h3,
+    color: Colors.textMain,
     marginBottom: 12,
     textAlign: 'center',
   },
   emptyMessage: {
-    fontSize: 16,
-    color: '#6B7280',
+    ...Typography.body,
+    color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
   },
 });

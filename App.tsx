@@ -4,7 +4,7 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme, View, Text, StyleSheet } from 'react-native';
+import { useColorScheme, Text, StyleSheet } from 'react-native';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
@@ -80,28 +80,87 @@ function ProfileNavigator() {
   );
 }
 
+import { Colors, Shadows, Spacing } from './constants/DesignSystem';
+import { View, TouchableOpacity } from 'react-native';
+
+// Custom Center Button (Snapchat/Reddit style)
+const CustomTabBarButton = ({ children, onPress }: any) => (
+  <TouchableOpacity
+    style={{
+      top: -20, // Bulge effect
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...Shadows.md,
+    }}
+    onPress={onPress}
+  >
+    <View
+      style={{
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: Colors.primary, // Civic Blue
+        borderWidth: 4,
+        borderColor: Colors.surface, // White border to cut visually
+      }}
+    >
+      {children}
+    </View>
+  </TouchableOpacity>
+);
+
 function AppTabs() {
   return (
-    <Tabs.Navigator screenOptions={({ route }) => ({
-      tabBarIcon: ({ color, size }) => {
-        const icon = route.name === 'Home' ? 'home-outline' : route.name === 'Report' ? 'camera' : 'person-circle-outline';
-        return <Ionicons name={icon as any} size={size} color={color} />;
-      },
-      tabBarActiveTintColor: '#00AEEF',
-      tabBarInactiveTintColor: '#8a9ab8',
-      tabBarStyle: {
-        backgroundColor: '#0b1524',
-        borderTopWidth: 0,
-        height: 72,
-        paddingBottom: 10,
-        paddingTop: 10,
-        position: 'absolute'
-      },
-      tabBarLabelStyle: { fontWeight: '700', fontSize: 12 },
-    })}>
-      <Tabs.Screen name="Home" component={FeedNavigator} options={{ headerShown: false }} />
-      <Tabs.Screen name="Report" component={ReportIssueScreen} />
-      <Tabs.Screen name="Profile" component={ProfileNavigator} options={{ headerShown: false }} />
+    <Tabs.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          backgroundColor: Colors.surface,
+          borderTopWidth: 0,
+          ...Shadows.lg,
+          height: 60,
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          right: 20,
+          borderRadius: 20,
+        },
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textMuted,
+      }}
+    >
+      <Tabs.Screen
+        name="Home"
+        component={FeedNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={28} color={color} />,
+        }}
+      />
+
+      {/* Center Action Button - Launches Modal */}
+      <Tabs.Screen
+        name="Report"
+        component={View} // Dummy component
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault(); // Prevent switching to this tab
+            navigation.navigate('ReportModal'); // Open Modal instead
+          },
+        })}
+        options={{
+          tabBarIcon: ({ focused }) => <Ionicons name="camera" size={32} color="#fff" />,
+          tabBarButton: (props) => <CustomTabBarButton {...props} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="Profile"
+        component={ProfileNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <Ionicons name="person" size={28} color={color} />,
+        }}
+      />
     </Tabs.Navigator>
   );
 }
@@ -123,28 +182,25 @@ function Root() {
     <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {session ? (
-          // If user has a session but no username/full_name (new signup), force UsernameSelection
-          (!profile?.username && !profile?.full_name) ? (
-            <>
+          <>
+            <RootStack.Screen name="AppTabs" component={AppTabs} />
+            <RootStack.Screen
+              name="ReportModal"
+              component={ReportIssueScreen}
+              options={{
+                presentation: 'fullScreenModal',
+                animation: 'slide_from_bottom',
+                gestureEnabled: false
+              }}
+            />
+            {(!profile?.username && !profile?.full_name) && (
               <RootStack.Screen
                 name="UsernameSelection"
                 component={UsernameSelectionScreen}
                 options={{ title: 'Choose Your Voice', headerBackVisible: false, headerShown: true }}
               />
-              {/* AppTabs available but secondary */}
-              <RootStack.Screen name="AppTabs" component={AppTabs} />
-            </>
-          ) : (
-            // User has username/profile (returning user), show AppTabs first
-            <>
-              <RootStack.Screen name="AppTabs" component={AppTabs} />
-              <RootStack.Screen
-                name="UsernameSelection"
-                component={UsernameSelectionScreen}
-                options={{ title: 'Choose Your Voice', headerBackVisible: false, headerShown: true }}
-              />
-            </>
-          )
+            )}
+          </>
         ) : (
           <RootStack.Screen name="Auth" component={AuthNavigator} />
         )}

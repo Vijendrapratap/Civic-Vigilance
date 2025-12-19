@@ -1,18 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../lib/theme';
+import { View, Image, StyleSheet, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { Colors, Spacing, Shadows } from '../constants/DesignSystem';
 
-export default function Header({ title = 'CivicVigilance' }: { title?: string }) {
+export default function Header() {
   return (
     <View style={styles.wrap}>
-      <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
-      <Text style={styles.title}>{title}</Text>
+      <Image
+        source={require('../assets/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
     </View>
   );
 }
 
+// ... (imports)
+
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingVertical: 14, backgroundColor: 'transparent', flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: colors.text, fontSize: 18, fontWeight: '800' }
+  wrap: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md, // slightly taller
+    backgroundColor: Colors.surface,
+    // Remove solid border, add modern shadow
+    borderBottomWidth: 0,
+    ...Shadows.sm,
+    zIndex: 10, // Ensure shadow casts on content
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  logo: {
+    width: 140, // Slightly smaller, elegant logo
+    height: 28
+  }
 });
