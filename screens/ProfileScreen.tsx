@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Pressable, Alert, ScrollView } from 'react-native';
-import { Colors, Typography, Spacing } from '../constants/DesignSystem';
+import { View, Text, StyleSheet, Image, Pressable, Alert, ScrollView, StatusBar } from 'react-native';
+import { Colors, Typography, Spacing, Shadows, BorderRadius, Layout } from '../constants/DesignSystem';
 import { useAuth } from '../hooks/useAuth';
 import ListItem from '../components/ListItem';
 import Button from '../components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { loadProfile, saveProfile, pickAvatar } from '../lib/profile';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen({ navigation }: any) {
   const { session, signOut } = useAuth();
@@ -19,10 +20,8 @@ export default function ProfileScreen({ navigation }: any) {
     const run = async () => {
       const p = await loadProfile(userId);
       setName(p.full_name || 'Civic User');
-      // @ts-ignore - profile typing mismatch legacy fix
-      setAvatar(p.photoURL || p.avatar_url || null);
-      // @ts-ignore
-      const year = (p.createdAt || p.created_at || new Date()).getFullYear();
+      setAvatar(p.photoURL as string || p.avatar_url as string || null);
+      const year = new Date((p.createdAt as any) || (p.created_at as any) || Date.now()).getFullYear();
       setJoined(String(year));
     };
     run();
@@ -31,10 +30,8 @@ export default function ProfileScreen({ navigation }: any) {
   const onChangeAvatar = async () => {
     const uri = await pickAvatar();
     if (!uri) return;
-    // @ts-ignore
-    const updated = await saveProfile({ id: userId, full_name: name, photoURL: uri });
-    // @ts-ignore
-    setAvatar(updated.photoURL || updated.avatar_url || uri);
+    const updated = await saveProfile({ id: userId, full_name: name, photoURL: uri } as any);
+    setAvatar(updated.photoURL as string || updated.avatar_url as string || uri);
   };
 
   const onLogout = () => {
@@ -45,84 +42,204 @@ export default function ProfileScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.pageTitle}>Profile</Text>
-      <Pressable onPress={onChangeAvatar} accessibilityLabel="Change avatar">
-        {avatar ? (
-          <Image source={{ uri: avatar }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarFallback]}><Ionicons name="person" size={40} color="#222" /></View>
-        )}
-      </Pressable>
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.joined}>Joined {joined}</Text>
-
-      <View style={{ height: 14 }} />
-      <View style={styles.card}>
-        <ListItem icon="document-text-outline" title="My Reports" onPress={() => navigation.navigate('MyReports')} />
-        <ListItem icon="settings-outline" title="Settings" onPress={() => navigation.navigate('Settings')} />
-        <ListItem icon="bug-outline" title="Debug Info" onPress={() => navigation.navigate('Debug')} />
+    <View style={styles.mainContainer}>
+      <StatusBar barStyle="light-content" />
+      {/* Premium Header Background */}
+      <View style={styles.headerBackground}>
+        <LinearGradient
+          colors={[Colors.primaryDark, Colors.primary]}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+        <View style={styles.headerGlass} />
       </View>
 
-      <View style={styles.card}>
-        <ListItem icon="notifications-outline" title="Notifications" subtitle="Manage your alerts" onPress={() => navigation.navigate('Notifications')} />
-        <ListItem icon="link-outline" title="Linked Accounts" onPress={() => navigation.navigate('LinkedAccounts')} />
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-      <View style={styles.card}>
-        <ListItem icon="shield-outline" title="Privacy Policy" onPress={() => navigation.navigate('Policy', { type: 'privacy' })} />
-        <ListItem icon="document-outline" title="Terms of Service" onPress={() => navigation.navigate('Policy', { type: 'terms' })} />
-      </View>
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
+          <Pressable onPress={onChangeAvatar} style={styles.avatarContainer}>
+            {avatar ? (
+              <Image source={{ uri: avatar }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.avatarFallback]}>
+                <Ionicons name="person" size={50} color={Colors.primary} />
+              </View>
+            )}
+            <View style={styles.cameraIcon}>
+              <Ionicons name="camera" size={16} color="white" />
+            </View>
+          </Pressable>
 
-      <View style={{ height: 20 }} />
-      <Button title="Log out" onPress={onLogout} />
-      <View style={{ height: 40 }} />
-    </ScrollView>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.email}>{email}</Text>
+          <View style={styles.joinedBadge}>
+            <Text style={styles.joinedText}>Member since {joined}</Text>
+          </View>
+        </View>
+
+        {/* Statistics Row (Demo) */}
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>5</Text>
+            <Text style={styles.statLabel}>Reports</Text>
+          </View>
+          <View style={styles.verticalDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>12</Text>
+            <Text style={styles.statLabel}>Upvotes</Text>
+          </View>
+          <View style={styles.verticalDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>3</Text>
+            <Text style={styles.statLabel}>Fixed</Text>
+          </View>
+        </View>
+
+        <Text style={styles.sectionTitle}>Account</Text>
+        <View style={styles.menuCard}>
+          <ListItem icon="document-text-outline" title="My Reports" onPress={() => navigation.navigate('MyReports')} />
+          <ListItem icon="settings-outline" title="Settings" onPress={() => navigation.navigate('Settings')} />
+          <ListItem icon="notifications-outline" title="Notifications" onPress={() => navigation.navigate('Notifications')} />
+        </View>
+
+        <Text style={styles.sectionTitle}>Support</Text>
+        <View style={styles.menuCard}>
+          <ListItem icon="shield-outline" title="Privacy Policy" onPress={() => navigation.navigate('Policy', { type: 'privacy' })} />
+          <ListItem icon="help-circle-outline" title="Help & Support" onPress={() => { }} />
+          <ListItem icon="bug-outline" title="Debug Info" onPress={() => navigation.navigate('Debug')} />
+        </View>
+
+        <View style={{ height: 24 }} />
+        <Button title="Log Out" onPress={onLogout} variant="danger" />
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
   );
 }
 
-// ... styles begin
-
 const styles = StyleSheet.create({
-  container: {
-    padding: Spacing.md,
+  mainContainer: {
+    flex: 1,
     backgroundColor: Colors.background,
-    paddingBottom: 100, // Space for floating tab bar
   },
-  pageTitle: {
-    ...Typography.h2,
-    color: Colors.textMain,
-    textAlign: 'center',
-    marginBottom: Spacing.md
+  headerBackground: {
+    height: 180,
+    width: '100%',
+    position: 'absolute',
+    top: 0,
+    zIndex: 0,
+  },
+  headerGlass: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  scrollContent: {
+    paddingTop: 100, // Push content down to overlap header
+    paddingHorizontal: Spacing.screenPadding,
+    paddingBottom: 100,
+  },
+  profileCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    alignItems: 'center',
+    ...Shadows.lg,
+    marginBottom: Spacing.lg,
+  },
+  avatarContainer: {
+    marginTop: -60, // Pull up out of card
+    marginBottom: Spacing.md,
+    ...Shadows.md,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignSelf: 'center',
-    backgroundColor: Colors.surface,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     borderWidth: 4,
-    borderColor: Colors.border,
+    borderColor: Colors.surface,
   },
   avatarFallback: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.surface
+    backgroundColor: Colors.primaryLight,
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: Colors.primary,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.surface,
   },
   name: {
-    ...Typography.h3,
-    color: Colors.textMain,
-    textAlign: 'center',
-    marginTop: Spacing.md
+    ...Typography.h2,
+    marginBottom: 4,
   },
-  joined: {
+  email: {
+    ...Typography.bodySm,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.md,
+  },
+  joinedBadge: {
+    backgroundColor: Colors.surfaceHighlight,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.pill,
+  },
+  joinedText: {
     ...Typography.caption,
     color: Colors.textMuted,
-    textAlign: 'center',
-    marginTop: 4
+    fontWeight: '600',
   },
-  card: {
-    backgroundColor: 'transparent',
-    marginTop: Spacing.md
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.surface,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.xl,
+    ...Shadows.sm,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.textMain,
+  },
+  statLabel: {
+    ...Typography.caption,
+    marginTop: 2,
+  },
+  verticalDivider: {
+    width: 1,
+    height: '60%',
+    backgroundColor: Colors.border,
+    alignSelf: 'center',
+  },
+  sectionTitle: {
+    ...Typography.h4,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm,
+    marginLeft: 4,
+  },
+  menuCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.xs,
+    marginBottom: Spacing.lg,
+    ...Shadows.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
 });
