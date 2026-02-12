@@ -41,7 +41,7 @@ export default function PostDetailScreen({ route }: any) {
             ? 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80&w=800'
             : (id === 'dummy-2' ? 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=800' : 'https://images.unsplash.com/photo-1555677284-6a6f9716399a?auto=format&fit=crop&q=80&w=800'),
           address: 'Mumbai, India',
-          privacy: 'personal',
+          privacy: 'twitter',
           metrics: { upvotes: 42, downvotes: 2, comments: 4, shares: 8, twitterImpressions: 1250 },
           anonymousUsername: 'Citizen_One',
           createdAt: new Date().toISOString(),
@@ -185,7 +185,15 @@ export default function PostDetailScreen({ route }: any) {
     return roots.map(r => renderNode(r));
   }, [comments]);
 
-  if (!issue) return null;
+  if (!issue) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
+        <Ionicons name="alert-circle-outline" size={64} color="#D1D5DB" />
+        <Text style={{ fontSize: 18, fontWeight: '600', color: '#6B7280', marginTop: 16 }}>Issue not found</Text>
+        <Text style={{ fontSize: 14, color: '#9CA3AF', marginTop: 8 }}>This issue may have been removed or is unavailable.</Text>
+      </View>
+    );
+  }
 
   const tweetUrl = issue.tweetUrl;
 

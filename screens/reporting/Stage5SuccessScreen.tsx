@@ -1,12 +1,12 @@
 /**
  * Stage 5: Success Celebration
- * PRD Section 5.2 - Stage 5: Submission & Confirmation
  *
  * Features:
  * - Celebratory UI with animation
  * - Summary of what happened
+ * - Share on X button if user chose App Only
+ * - Share More for multi-platform sharing
  * - Action buttons (View Post, Share More, Done)
- * - Deep link to issue detail
  */
 
 import React, { useEffect } from 'react';
@@ -42,7 +42,6 @@ export default function Stage5SuccessScreen({
   const fadeAnim = new Animated.Value(0);
 
   useEffect(() => {
-    // Celebration animation
     Animated.sequence([
       Animated.timing(scaleAnim, {
         toValue: 1,
@@ -75,19 +74,15 @@ export default function Stage5SuccessScreen({
 
       {/* Success Message */}
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <Text style={styles.title}>🎉 Success!</Text>
+        <Text style={styles.title}>Issue Reported!</Text>
         <Text style={styles.subtitle}>Your voice is now live!</Text>
 
         {/* What Happened Summary */}
         <View style={styles.summaryBox}>
-          {privacy !== 'none' && (
+          {privacy === 'twitter' && (
             <View style={styles.summaryRow}>
               <Ionicons name="logo-twitter" size={20} color="#1DA1F2" />
-              <Text style={styles.summaryText}>
-                {privacy === 'civic_vigilance'
-                  ? 'Posted to Twitter via @CivicVigilance'
-                  : 'Posted from your Twitter account'}
-              </Text>
+              <Text style={styles.summaryText}>Shared on X/Twitter</Text>
             </View>
           )}
 
@@ -101,6 +96,19 @@ export default function Stage5SuccessScreen({
             <Text style={styles.summaryText}>Others can upvote to amplify</Text>
           </View>
         </View>
+
+        {/* Prompt to share if user chose App Only */}
+        {privacy === 'none' && (
+          <View style={styles.sharePromptBox}>
+            <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sharePromptTitle}>Amplify your issue!</Text>
+              <Text style={styles.sharePromptText}>
+                Share on X/Twitter to tag authorities and get faster attention.
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Call to Action */}
         <View style={styles.ctaBox}>
@@ -129,16 +137,6 @@ export default function Stage5SuccessScreen({
             <Text style={styles.doneText}>Done</Text>
           </Pressable>
         </View>
-
-        {/* Tweet Link (if posted to Twitter) */}
-        {tweetUrl && (
-          <Pressable onPress={() => {
-            // TODO: Open Twitter URL
-            console.log('[Success] Opening tweet:', tweetUrl);
-          }}>
-            <Text style={styles.tweetLink}>🐦 View on Twitter</Text>
-          </Pressable>
-        )}
       </Animated.View>
     </View>
   );
@@ -204,6 +202,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#4B5563',
   },
+  sharePromptBox: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  sharePromptTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E40AF',
+    marginBottom: 4,
+  },
+  sharePromptText: {
+    fontSize: 13,
+    color: '#1E40AF',
+    lineHeight: 18,
+  },
   ctaBox: {
     width: '100%',
     backgroundColor: '#FEF3C7',
@@ -242,11 +263,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     fontWeight: '500',
-  },
-  tweetLink: {
-    marginTop: 24,
-    fontSize: 15,
-    color: '#1DA1F2',
-    fontWeight: '600',
   },
 });

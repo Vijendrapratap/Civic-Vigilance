@@ -23,7 +23,7 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
       category: 'pothole',
       photos: ['https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80&w=800'],
       location: { lat: 19.0760, lng: 72.8777, address: 'Main Street, Mumbai', geohash: 'te7u' },
-      privacy: 'personal',
+      privacy: 'twitter',
       status: 'posted',
       anonymousUsername: 'Citizen_One',
       metrics: { upvotes: 42, downvotes: 2, comments: 15, shares: 8 },
@@ -40,7 +40,7 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
       category: 'garbage',
       photos: ['https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=800'],
       location: { lat: 19.0800, lng: 72.8800, address: 'Market Road, Mumbai', geohash: 'te7u' },
-      privacy: 'civic_vigilance',
+      privacy: 'twitter',
       status: 'pending',
       anonymousUsername: 'Eco_Warrior',
       metrics: { upvotes: 128, downvotes: 5, comments: 45, shares: 32 },
@@ -57,7 +57,7 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
       category: 'streetlight',
       photos: ['https://images.unsplash.com/photo-1555677284-6a6f9716399a?auto=format&fit=crop&q=80&w=800'],
       location: { lat: 19.0820, lng: 72.8820, address: 'Park Avenue, Mumbai', geohash: 'te7u' },
-      privacy: 'personal',
+      privacy: 'twitter',
       status: 'posted',
       anonymousUsername: 'Night_Owl',
       metrics: { upvotes: 15, downvotes: 0, comments: 3, shares: 1 },
@@ -72,12 +72,12 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
     const run = async () => {
       setLoading(true);
 
-      // Check for guest user in session (using logic from useAuth context)
-      const isGuest = session?.user?.email === 'guest@civic.com';
+      // Check for guest user in session
+      const isGuest = session?.user?.email === '__guest__';
 
       if (isGuest) {
         // Return sorted dummy data for visualization
-        console.log('[useIssues] Serving dummy data for Guest Mode');
+        if (__DEV__) console.log('[useIssues] Serving dummy data for Guest Mode');
         await new Promise(r => setTimeout(r, 500)); // Fake network delay
 
         // Clone to avoid mutating sorting reference
@@ -134,6 +134,15 @@ export function useIssues(sort: SortMode, coords?: { lat: number; lng: number })
   return { data, loading };
 }
 
+// Basic XSS sanitization for user input
+function sanitizeInput(input: string): string {
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 export async function createIssue(payload: {
   title: string;
   description: string;
@@ -143,13 +152,38 @@ export async function createIssue(payload: {
   lng?: number;
   address?: string;
 }) {
+  // Input validation
+  if (!payload.title || payload.title.trim().length === 0) {
+    throw new Error('Title is required');
+  }
+  if (payload.title.length > 100) {
+    throw new Error('Title must be 100 characters or less');
+  }
+  if (!payload.description || payload.description.trim().length === 0) {
+    throw new Error('Description is required');
+  }
+  if (payload.description.length > 2000) {
+    throw new Error('Description must be 2000 characters or less');
+  }
+  if (!payload.category) {
+    throw new Error('Category is required');
+  }
+
+  // Sanitize user-generated text content
+  const sanitizedPayload = {
+    ...payload,
+    title: sanitizeInput(payload.title.trim()),
+    description: sanitizeInput(payload.description.trim()),
+    address: payload.address ? sanitizeInput(payload.address) : payload.address,
+  };
+
   if (getBackend() === 'sqlite') {
     const localUserId = await ensureSessionUserId();
-    return await (createIssueSqlite({ user_id: localUserId, ...payload }) as any);
+    return await (createIssueSqlite({ user_id: localUserId, ...sanitizedPayload }) as any);
   }
 
   // Supabase backend
-  const { data, error } = await supabase.from('issues').insert(payload).select('*').single();
+  const { data, error } = await supabase.from('issues').insert(sanitizedPayload).select('*').single();
   if (error) throw error;
   return data;
 }

@@ -29,7 +29,7 @@ export default function MyReportsScreen({ navigation }: any) {
           category: 'pothole',
           photos: ['https://images.unsplash.com/photo-1596484552993-3d752dd30c33?auto=format&fit=crop&q=80&w=800'],
           location: { lat: 19.1000, lng: 72.8900, address: 'School Lane, Mumbai', geohash: 'te7u' },
-          privacy: 'personal',
+          privacy: 'twitter',
           status: 'pending',
           anonymousUsername: 'Guest_User',
           metrics: { upvotes: 5, downvotes: 0, comments: 1, shares: 0 },

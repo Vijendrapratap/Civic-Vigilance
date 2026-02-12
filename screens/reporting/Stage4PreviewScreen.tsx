@@ -78,7 +78,7 @@ export default function Stage4PreviewScreen({
       category
     );
 
-    console.log('[Preview] Matched authorities:', matchedAuthorities);
+    if (__DEV__) console.log('[Preview] Matched authorities:', matchedAuthorities);
     setAuthorities(matchedAuthorities.length > 0 ? matchedAuthorities : ['@mygovindia']);
   }, [coords, category, address]);
 
@@ -146,27 +146,14 @@ export default function Stage4PreviewScreen({
             {/* Tweet Header */}
             <View style={styles.tweetHeader}>
               <View style={styles.tweetAvatar}>
-                {privacy === 'civic_vigilance' ? (
-                  <View style={styles.avatarPlaceholder}>
-                    <Ionicons name="shield-checkmark" size={20} color="#fff" />
-                  </View>
-                ) : (
-                  <View style={[styles.avatarPlaceholder, { backgroundColor: '#6B7280' }]}>
-                    <Ionicons name="person" size={20} color="#fff" />
-                  </View>
-                )}
+                <View style={[styles.avatarPlaceholder, { backgroundColor: '#1DA1F2' }]}>
+                  <Ionicons name="person" size={20} color="#fff" />
+                </View>
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.tweetUserRow}>
-                  <Text style={styles.tweetDisplayName}>
-                    {privacy === 'civic_vigilance' ? 'Civic Vigilance' : 'Your Name'}
-                  </Text>
-                  {privacy === 'civic_vigilance' && (
-                    <Ionicons name="checkmark-circle" size={14} color="#1DA1F2" style={{ marginLeft: 2 }} />
-                  )}
-                  <Text style={styles.tweetHandle}>
-                    {privacy === 'civic_vigilance' ? '@CivicVigilance' : '@your_handle'} · Now
-                  </Text>
+                  <Text style={styles.tweetDisplayName}>Your Account</Text>
+                  <Text style={styles.tweetHandle}>@you · Now</Text>
                 </View>
               </View>
               <Ionicons name="logo-twitter" size={20} color="#1DA1F2" />
@@ -202,9 +189,7 @@ export default function Stage4PreviewScreen({
           </View>
 
           <Text style={styles.privacyNote}>
-            {privacy === 'civic_vigilance'
-              ? '✅ Posted from @CivicVigilance account (anonymous)'
-              : '✅ Posted from your Twitter account (public)'}
+            ✅ Will open in Twitter/X for you to post
           </Text>
         </View>
       )}

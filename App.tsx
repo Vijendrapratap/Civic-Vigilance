@@ -47,9 +47,10 @@ import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import MyReportsScreen from './screens/MyReportsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
-import LinkedAccountsScreen from './screens/LinkedAccountsScreen';
 import PolicyScreen from './screens/PolicyScreen';
 import DebugScreen from './screens/DebugScreen';
+import TermsOfServiceScreen from './screens/TermsOfServiceScreen';
+import PrivacyPolicyScreen from './screens/PrivacyPolicyScreen';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 
 const RootStack = createNativeStackNavigator();
@@ -73,8 +74,9 @@ function ProfileNavigator() {
       <ProfileStack.Screen name="MyReports" component={MyReportsScreen} options={{ title: 'My Reports' }} />
       <ProfileStack.Screen name="Settings" component={SettingsScreen} />
       <ProfileStack.Screen name="Notifications" component={NotificationsScreen} />
-      <ProfileStack.Screen name="LinkedAccounts" component={LinkedAccountsScreen} options={{ title: 'Linked Accounts' }} />
       <ProfileStack.Screen name="Policy" component={PolicyScreen} options={{ title: 'Policy' }} />
+      <ProfileStack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={{ title: 'Terms of Service' }} />
+      <ProfileStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ title: 'Privacy Policy' }} />
       <ProfileStack.Screen name="Debug" component={DebugScreen} options={{ title: 'Debug' }} />
     </ProfileStack.Navigator>
   );
@@ -225,48 +227,50 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1a1a2e',
-    padding: 20,
+    backgroundColor: Colors.background,
+    padding: Spacing.screenPadding,
   },
   errorTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ff6b6b',
-    marginBottom: 16,
+    color: Colors.error,
+    marginBottom: Spacing.md,
   },
   errorText: {
     fontSize: 14,
-    color: '#fff',
+    color: Colors.textMain,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   errorHint: {
     fontSize: 12,
-    color: '#888',
-    marginTop: 16,
+    color: Colors.textMuted,
+    marginTop: Spacing.md,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0b1524',
+    backgroundColor: Colors.background,
   },
   loadingText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#00AEEF',
-    marginBottom: 8,
+    color: Colors.primary,
+    marginBottom: Spacing.sm,
   },
   loadingHint: {
     fontSize: 14,
-    color: '#8a9ab8',
+    color: Colors.textSecondary,
   },
 });
 
 export default function App() {
-  console.log('[App] Starting Civic Vigilance...');
-  console.log('[App] Supabase configured:', process.env.EXPO_PUBLIC_SUPABASE_URL ? 'Yes' : 'No');
-  console.log('[App] Backend mode:', process.env.EXPO_PUBLIC_BACKEND_MODE);
+  if (__DEV__) {
+    console.log('[App] Starting Civic Vigilance...');
+    console.log('[App] Supabase configured:', process.env.EXPO_PUBLIC_SUPABASE_URL ? 'Yes' : 'No');
+    console.log('[App] Backend mode:', process.env.EXPO_PUBLIC_BACKEND_MODE);
+  }
 
   return (
     <ErrorBoundary>

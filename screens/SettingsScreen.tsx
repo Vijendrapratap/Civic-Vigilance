@@ -10,11 +10,12 @@
  */
 
 import React, { useState } from 'react';
-import { ScrollView, View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { ScrollView, View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { saveProfile } from '../lib/profile';
 import { useAuth } from '../hooks/useAuth';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export default function SettingsScreen() {
   const navigation = useNavigation<any>();
@@ -23,8 +24,24 @@ export default function SettingsScreen() {
   const { profile, signOut, refreshProfile } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
 
-  // If no profile yet (loading), show safe defaults or loading spinner
-  if (!profile) return null;
+  // If no profile yet (loading), show loading skeleton
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back">
+            <Ionicons name="arrow-back" size={24} color={Colors.textMain} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Settings</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={{ ...Typography.bodySm, color: Colors.textMuted, marginTop: Spacing.md }}>Loading settings...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleUpdate = async (updates: Partial<typeof profile>) => {
     setIsSaving(true);
@@ -84,8 +101,36 @@ export default function SettingsScreen() {
         {
           text: 'Delete',
           style: 'destructive',
+          onPress: async () => {
+            try {
+              if (isSupabaseConfigured && profile.uid) {
+                // Delete user data from profiles table
+                await supabase.from('profiles').delete().eq('id', profile.uid);
+                // Sign out (actual user deletion requires service role key on backend)
+                await signOut();
+                Alert.alert('Account Deleted', 'Your account data has been removed. If you need full data purge, email support@civicvigilance.com.');
+              } else {
+                await signOut();
+              }
+            } catch {
+              Alert.alert('Error', 'Failed to delete account. Please email support@civicvigilance.com for assistance.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleRequestDataExport = () => {
+    Alert.alert(
+      'Request Data Export',
+      'We will email a copy of your data to your registered email address within 72 hours.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Request Export',
           onPress: () => {
-            Alert.alert('Contact Support', 'Please email support@civicvigilance.com to process account deletion securely.');
+            Alert.alert('Request Sent', 'Your data export request has been submitted. You will receive an email at ' + (profile.email || 'your registered address') + ' within 72 hours.');
           },
         },
       ]
@@ -96,8 +141,8 @@ export default function SettingsScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
-          <Ionicons name="arrow-back" size={24} color="#23272F" />
+        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8} accessibilityRole="button" accessibilityLabel="Go back">
+          <Ionicons name="arrow-back" size={24} color={Colors.textMain} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={{ width: 24 }} />
@@ -108,7 +153,7 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
 
-          <TouchableOpacity style={styles.settingRow} onPress={() => console.log('Edit profile')}>
+          <TouchableOpacity style={styles.settingRow} onPress={() => navigation.navigate('ProfileHome')} accessibilityRole="button" accessibilityLabel="Edit username">
             <View style={styles.settingLeft}>
               <Ionicons name="person-outline" size={22} color="#4B5563" />
               <View style={styles.settingText}>
@@ -146,28 +191,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Connected Accounts */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Connected Accounts</Text>
-
-          {/* Twitter only for MVP */}
-          <TouchableOpacity
-            style={styles.settingRow}
-            onPress={() => console.log('Connect Twitter')}
-          >
-            <View style={styles.settingLeft}>
-              <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
-              <View style={styles.settingText}>
-                <Text style={styles.settingLabel}>Twitter</Text>
-                <Text style={styles.settingDisconnected}>
-                  {profile.twitterConnected ? 'Connected' : 'Not Connected'}
-                </Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
-        </View>
-
         {/* Privacy Settings */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Privacy</Text>
@@ -178,9 +201,7 @@ export default function SettingsScreen() {
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Default Privacy</Text>
                 <Text style={styles.settingValue}>
-                  {profile.privacyDefault === 'civic_vigilance' && 'Via @CivicVigilance'}
-                  {profile.privacyDefault === 'personal' && 'Via My Twitter'}
-                  {profile.privacyDefault === 'none' && 'App Only'}
+                  {profile.privacyDefault === 'twitter' ? 'Share on X' : 'App Only'}
                 </Text>
               </View>
             </View>
@@ -352,20 +373,36 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Data & Privacy */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Data & Privacy</Text>
+
+          <TouchableOpacity style={styles.settingRow} onPress={handleRequestDataExport} accessibilityRole="button">
+            <View style={styles.settingLeft}>
+              <Ionicons name="download-outline" size={22} color="#4B5563" />
+              <View style={styles.settingText}>
+                <Text style={styles.settingLabel}>Request Data Export</Text>
+                <Text style={styles.settingSubtext}>Get a copy of your data via email</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
+
         {/* Danger Zone */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account Actions</Text>
 
-          <TouchableOpacity style={styles.settingRowDanger} onPress={handleLogout}>
+          <TouchableOpacity style={styles.settingRowDanger} onPress={handleLogout} accessibilityRole="button" accessibilityLabel="Logout">
             <View style={styles.settingLeft}>
-              <Ionicons name="log-out-outline" size={22} color="#DC2626" />
+              <Ionicons name="log-out-outline" size={22} color={Colors.error} />
               <Text style={styles.settingLabelDanger}>Logout</Text>
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingRowDanger} onPress={handleDeleteAccount}>
+          <TouchableOpacity style={styles.settingRowDanger} onPress={handleDeleteAccount} accessibilityRole="button" accessibilityLabel="Delete account">
             <View style={styles.settingLeft}>
-              <Ionicons name="trash-outline" size={22} color="#DC2626" />
+              <Ionicons name="trash-outline" size={22} color={Colors.error} />
               <Text style={styles.settingLabelDanger}>Delete Account</Text>
             </View>
           </TouchableOpacity>

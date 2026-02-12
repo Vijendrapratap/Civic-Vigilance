@@ -15,8 +15,8 @@ export type IssueCategory =
 // Category key type for mapping
 export type CategoryKey = IssueCategory;
 
-// Twitter posting methods - core feature per PRD (3-tier privacy system)
-export type TwitterPostingMethod = 'civic_vigilance' | 'personal' | 'none';
+// Twitter sharing method - simplified deep link approach
+export type TwitterPostingMethod = 'twitter' | 'none';
 
 // Posting status (NOT resolution status - we don't track if authorities fixed issues)
 export type PostingStatus = 'pending' | 'posted' | 'failed';
@@ -106,7 +106,7 @@ export interface Report {
   };
 
   // Privacy & Amplification (PRD Section 5.2 Stage 3 - THE KEY FEATURE)
-  privacy: TwitterPostingMethod; // 'anonymous' | 'personal' | 'appOnly' in PRD, but we use existing type
+  privacy: TwitterPostingMethod; // 'twitter' | 'none'
   twitterHandle?: string; // Which handle posted (for display)
   authorities: string[]; // @handles to tag (PRD Section 5.2 Stage 4B)
 
@@ -276,7 +276,7 @@ export interface PendingTwitterPost {
   id: string;
   reportId: string;
   userId: string;
-  method: 'civic_vigilance' | 'personal';
+  method: 'twitter';
   tweetText: string;
   imageUrl: string;
   authorities: string[]; // handles to tag

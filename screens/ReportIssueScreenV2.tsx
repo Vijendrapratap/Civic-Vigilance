@@ -15,6 +15,8 @@ import { TwitterPostingMethod, CategoryKey } from '../types';
 import { generateAnonymousUsername } from '../lib/username';
 import { createIssue } from '../hooks/useIssues';
 import { uploadPhotos } from '../lib/storage';
+import { composePostText, shareToTwitter, showShareDialog } from '../lib/sharingEnhanced';
+import { getAuthorityHandles } from '../lib/smartAuthorities';
 
 // Import all 5 stage screens
 import Stage1CameraScreen from './reporting/Stage1CameraScreen';
@@ -94,7 +96,7 @@ export default function ReportIssueScreenV2() {
   // Stage 4: Preview -> Submit -> Stage 5: Success
   const handleStage4Submit = async () => {
     try {
-      console.log('[Report] Starting submission...');
+      if (__DEV__) console.log('[Report] Starting submission...');
 
       // Validate required fields
       if (!reportData.title || !reportData.category) {
@@ -102,12 +104,12 @@ export default function ReportIssueScreenV2() {
       }
 
       // Step 1: Upload photos to Supabase Storage
-      console.log('[Report] Uploading photos...');
+      if (__DEV__) console.log('[Report] Uploading photos...');
       const photoUrls = await uploadPhotos(reportData.photos, 'issues');
-      console.log('[Report] Photos uploaded:', photoUrls);
+      if (__DEV__) console.log('[Report] Photos uploaded:', photoUrls);
 
       // Step 2: Create issue in database
-      console.log('[Report] Creating issue in database...');
+      if (__DEV__) console.log('[Report] Creating issue in database...');
       const issueData = await createIssue({
         title: reportData.title,
         description: reportData.description || '',
@@ -118,16 +120,28 @@ export default function ReportIssueScreenV2() {
         address: reportData.address,
       });
 
-      console.log('[Report] Issue created:', issueData);
+      if (__DEV__) console.log('[Report] Issue created:', issueData);
 
-      // Step 3: Post to Twitter (if privacy !== 'none')
-      // TODO: Implement Twitter posting in future update
-      // For now, we just save the issue to the database
+      // Step 3: Share to Twitter via deep link (if user chose Twitter sharing)
       let tweetUrl: string | undefined;
-      if (reportData.privacy !== 'none') {
-        console.log('[Report] Twitter posting not yet implemented');
-        // Future: Call Twitter API or queue for backend processing
-        tweetUrl = undefined; // Will implement Twitter API later
+      if (reportData.privacy === 'twitter') {
+        if (__DEV__) console.log('[Report] Opening Twitter for sharing...');
+        const authorities = getAuthorityHandles(
+          reportData.coords.lat,
+          reportData.coords.lng,
+          reportData.address,
+          reportData.category!
+        );
+        const tweetText = composePostText({
+          title: reportData.title!,
+          description: reportData.description,
+          address: reportData.address,
+          lat: reportData.coords.lat,
+          lng: reportData.coords.lng,
+          authorities: authorities.length > 0 ? authorities : ['@mygovindia'],
+          category: reportData.category,
+        });
+        await shareToTwitter({ text: tweetText });
       }
 
       // Generate anonymous username for this post
@@ -142,7 +156,7 @@ export default function ReportIssueScreenV2() {
         tweetUrl,
       });
 
-      console.log('[Report] Submission successful!');
+      if (__DEV__) console.log('[Report] Submission successful!');
       setCurrentStage(5);
     } catch (error: any) {
       console.error('[Report] Submission error:', error);
@@ -169,7 +183,15 @@ export default function ReportIssueScreenV2() {
   };
 
   const handleShareMore = () => {
-    // TODO: Implement native share functionality
+    const tweetText = composePostText({
+      title: reportData.title || '',
+      description: reportData.description,
+      address: reportData.address,
+      lat: reportData.coords.lat,
+      lng: reportData.coords.lng,
+      category: reportData.category,
+    });
+    showShareDialog({ text: tweetText });
   };
 
   const handleDone = () => {
@@ -220,7 +242,7 @@ export default function ReportIssueScreenV2() {
           category={reportData.category || 'other'}
           address={reportData.address}
           coords={reportData.coords}
-          privacy={reportData.privacy || 'civic_vigilance'}
+          privacy={reportData.privacy || 'twitter'}
           onSubmit={handleStage4Submit}
           onBack={() => handleBack(3)}
           onEditDetails={() => handleBack(2)}
@@ -231,7 +253,7 @@ export default function ReportIssueScreenV2() {
       {currentStage === 5 && (
         <Stage5SuccessScreen
           issueId={reportData.issueId || ''}
-          privacy={reportData.privacy || 'civic_vigilance'}
+          privacy={reportData.privacy || 'twitter'}
           tweetUrl={reportData.tweetUrl}
           onViewPost={handleViewPost}
           onShareMore={handleShareMore}

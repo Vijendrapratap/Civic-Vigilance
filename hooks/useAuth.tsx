@@ -13,6 +13,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { User as ProfileUser } from '../types';
+import * as Crypto from 'expo-crypto';
 
 // User Session type (Auth User)
 interface AuthUser {
@@ -31,6 +32,7 @@ interface AuthContextType {
   profile: ProfileUser | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string; code?: string } | undefined>;
+  signInAsGuest: () => Promise<{ error?: string; code?: string } | undefined>;
   signUp: (email: string, password: string) => Promise<{ data?: any; error?: string; code?: string }>;
   resetPassword: (email: string) => Promise<{ error?: string; code?: string } | undefined>;
   signOut: () => Promise<void>;
@@ -147,6 +149,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
 
     /**
+     * Sign in as guest with a unique anonymous session
+     * No hardcoded credentials - generates a random UUID-based identity
+     */
+    signInAsGuest: async () => {
+      const guestId = `guest-${Crypto.randomUUID()}`;
+
+      setSession({ user: { id: guestId, email: '__guest__' } });
+      setProfile({
+        id: guestId,
+        username: 'Guest_User',
+        full_name: 'Guest User',
+        email: '__guest__',
+        anonymousMode: false,
+        stats: { totalPosts: 5, totalUpvotes: 34, totalComments: 12, totalShares: 8 },
+        createdAt: new Date(),
+        lastLoginAt: new Date(),
+        googleConnected: false,
+        twitterConnected: false,
+        privacyDefault: 'twitter',
+        alwaysAskTwitterMethod: true,
+        isVerified: false,
+        preferences: {
+          notifications: {
+            nearby: false, comments: false, upvotes: false, replies: false,
+            twitter: false, digest: false, trending: false, similar: false,
+          },
+        },
+        privacySettings: { profileVisibility: 'public', showLocation: true },
+      } as any);
+
+      return undefined;
+    },
+
+    /**
      * Sign in with email and password
      *
      * @param email - User's email address
@@ -154,45 +190,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      * @returns Error object if sign in fails, undefined if successful
      */
     signIn: async (email: string, password: string) => {
-      // DUMMY CREDENTIALS CHECK
-      if (email === 'guest@civic.com' && password === 'password123') {
-        console.log('[Auth] Using dummy credentials');
-        const dummyUser = { id: 'dummy-user-123', email: 'guest@civic.com' };
-
-        // Set dummy session
-        setSession({ user: dummyUser });
-
-        // Set dummy profile
-        setProfile({
-          id: dummyUser.id,
-          username: 'Guest_User',
-          full_name: 'Guest User',
-          email: 'guest@civic.com',
-          anonymousMode: false,
-          stats: { totalPosts: 5, totalUpvotes: 34, totalComments: 12, totalShares: 8 },
-          createdAt: new Date(),
-          lastLoginAt: new Date(),
-          googleConnected: false,
-          twitterConnected: false,
-          privacyDefault: 'personal',
-          alwaysAskTwitterMethod: true,
-          isVerified: false,
-          preferences: {
-            notifications: {
-              nearby: false,
-              comments: false,
-              upvotes: false,
-              replies: false,
-              twitter: false,
-              digest: false,
-              trending: false,
-              similar: false
-            }
-          },
-          privacySettings: { profileVisibility: 'public', showLocation: true }
-        } as any); // Cast as any to avoid strict type matching for every single field if some are missing in type definition vs usage
-
-        return undefined;
+      // Guest mode check - triggered from "Try Demo" button
+      if (email === '__guest__') {
+        return value.signInAsGuest();
       }
 
       if (!isSupabaseConfigured) {
