@@ -2,6 +2,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { getBackend } from './backend';
 
+/** Retry helper with exponential backoff */
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  let lastError: any;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+      }
+    }
+  }
+  throw lastError;
+}
+
 const VOTES_KEY = 'demo_votes'; // { [issueId: string]: -1 | 0 | 1 }
 
 async function readVotes(): Promise<Record<string, number>> {
@@ -46,17 +62,19 @@ export async function castVote(issueId: string, value: -1 | 1): Promise<{ vote: 
   const { data: userRes } = await supabase.auth.getUser();
   if (!userRes?.user) return { vote: 0 };
 
-  // Fetch current vote
-  const { data: cur } = await supabase.from('votes').select('id,value').eq('issue_id', issueId).limit(1).single();
-  const next = cur?.value === value ? 0 : value;
-  if (next === 0 && cur?.id) {
-    await supabase.from('votes').delete().eq('id', cur.id);
-  } else {
-    // upsert by unique (user_id, issue_id)
-    await supabase.from('votes').upsert({ issue_id: issueId, value: next || 1 });
-  }
+  return withRetry(async () => {
+    // Fetch current vote
+    const { data: cur } = await supabase.from('votes').select('id,value').eq('issue_id', issueId).limit(1).single();
+    const next = cur?.value === value ? 0 : value;
+    if (next === 0 && cur?.id) {
+      await supabase.from('votes').delete().eq('id', cur.id);
+    } else {
+      // upsert by unique (user_id, issue_id)
+      await supabase.from('votes').upsert({ issue_id: issueId, value: next || 1 });
+    }
 
-  // Read updated counts
-  const { data: issue } = await supabase.from('issues').select('upvotes,downvotes').eq('id', issueId).single();
-  return { vote: next as any, upvotes: issue?.upvotes, downvotes: issue?.downvotes };
+    // Read updated counts
+    const { data: issue } = await supabase.from('issues').select('upvotes,downvotes').eq('id', issueId).single();
+    return { vote: next as any, upvotes: issue?.upvotes, downvotes: issue?.downvotes };
+  });
 }

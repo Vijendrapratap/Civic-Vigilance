@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Pressable, Alert, ScrollView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable, Alert, ScrollView, StatusBar, SafeAreaView, Linking } from 'react-native';
 import { Colors, Typography, Spacing, Shadows, BorderRadius, Layout } from '../constants/DesignSystem';
 import { useAuth } from '../hooks/useAuth';
 import ListItem from '../components/ListItem';
@@ -9,7 +9,7 @@ import { loadProfile, saveProfile, pickAvatar } from '../lib/profile';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen({ navigation }: any) {
-  const { session, signOut } = useAuth();
+  const { session, profile: authProfile, signOut } = useAuth();
   const userId = session?.user?.id || 'demo-user';
   const email = session?.user?.email || 'demo@example.com';
   const [name, setName] = useState<string>('Civic User');
@@ -79,21 +79,21 @@ export default function ProfileScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Statistics Row (Demo) */}
+        {/* Statistics Row */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>5</Text>
+            <Text style={styles.statValue}>{authProfile?.stats?.totalPosts ?? 0}</Text>
             <Text style={styles.statLabel}>Reports</Text>
           </View>
           <View style={styles.verticalDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>12</Text>
+            <Text style={styles.statValue}>{authProfile?.stats?.totalUpvotes ?? 0}</Text>
             <Text style={styles.statLabel}>Upvotes</Text>
           </View>
           <View style={styles.verticalDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>Fixed</Text>
+            <Text style={styles.statValue}>{authProfile?.stats?.totalShares ?? 0}</Text>
+            <Text style={styles.statLabel}>Shares</Text>
           </View>
         </View>
 
@@ -106,9 +106,11 @@ export default function ProfileScreen({ navigation }: any) {
 
         <Text style={styles.sectionTitle}>Support</Text>
         <View style={styles.menuCard}>
-          <ListItem icon="shield-outline" title="Privacy Policy" onPress={() => navigation.navigate('Policy', { type: 'privacy' })} />
-          <ListItem icon="help-circle-outline" title="Help & Support" onPress={() => { }} />
-          <ListItem icon="bug-outline" title="Debug Info" onPress={() => navigation.navigate('Debug')} />
+          <ListItem icon="shield-outline" title="Privacy Policy" onPress={() => navigation.navigate('PrivacyPolicy')} />
+          <ListItem icon="help-circle-outline" title="Help & Support" onPress={() => Linking.openURL('mailto:support@civicvigilance.com?subject=Help%20Request')} />
+          {__DEV__ && (
+            <ListItem icon="bug-outline" title="Debug Info" onPress={() => navigation.navigate('Debug')} />
+          )}
         </View>
 
         <View style={{ height: 24 }} />

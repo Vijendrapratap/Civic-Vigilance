@@ -5,6 +5,22 @@ import { getBackend } from './backend';
 
 import { User } from '../types';
 
+/** Exponential backoff retry for profile operations */
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  let lastError: any;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export type UserProfile = Partial<User> & { id: string };
 
 const PROFILE_KEY = 'demo_profile';
@@ -21,14 +37,16 @@ export async function loadProfile(userId: string): Promise<UserProfile> {
   if (!isSupabaseConfigured) {
     return { id: userId, full_name: 'Civic User', photoURL: undefined, createdAt: new Date() } as unknown as UserProfile;
   }
-  const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
-  // Cast DB response to User type logic (handling ID vs UID mismatch if necessary)
-  if (data) {
-    const userProfile: UserProfile = { ...data, uid: data.id, photoURL: data.avatar_url };
-    return userProfile;
-  }
-  return { id: userId };
+  return withRetry(async () => {
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+
+    if (data) {
+      const userProfile: UserProfile = { ...data, uid: data.id, photoURL: data.avatar_url };
+      return userProfile;
+    }
+    return { id: userId };
+  });
 }
 
 export async function saveProfile(p: UserProfile) {

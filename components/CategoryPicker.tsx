@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Pressable, Text, StyleSheet, ScrollView } from 'react-native';
+import { Colors, BorderRadius, Spacing } from '../constants/DesignSystem';
 
 // PRD Section 16.1 - Issue Categories with Emojis
 const CATS = [
@@ -44,10 +45,10 @@ export default function CategoryPicker({ value, onChange }: { value: CategoryKey
 }
 
 const styles = StyleSheet.create({
-  row: { gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: '#f0f2f5' },
-  active: { backgroundColor: '#111' },
-  text: { color: '#111' },
-  activeText: { color: '#fff', fontWeight: '700' }
+  row: { gap: Spacing.sm },
+  chip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: BorderRadius.xl, backgroundColor: Colors.surfaceHighlight },
+  active: { backgroundColor: Colors.textMain },
+  text: { color: Colors.textMain },
+  activeText: { color: Colors.textInverse, fontWeight: '700' },
 });
 

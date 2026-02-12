@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, KeyboardAvoidingView, Platform, ScrollView, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, KeyboardAvoidingView, Platform, ScrollView, Image, Dimensions, SafeAreaView } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import TextField from '../components/ui/TextField';
 import Button from '../components/ui/Button';
@@ -10,7 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient'; // Ensure this is install
 const { height } = Dimensions.get('window');
 
 export default function LoginScreen({ navigation }: any) {
-  const { signIn } = useAuth();
+  const { signIn, signInAsGuest } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export default function LoginScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.mainContainer}>
+    <SafeAreaView style={styles.mainContainer}>
       <LinearGradient
         colors={[Colors.primaryDark, Colors.primary, Colors.primaryLight]}
         style={StyleSheet.absoluteFill}
@@ -107,12 +107,7 @@ export default function LoginScreen({ navigation }: any) {
               title="Try Demo (Guest Mode)"
               variant="secondary"
               icon={<Ionicons name="person-circle-outline" size={20} color={Colors.primary} />}
-              onPress={() => {
-                setEmail('guest@civic.com');
-                setPassword('password123');
-                // Allow state update before submitting
-                setTimeout(() => signIn('guest@civic.com', 'password123'), 100);
-              }}
+              onPress={() => signInAsGuest()}
             />
           </View>
 
@@ -125,7 +120,7 @@ export default function LoginScreen({ navigation }: any) {
 
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -185,12 +180,12 @@ const styles = StyleSheet.create({
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF2F2',
+    backgroundColor: Colors.errorLight,
     padding: Spacing.sm,
     borderRadius: BorderRadius.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#FCA5A5',
+    borderColor: Colors.errorBorder,
   },
   errorText: {
     color: Colors.error,

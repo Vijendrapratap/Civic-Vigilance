@@ -15,6 +15,27 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { getBackend } from './backend';
 import { optimizeImage } from './imageOptimizer';
 
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 1000;
+
+/** Exponential backoff retry helper */
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = MAX_RETRIES): Promise<T> {
+  let lastError: any;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxRetries - 1) {
+        const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+        if (__DEV__) console.log(`[Storage] Retry ${attempt + 1}/${maxRetries} after ${delay}ms`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 /**
  * Upload a photo to Supabase Storage with optimization
  *
@@ -30,7 +51,7 @@ export async function uploadPhoto(
 ): Promise<string> {
   if (getBackend() !== 'supabase' || !isSupabaseConfigured) {
     // For SQLite backend, just return the local URI
-    console.log('[Storage] Using local URI for SQLite backend');
+    if (__DEV__) console.log('[Storage] Using local URI for SQLite backend');
     return uri;
   }
 
@@ -41,7 +62,7 @@ export async function uploadPhoto(
 
     // Optimize image before upload for faster speeds
     if (optimize) {
-      console.log('[Storage] Compressing image...');
+      if (__DEV__) console.log('[Storage] Compressing image...');
       const optimized = await optimizeImage(uri, {
         maxWidth: 1920,
         maxHeight: 1920,
@@ -49,7 +70,7 @@ export async function uploadPhoto(
         format: 'jpeg',
       });
       uploadUri = optimized.uri;
-      console.log(`[Storage] Compression saved ${((1 - optimized.size / 1024 / 1024) * 100).toFixed(1)}% bandwidth`);
+      if (__DEV__) console.log(`[Storage] Compression saved ${((1 - optimized.size / 1024 / 1024) * 100).toFixed(1)}% bandwidth`);
     }
 
     // Convert local URI to blob for upload
@@ -61,32 +82,35 @@ export async function uploadPhoto(
     const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = `${folder}/${fileName}`;
 
-    console.log('[Storage] Uploading to Supabase Storage...');
+    if (__DEV__) console.log('[Storage] Uploading to Supabase Storage...');
 
-    // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
-      .from('civic-vigilance')
-      .upload(filePath, blob, {
-        contentType: 'image/jpeg',
-        cacheControl: '3600',
-        upsert: false,
-      });
+    // Upload to Supabase Storage with retry
+    const publicUrl = await withRetry(async () => {
+      const { data, error } = await supabase.storage
+        .from('civic-vigilance')
+        .upload(filePath, blob, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+          upsert: false,
+        });
 
-    if (error) {
-      console.error('[Storage] Upload error:', error);
-      throw new Error(`Failed to upload photo: ${error.message}`);
-    }
+      if (error) {
+        throw new Error(`Failed to upload photo: ${error.message}`);
+      }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('civic-vigilance')
-      .getPublicUrl(filePath);
+      // Get public URL
+      const { data: { publicUrl: url } } = supabase.storage
+        .from('civic-vigilance')
+        .getPublicUrl(filePath);
+
+      return url;
+    });
 
     const uploadTime = Date.now() - startTime;
-    console.log(`[Storage] Upload complete in ${uploadTime}ms: ${publicUrl}`);
+    if (__DEV__) console.log(`[Storage] Upload complete in ${uploadTime}ms: ${publicUrl}`);
     return publicUrl;
   } catch (error: any) {
-    console.error('[Storage] Upload failed:', error);
+    console.error('[Storage] Upload failed after retries:', error);
     // Fallback to local URI if upload fails
     return uri;
   }
@@ -105,7 +129,7 @@ export async function uploadPhotos(
   folder: string = 'issues',
   optimize: boolean = true
 ): Promise<string[]> {
-  console.log(`[Storage] Uploading ${uris.length} photos in parallel...`);
+  if (__DEV__) console.log(`[Storage] Uploading ${uris.length} photos in parallel...`);
 
   const startTime = Date.now();
 
@@ -116,8 +140,10 @@ export async function uploadPhotos(
   const totalTime = Date.now() - startTime;
   const avgTime = (totalTime / uris.length).toFixed(0);
 
-  console.log(`[Storage] Batch upload complete in ${totalTime}ms (${avgTime}ms/photo)`);
-  console.log(`[Storage] Successfully uploaded ${urls.length} photos`);
+  if (__DEV__) {
+    console.log(`[Storage] Batch upload complete in ${totalTime}ms (${avgTime}ms/photo)`);
+    console.log(`[Storage] Successfully uploaded ${urls.length} photos`);
+  }
   return urls;
 }
 
@@ -148,7 +174,7 @@ export async function deletePhoto(url: string): Promise<void> {
     if (error) {
       console.error('[Storage] Delete error:', error);
     } else {
-      console.log('[Storage] Photo deleted successfully:', filePath);
+      if (__DEV__) console.log('[Storage] Photo deleted successfully:', filePath);
     }
   } catch (error) {
     console.error('[Storage] Delete failed:', error);

@@ -4,8 +4,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://civicvigilance.com';
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -23,6 +25,31 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify the user is authenticated via Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Parse request body
     const { text, imageUrl, reporterId, reporterName }: TweetRequest = await req.json();
 
@@ -30,6 +57,15 @@ serve(async (req) => {
     if (!text || !reporterId || !reporterName) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: text, reporterId, reporterName' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate tweet text length
+    const tweetText = `${text}\n\nReported by: ${reporterName}`;
+    if (tweetText.length > 280) {
+      return new Response(
+        JSON.stringify({ error: 'Tweet text exceeds 280 character limit' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -43,16 +79,12 @@ serve(async (req) => {
     if (!TWITTER_API_KEY || !TWITTER_API_SECRET || !TWITTER_ACCESS_TOKEN || !TWITTER_ACCESS_TOKEN_SECRET) {
       console.error('Twitter credentials not configured');
       return new Response(
-        JSON.stringify({ error: 'Twitter API credentials not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Service temporarily unavailable' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Add reporter credit to tweet text
-    const tweetText = `${text}\n\nReported by: ${reporterName}`;
-
     // Post tweet using Twitter API v2
-    // We'll use OAuth 1.0a for posting
     const tweetResponse = await postTweet(
       tweetText,
       imageUrl,
@@ -76,7 +108,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Failed to post tweet'
+        error: 'Failed to post tweet. Please try again later.',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -92,26 +124,38 @@ async function postTweet(
   accessToken: string,
   accessTokenSecret: string
 ) {
-  // For simplicity, we'll use the Twitter API v2
-  // You may need to install oauth-1.0a library or implement OAuth 1.0a signing
-
   // Step 1: Upload media if imageUrl provided
   let mediaId: string | undefined;
   if (imageUrl) {
-    // Download image and upload to Twitter
-    // This is a simplified version - in production, you'd want error handling
     try {
+      // Validate URL before fetching
+      const url = new URL(imageUrl);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        throw new Error('Invalid image URL protocol');
+      }
+
       const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) throw new Error('Failed to download image');
+
+      const contentType = imageResponse.headers.get('content-type') || '';
+      if (!contentType.startsWith('image/')) {
+        throw new Error('URL does not point to an image');
+      }
+
       const imageBlob = await imageResponse.blob();
+
+      // Size check (5MB max for Twitter)
+      if (imageBlob.size > 5 * 1024 * 1024) {
+        console.error('Image too large for Twitter upload');
+      }
+
       const formData = new FormData();
       formData.append('media', imageBlob);
 
-      // Upload to Twitter media endpoint
-      // Note: This requires OAuth 1.0a signing
-      // For now, we'll skip media upload and just post text
-      console.log('Media upload not yet implemented');
+      // Note: Full media upload requires OAuth 1.0a signing
+      console.log('Media upload not yet implemented - posting text only');
     } catch (error) {
-      console.error('Error uploading media:', error);
+      console.error('Error processing media:', error);
       // Continue without image
     }
   }
@@ -123,8 +167,6 @@ async function postTweet(
   };
 
   // Make authenticated request to Twitter API v2
-  // Note: In production, use a proper OAuth 1.0a library
-  // For now, using Bearer Token (limited functionality)
   const bearerToken = Deno.env.get('TWITTER_BEARER_TOKEN');
 
   const response = await fetch('https://api.twitter.com/2/tweets', {
@@ -139,22 +181,9 @@ async function postTweet(
   if (!response.ok) {
     const errorData = await response.text();
     console.error('Twitter API error:', errorData);
-    throw new Error(`Twitter API error: ${response.status} ${errorData}`);
+    throw new Error('Failed to post tweet');
   }
 
   const result = await response.json();
   return result.data;
 }
-
-/*
- * IMPORTANT: This is a simplified implementation!
- *
- * For production use, you should:
- * 1. Use a proper OAuth 1.0a library for authentication
- * 2. Implement media upload correctly
- * 3. Add rate limiting (Twitter has strict limits)
- * 4. Add retry logic for failed requests
- * 5. Store tweet metadata in your database
- *
- * Recommended library: https://deno.land/x/oauth_1_0a
- */

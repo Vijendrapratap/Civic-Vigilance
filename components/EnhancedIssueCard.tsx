@@ -35,6 +35,7 @@ interface Props {
 function EnhancedIssueCard({ item, onPress, distance }: Props) {
   const [vote, setVote] = useState<-1 | 0 | 1>(0);
   const [upvotes, setUpvotes] = useState(item.upvotes ?? 0);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     getUserVote(item.id).then(setVote).catch(() => { });
@@ -105,8 +106,19 @@ function EnhancedIssueCard({ item, onPress, distance }: Props) {
       </Text>
 
       {/* Photo Thumbnail (16:9 ratio) */}
-      {item.imageUrl && (
-        <Image source={{ uri: item.imageUrl }} style={styles.photo} resizeMode="cover" />
+      {item.imageUrl && !imageError && (
+        <Image
+          source={{ uri: item.imageUrl }}
+          style={styles.photo}
+          resizeMode="cover"
+          onError={() => setImageError(true)}
+        />
+      )}
+      {item.imageUrl && imageError && (
+        <View style={[styles.photo, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Ionicons name="image-outline" size={40} color={Colors.textMuted} />
+          <Text style={{ ...Typography.caption, color: Colors.textMuted, marginTop: 4 }}>Image unavailable</Text>
+        </View>
       )}
 
       {/* Metadata Row */}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Pressable, Text, StyleSheet } from 'react-native';
-import { colors } from '../lib/theme';
+import { Colors, BorderRadius, Spacing } from '../constants/DesignSystem';
 
 export default function SortBar({ value, onChange }: { value: 'trending' | 'newest' | 'nearby'; onChange: (v: 'trending' | 'newest' | 'nearby') => void; }) {
   return (
@@ -23,9 +23,9 @@ export default function SortBar({ value, onChange }: { value: 'trending' | 'newe
 }
 
 const styles = StyleSheet.create({
-  wrap: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
-  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(148,163,184,0.35)', backgroundColor: 'rgba(15, 23, 42, 0.6)' },
-  active: { backgroundColor: colors.primary, borderColor: colors.primary },
-  activeText: { color: '#fff', fontWeight: '700' },
-  text: { color: colors.subtext, fontWeight: '600' }
+  wrap: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm + 4 },
+  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: BorderRadius.lg, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surfaceHighlight },
+  active: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  activeText: { color: Colors.textInverse, fontWeight: '700' },
+  text: { color: Colors.textSecondary, fontWeight: '600' },
 });

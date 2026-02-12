@@ -78,7 +78,7 @@ export default function UsernameSelectionScreen() {
       }
 
       // Save username to profile
-      console.log('[UsernameSelection] Saving username to profile...', {
+      if (__DEV__) console.log('[UsernameSelection] Saving username to profile...', {
         username: finalUsername,
         anonymousMode: isAnonymous,
         userId: session.user.id,
@@ -91,11 +91,11 @@ export default function UsernameSelectionScreen() {
         // Note: We're storing username in full_name field for now
       });
 
-      console.log('[UsernameSelection] Username saved successfully. Refreshing profile...');
+      if (__DEV__) console.log('[UsernameSelection] Username saved successfully. Refreshing profile...');
 
       await refreshProfile();
 
-      console.log('[UsernameSelection] Profile refreshed.');
+      if (__DEV__) console.log('[UsernameSelection] Profile refreshed.');
 
       // Show success message
       Alert.alert(

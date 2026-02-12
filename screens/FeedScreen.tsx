@@ -24,7 +24,7 @@ export default function FeedScreen() {
         const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         setCoords({ lat: location.coords.latitude, lng: location.coords.longitude });
       } catch (error) {
-        console.log('[Feed] Location error:', error);
+        if (__DEV__) console.log('[Feed] Location error:', error);
       }
     })();
   }, []);

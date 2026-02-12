@@ -4,8 +4,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://civicvigilance.com';
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -25,7 +27,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -34,14 +36,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: false,
-      },
-      global: {
-        headers: {
-          Authorization: authHeader,
-        },
-      },
+      auth: { persistSession: false },
+      global: { headers: { Authorization: authHeader } },
     });
 
     // Get authenticated user
@@ -63,8 +59,15 @@ serve(async (req) => {
       );
     }
 
+    // Validate tweet length
+    if (text.length > 280) {
+      return new Response(
+        JSON.stringify({ error: 'Tweet text exceeds 280 character limit' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get user's Twitter credentials from database
-    // You would store OAuth tokens securely in a separate table
     const { data: userProfile, error: profileError } = await supabase
       .from('users')
       .select('twitter_access_token, twitter_access_token_secret, twitter_connected')
@@ -106,7 +109,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Failed to post tweet'
+        error: 'Failed to post tweet. Please try again later.',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -122,19 +125,14 @@ async function postTweetAsUser(
   userAccessToken: string,
   userAccessTokenSecret: string
 ) {
-  // Similar to post-tweet-civic but uses user's tokens
-  // Implementation would be the same as above
-
-  const bearerToken = Deno.env.get('TWITTER_BEARER_TOKEN');
-
-  const tweetData = {
-    text: text,
-  };
+  // Note: In production, use OAuth 1.0a signing with user's tokens
+  // This uses the user's access token for authentication
+  const tweetData = { text };
 
   const response = await fetch('https://api.twitter.com/2/tweets', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${bearerToken}`,
+      'Authorization': `Bearer ${userAccessToken}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(tweetData),
@@ -142,7 +140,8 @@ async function postTweetAsUser(
 
   if (!response.ok) {
     const errorData = await response.text();
-    throw new Error(`Twitter API error: ${response.status} ${errorData}`);
+    console.error('Twitter API error:', errorData);
+    throw new Error('Failed to post tweet');
   }
 
   const result = await response.json();

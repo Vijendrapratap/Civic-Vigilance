@@ -4,14 +4,17 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://civicvigilance.com';
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 interface AuthRequest {
   userId: string;
   code: string;
+  codeVerifier: string;
 }
 
 serve(async (req) => {
@@ -21,12 +24,21 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request
-    const { userId, code }: AuthRequest = await req.json();
-
-    if (!userId || !code) {
+    // Verify authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse request
+    const { userId, code, codeVerifier }: AuthRequest = await req.json();
+
+    if (!userId || !code || !codeVerifier) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: userId, code, codeVerifier' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -37,6 +49,7 @@ serve(async (req) => {
     const redirectUri = Deno.env.get('TWITTER_REDIRECT_URI') || 'civicvigilance://oauth/twitter';
 
     // Exchange code for access token using OAuth 2.0
+    // Use the actual code_verifier from the client (PKCE flow)
     const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
       headers: {
@@ -47,7 +60,7 @@ serve(async (req) => {
         grant_type: 'authorization_code',
         code: code,
         redirect_uri: redirectUri,
-        code_verifier: 'stored_code_verifier', // You need to retrieve this from storage
+        code_verifier: codeVerifier,
       }).toString(),
     });
 
@@ -66,9 +79,13 @@ serve(async (req) => {
       },
     });
 
+    if (!profileResponse.ok) {
+      throw new Error('Failed to fetch Twitter profile');
+    }
+
     const profile = await profileResponse.json();
 
-    // Store tokens in database (encrypted!)
+    // Store tokens in database using service role key
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -84,7 +101,7 @@ serve(async (req) => {
       })
       .eq('id', userId);
 
-    // Return success
+    // Return success (do not expose tokens to the client)
     return new Response(
       JSON.stringify({
         success: true,
@@ -98,7 +115,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: 'Twitter authentication failed. Please try again.',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

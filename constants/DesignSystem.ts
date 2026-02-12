@@ -34,6 +34,8 @@ export const Colors = {
     // Semantic Status Colors (Tailored)
     success: '#10B981', // Emerald-500: Modern green
     error: '#EF4444', // Red-500: Clear alert
+    errorLight: '#FEF2F2', // Red-50: Error backgrounds
+    errorBorder: '#FCA5A5', // Red-300: Error borders
     warning: '#F59E0B', // Amber-500
     info: '#3B82F6', // Blue-500
 

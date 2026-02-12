@@ -3,11 +3,13 @@
     "name": "Civic Vigilance",
     "slug": "civicvigilance",
     "scheme": "civicvigilance",
-    "version": "0.1.0",
+    "version": "1.0.0",
+    "description": "Report civic issues. Amplify your voice. Hold authorities accountable. CivicVigilance empowers citizens to report potholes, garbage, broken infrastructure and more with photos, GPS tagging, and social media amplification.",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.civicvigilance.app",
       "infoPlist": {
         "NSCameraUsageDescription": "CivicVigilance needs camera access to capture civic issues.",
         "NSLocationWhenInUseUsageDescription": "CivicVigilance uses your location to tag reports accurately."
@@ -25,7 +27,7 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION"
       ],
-      "package": "com.anonymous.civicvigilance"
+      "package": "com.civicvigilance.app"
     },
     "web": {
       "bundler": "metro"

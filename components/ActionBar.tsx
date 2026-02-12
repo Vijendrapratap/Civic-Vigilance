@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { formatCount } from '../lib/format';
-import { colors } from '../lib/theme';
+import { Colors, BorderRadius } from '../constants/DesignSystem';
 
 type Props = {
   vote: -1 | 0 | 1;
