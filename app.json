@@ -6,6 +6,7 @@
     "version": "1.0.0",
     "description": "Report civic issues. Amplify your voice. Hold authorities accountable. CivicVigilance empowers citizens to report potholes, garbage, broken infrastructure and more with photos, GPS tagging, and social media amplification.",
     "orientation": "portrait",
+    "icon": "./assets/App Icon/Civic Vigilance (1).png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
@@ -27,7 +28,11 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION"
       ],
-      "package": "com.civicvigilance.app"
+      "package": "com.civicvigilance.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/App Icon/Civic Vigilance (1).png",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "web": {
       "bundler": "metro"
