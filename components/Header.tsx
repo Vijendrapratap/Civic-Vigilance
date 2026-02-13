@@ -6,7 +6,7 @@ export default function Header() {
   return (
     <View style={styles.wrap}>
       <Image
-        source={require('../assets/logo.png')}
+        source={require('../assets/Featured_Image.png')}
         style={styles.logo}
         resizeMode="contain"
       />

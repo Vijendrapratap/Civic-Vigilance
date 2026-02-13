@@ -45,7 +45,7 @@ export default function LoginScreen({ navigation }: any) {
             <View style={styles.logoCircle}>
               {/* Placeholder for Logo if image fails, transparent bg */}
               <Image
-                source={require('../assets/logo.png')}
+                source={require('../assets/logo-icon.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />
