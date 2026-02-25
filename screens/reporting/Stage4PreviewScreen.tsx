@@ -23,6 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/ui/Button';
 import { TwitterPostingMethod, CategoryKey } from '../../types';
 import { getAuthorityHandles, getMatchedAuthoritiesWithDetails } from '../../lib/smartAuthorities';
+import { Colors, Shadows, Typography, BorderRadius } from '../../constants/DesignSystem';
 
 interface Props {
   photos: string[];
@@ -292,7 +293,7 @@ export default function Stage4PreviewScreen({
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
     paddingBottom: 120,
   },
   header: {
@@ -300,14 +301,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#23272F',
+    ...Typography.h2,
     marginBottom: 8,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...Typography.bodySm,
     textAlign: 'center',
   },
   section: {
@@ -320,21 +318,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#23272F',
+    ...Typography.h4,
   },
   editLink: {
     fontSize: 14,
-    color: '#2563EB',
+    color: Colors.primary,
     fontWeight: '500',
   },
   tweetCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#E1E8ED',
+    borderColor: Colors.border,
   },
   tweetHeader: {
     flexDirection: 'row',
@@ -348,7 +344,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#1DA1F2',
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -360,41 +356,38 @@ const styles = StyleSheet.create({
   tweetDisplayName: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#14171A',
+    color: Colors.textMain,
     marginRight: 2,
   },
   tweetHandle: {
     fontSize: 14,
-    color: '#657786',
+    color: Colors.textSecondary,
     marginLeft: 4,
   },
   tweetText: {
-    fontSize: 15,
-    color: '#14171A',
-    lineHeight: 20,
+    ...Typography.body,
     marginBottom: 12,
   },
   tweetMediaContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 4,
-    borderRadius: 16,
+    borderRadius: BorderRadius.lg,
     overflow: 'hidden',
     marginBottom: 12,
   },
   tweetPhoto: {
-    // Base style shared by single and grid photos
-    backgroundColor: '#E1E8ED',
+    backgroundColor: Colors.border,
   },
   tweetPhotoSingle: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
+    borderRadius: BorderRadius.md,
   },
   tweetPhotoGrid: {
     width: '48%',
     height: 120,
-    borderRadius: 8,
+    borderRadius: BorderRadius.sm,
   },
   tweetActions: {
     flexDirection: 'row',
@@ -404,7 +397,7 @@ const styles = StyleSheet.create({
   },
   privacyNote: {
     fontSize: 13,
-    color: '#059669',
+    color: Colors.success,
     marginTop: 8,
   },
   authoritiesList: {
@@ -416,27 +409,27 @@ const styles = StyleSheet.create({
   authorityChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#DBEAFE',
+    backgroundColor: Colors.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: BorderRadius.lg,
     gap: 4,
   },
   authorityText: {
     fontSize: 14,
-    color: '#1E40AF',
+    color: Colors.primaryDark,
     fontWeight: '500',
   },
   hintText: {
     fontSize: 12,
-    color: '#6B7280',
+    color: Colors.textSecondary,
   },
   detailsBox: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: Colors.border,
     gap: 12,
   },
   detailRow: {
@@ -445,29 +438,29 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: Colors.textSecondary,
     textTransform: 'uppercase',
   },
   detailValue: {
     fontSize: 14,
-    color: '#23272F',
+    color: Colors.textMain,
   },
   infoBox: {
     flexDirection: 'row',
     gap: 12,
-    backgroundColor: '#DBEAFE',
-    borderRadius: 12,
+    backgroundColor: Colors.primaryLight,
+    borderRadius: BorderRadius.md,
     padding: 16,
   },
   infoTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1E40AF',
+    color: Colors.primaryDark,
     marginBottom: 8,
   },
   infoText: {
     fontSize: 13,
-    color: '#1E3A8A',
+    color: Colors.primaryDark,
     lineHeight: 20,
   },
   bottomNav: {
@@ -477,13 +470,10 @@ const styles = StyleSheet.create({
     bottom: 24,
     flexDirection: 'row',
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     padding: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: -2 },
+    borderRadius: BorderRadius.md,
+    ...Shadows.lg,
   },
   loadingOverlay: {
     position: 'absolute',
@@ -491,12 +481,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: Colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
-    color: '#fff',
+    color: Colors.textInverse,
     fontSize: 16,
     marginTop: 12,
   },

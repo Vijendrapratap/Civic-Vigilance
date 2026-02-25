@@ -20,6 +20,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/ui/Button';
 import { TwitterPostingMethod } from '../../types';
+import { Colors, Shadows, Typography, BorderRadius } from '../../constants/DesignSystem';
 
 interface Props {
   issueId: string;
@@ -145,7 +146,7 @@ export default function Stage5SuccessScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -157,40 +158,32 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#34D399',
+    backgroundColor: Colors.success,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#34D399',
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
+    ...Shadows.lg,
+    shadowColor: Colors.success,
   },
   content: {
     width: '100%',
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#23272F',
+    ...Typography.h1,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#6B7280',
+    ...Typography.body,
     marginBottom: 32,
   },
   summaryBox: {
     width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
     padding: 20,
     gap: 16,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    ...Shadows.sm,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -199,51 +192,48 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     flex: 1,
-    fontSize: 15,
-    color: '#4B5563',
+    ...Typography.bodySm,
   },
   sharePromptBox: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
+    backgroundColor: Colors.primaryLight,
+    borderRadius: BorderRadius.md,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: Colors.borderDark,
   },
   sharePromptTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1E40AF',
+    fontSize: Typography.h4.fontSize,
+    fontWeight: Typography.h4.fontWeight,
+    color: Colors.primaryDark,
     marginBottom: 4,
   },
   sharePromptText: {
-    fontSize: 13,
-    color: '#1E40AF',
-    lineHeight: 18,
+    ...Typography.caption,
+    color: Colors.primaryDark,
   },
   ctaBox: {
     width: '100%',
-    backgroundColor: '#FEF3C7',
-    borderRadius: 12,
+    backgroundColor: Colors.errorLight,
+    borderRadius: BorderRadius.md,
     padding: 16,
     marginBottom: 32,
   },
   ctaTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#92400E',
+    fontSize: Typography.h4.fontSize,
+    fontWeight: Typography.h4.fontWeight,
+    color: Colors.error,
     marginBottom: 8,
     textAlign: 'center',
   },
   ctaText: {
-    fontSize: 14,
-    color: '#92400E',
+    ...Typography.bodySm,
+    color: Colors.error,
     textAlign: 'center',
-    lineHeight: 20,
   },
   buttonContainer: {
     width: '100%',
@@ -260,8 +250,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   doneText: {
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500',
+    ...Typography.button,
+    color: Colors.textSecondary,
   },
 });

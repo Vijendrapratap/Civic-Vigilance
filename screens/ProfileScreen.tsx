@@ -20,8 +20,8 @@ export default function ProfileScreen({ navigation }: any) {
     const run = async () => {
       const p = await loadProfile(userId);
       setName(p.full_name || 'Civic User');
-      setAvatar(p.photoURL as string || p.avatar_url as string || null);
-      const year = new Date((p.createdAt as any) || (p.created_at as any) || Date.now()).getFullYear();
+      setAvatar((p as any).photoURL as string || (p as any).avatar_url as string || null);
+      const year = new Date((p as any).createdAt || (p as any).created_at || Date.now()).getFullYear();
       setJoined(String(year));
     };
     run();
@@ -31,7 +31,7 @@ export default function ProfileScreen({ navigation }: any) {
     const uri = await pickAvatar();
     if (!uri) return;
     const updated = await saveProfile({ id: userId, full_name: name, photoURL: uri } as any);
-    setAvatar(updated.photoURL as string || updated.avatar_url as string || uri);
+    setAvatar((updated as any).photoURL as string || (updated as any).avatar_url as string || uri);
   };
 
   const onLogout = () => {

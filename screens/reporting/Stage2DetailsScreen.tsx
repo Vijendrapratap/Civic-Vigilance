@@ -25,6 +25,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/ui/Button';
 import CategoryPicker, { CategoryKey } from '../../components/CategoryPicker';
+import { Colors, Shadows, Typography, Layout, BorderRadius } from '../../constants/DesignSystem';
 
 interface Props {
   photos: string[];
@@ -181,7 +182,7 @@ export default function Stage2DetailsScreen({
 
             {/* TODO: Add map preview in v1.5 */}
             <Pressable style={styles.mapLink}>
-              <Ionicons name="map-outline" size={16} color="#2563EB" />
+              <Ionicons name="map-outline" size={16} color={Colors.primary} />
               <Text style={styles.mapLinkText}>View on map</Text>
             </Pressable>
           </View>
@@ -215,7 +216,7 @@ export default function Stage2DetailsScreen({
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
     paddingBottom: 120,
   },
   photoSection: {
@@ -224,19 +225,15 @@ const styles = StyleSheet.create({
   photoPreview: {
     width: 120,
     height: 120,
-    borderRadius: 12,
+    borderRadius: BorderRadius.md,
     marginRight: 12,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    ...Shadows.sm,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -245,27 +242,27 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#23272F',
+    fontSize: Typography.h4.fontSize,
+    fontWeight: Typography.h4.fontWeight,
+    color: Colors.textMain,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: Typography.bodySm.fontSize,
+    color: Colors.textSecondary,
     marginBottom: 12,
   },
   charCount: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: Colors.textMuted,
   },
   input: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.sm,
     padding: 12,
     fontSize: 16,
-    color: '#23272F',
+    color: Colors.textMain,
   },
   textArea: {
     height: 110,
@@ -274,22 +271,22 @@ const styles = StyleSheet.create({
   suggestLink: {
     marginTop: 8,
     fontSize: 14,
-    color: '#2563EB',
+    color: Colors.primary,
   },
   locationBox: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.sm,
     padding: 12,
   },
   addressText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#23272F',
+    color: Colors.textMain,
     marginBottom: 4,
   },
   coordsText: {
     fontSize: 13,
-    color: '#6B7280',
+    color: Colors.textSecondary,
     marginBottom: 8,
   },
   mapLink: {
@@ -299,12 +296,12 @@ const styles = StyleSheet.create({
   },
   mapLinkText: {
     fontSize: 14,
-    color: '#2563EB',
+    color: Colors.primary,
     fontWeight: '500',
   },
   hintText: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: Colors.textMuted,
     marginTop: 8,
   },
   bottomNav: {
@@ -314,24 +311,21 @@ const styles = StyleSheet.create({
     bottom: 24,
     flexDirection: 'row',
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     padding: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: -2 },
+    borderRadius: BorderRadius.md,
+    ...Shadows.lg,
   },
   editLink: {
     fontSize: 14,
-    color: '#2563EB',
+    color: Colors.primary,
     fontWeight: '600',
   },
   addressInput: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     marginBottom: 8,
     fontSize: 15,
     fontWeight: '600',
-    color: '#23272F',
+    color: Colors.textMain,
   },
 });

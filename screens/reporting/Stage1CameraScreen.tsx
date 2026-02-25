@@ -27,6 +27,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import { useLiveLocation } from '../../hooks/useLiveLocation';
 import Button from '../../components/ui/Button';
+import { Colors, Shadows, BorderRadius, Layout } from '../../constants/DesignSystem';
 
 interface Props {
   onContinue: (photos: string[], coords: { lat: number; lng: number }, address: string) => void;
@@ -265,16 +266,13 @@ export default function Stage1CameraScreen({ onContinue, onCancel }: Props) {
 
 const styles = StyleSheet.create({
   headerOverlay: {
+    ...Layout.glassCard,
     position: 'absolute',
     top: 50, // Safe Area fallback
     left: 16,
     right: 16,
     zIndex: 10,
-    backgroundColor: 'rgba(23, 23, 23, 0.85)', // Elegant Charcoal with opacity
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden',
+    backgroundColor: Colors.glassDark, // Elegant Charcoal with opacity
   },
   headerContent: {
     padding: 16,
@@ -387,7 +385,7 @@ const styles = StyleSheet.create({
   },
   shutterRow: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 110,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -398,26 +396,27 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderWidth: 6,
-    borderColor: '#e5e5e5',
+    borderColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    ...Shadows.md,
   },
   badge: {
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: '#2563EB',
+    backgroundColor: Colors.primary,
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: BorderRadius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
-    color: '#fff',
+    color: Colors.textInverse,
     fontSize: 12,
     fontWeight: '700',
   },

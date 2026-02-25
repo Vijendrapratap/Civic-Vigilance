@@ -42,7 +42,8 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: 6,
     color: Colors.textSecondary,
-    ...Typography.bodySm,
+    fontSize: Typography.bodySm.fontSize,
+    lineHeight: Typography.bodySm.lineHeight,
     fontWeight: '600',
     marginLeft: 4,
   },
@@ -59,7 +60,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: Colors.textMain,
-    ...Typography.body,
+    fontSize: Typography.body.fontSize,
+    lineHeight: Typography.body.lineHeight,
     height: '100%',
   },
   inputFocused: {
@@ -76,7 +78,8 @@ const styles = StyleSheet.create({
   error: {
     marginTop: 4,
     color: Colors.error,
-    ...Typography.caption,
+    fontSize: Typography.caption.fontSize,
+    lineHeight: Typography.caption.lineHeight,
     marginLeft: 4,
   },
 });

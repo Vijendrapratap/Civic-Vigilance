@@ -36,7 +36,7 @@ function Chip({ icon, label, onPress, active, a11yLabel }: { icon: keyof typeof 
       accessibilityLabel={a11yLabel || label}
       hitSlop={8}
     >
-      <Ionicons name={icon} size={16} color={active ? '#fff' : colors.text} />
+      <Ionicons name={icon} size={16} color={active ? '#fff' : Colors.textMain} />
       <Text style={[styles.text, active && { color: '#fff' }]}>{label}</Text>
     </Pressable>
   );
@@ -45,6 +45,6 @@ function Chip({ icon, label, onPress, active, a11yLabel }: { icon: keyof typeof 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 10, marginTop: 12 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: 'rgba(148, 163, 184, 0.18)' },
-  active: { backgroundColor: colors.primary },
-  text: { color: colors.text, fontWeight: '700' }
+  active: { backgroundColor: Colors.primary },
+  text: { color: Colors.textMain, fontWeight: '700' }
 });

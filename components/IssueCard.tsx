@@ -4,7 +4,7 @@ import { IssueWithUserData } from '../types';
 import { castVote, getUserVote } from '../lib/votes';
 import { composePostText, shareImageWithText, openTweetComposer } from '../lib/sharing';
 import ActionBar from './ActionBar';
-import { colors } from '../lib/theme';
+import { Colors } from '../constants/DesignSystem';
 
 export default function IssueCard({ item, onPress }: { item: IssueWithUserData; onPress?: () => void }) {
   const [vote, setVote] = useState<-1 | 0 | 1>(0);
@@ -12,7 +12,7 @@ export default function IssueCard({ item, onPress }: { item: IssueWithUserData; 
   const [down, setDown] = useState(item.downvotes ?? 0);
 
   useEffect(() => {
-    getUserVote(item.id).then(setVote).catch(() => {});
+    getUserVote(item.id).then(setVote).catch(() => { });
   }, [item.id]);
 
   const onVote = async (val: -1 | 1) => {
@@ -63,11 +63,11 @@ export default function IssueCard({ item, onPress }: { item: IssueWithUserData; 
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.card, borderRadius: 20, overflow: 'hidden', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, borderWidth: 1, borderColor: 'rgba(148, 163, 184, 0.12)' },
+  card: { backgroundColor: Colors.surface, borderRadius: 20, overflow: 'hidden', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, borderWidth: 1, borderColor: 'rgba(148, 163, 184, 0.12)' },
   image: { width: '100%', height: 200 },
   content: { padding: 16 },
-  title: { fontSize: 16, fontWeight: '800', marginBottom: 6, color: colors.text },
-  meta: { color: colors.subtext },
+  title: { fontSize: 16, fontWeight: '800', marginBottom: 6, color: Colors.textMain },
+  meta: { color: Colors.textSecondary },
   row: { flexDirection: 'row', marginTop: 10, gap: 12 },
   stat: { flexDirection: 'row', alignItems: 'center' }
 });

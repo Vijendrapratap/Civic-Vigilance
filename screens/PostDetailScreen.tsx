@@ -11,6 +11,7 @@ import Button from '../components/ui/Button';
 import { getBackend } from '../lib/backend';
 import { formatCount, getTimeAgo } from '../lib/format';
 import { CATEGORY_EMOJIS } from '../components/CategoryPicker';
+import { showShareDialog, composePostText } from '../lib/sharingEnhanced';
 
 export default function PostDetailScreen({ route }: any) {
   const { id } = route.params as { id: string };
@@ -136,8 +137,17 @@ export default function PostDetailScreen({ route }: any) {
   );
 
   const handleShare = useCallback(() => {
-    // TODO: Implement native share functionality
-  }, [id]);
+    if (!issue) return;
+    const tweetText = composePostText({
+      title: issue.title || '',
+      description: issue.description,
+      address: issue.address,
+      lat: issue.lat,
+      lng: issue.lng,
+      category: issue.category,
+    });
+    showShareDialog({ text: tweetText, imageUri: issue.imageUrl });
+  }, [id, issue]);
 
   const tree = useMemo(() => {
     const map = new Map<string, any[]>();

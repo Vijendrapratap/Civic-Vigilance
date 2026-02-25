@@ -192,7 +192,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn: async (email: string, password: string) => {
       // Guest mode check - triggered from "Try Demo" button
       if (email === '__guest__') {
-        return value.signInAsGuest();
+        const guestId = `guest-${Crypto.randomUUID()}`;
+
+        setSession({ user: { id: guestId, email: '__guest__' } });
+        setProfile({
+          id: guestId,
+          username: 'Guest_User',
+          full_name: 'Guest User',
+          email: '__guest__',
+          anonymousMode: false,
+          stats: { totalPosts: 5, totalUpvotes: 34, totalComments: 12, totalShares: 8 },
+          createdAt: new Date(),
+          lastLoginAt: new Date(),
+          googleConnected: false,
+          twitterConnected: false,
+          privacyDefault: 'twitter',
+          alwaysAskTwitterMethod: true,
+          isVerified: false,
+          preferences: {
+            notifications: {
+              nearby: false, comments: false, upvotes: false, replies: false,
+              twitter: false, digest: false, trending: false, similar: false,
+            },
+          },
+          privacySettings: { profileVisibility: 'public', showLocation: true },
+        } as any);
+
+        return undefined;
       }
 
       if (!isSupabaseConfigured) {
