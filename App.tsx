@@ -83,7 +83,7 @@ function ProfileNavigator() {
 }
 
 import { Colors, Shadows, Spacing } from './constants/DesignSystem';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Alert } from 'react-native';
 
 // Custom Center Button (Snapchat/Reddit style)
 const CustomTabBarButton = ({ children, onPress }: any) => (
@@ -112,6 +112,8 @@ const CustomTabBarButton = ({ children, onPress }: any) => (
 );
 
 function AppTabs() {
+  const { isGuest, signOut } = useAuth();
+
   return (
     <Tabs.Navigator
       screenOptions={{
@@ -147,7 +149,14 @@ function AppTabs() {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault(); // Prevent switching to this tab
-            navigation.navigate('ReportModal'); // Open Modal instead
+            if (isGuest) {
+              Alert.alert('Login Required', 'You need an account to report issues.', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Sign In', onPress: () => signOut() },
+              ]);
+            } else {
+              navigation.navigate('ReportModal'); // Open Modal instead
+            }
           },
         })}
         options={{

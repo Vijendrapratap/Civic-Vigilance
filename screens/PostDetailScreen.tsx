@@ -22,7 +22,7 @@ export default function PostDetailScreen({ route }: any) {
   const [vote, setVote] = useState<-1 | 0 | 1>(0);
   const [up, setUp] = useState(0);
   const [down, setDown] = useState(0);
-  const { session } = useAuth();
+  const { session, isGuest, signOut } = useAuth();
   const localUserId = Number((session as any)?.user?.id || 1);
 
   useEffect(() => {
@@ -88,6 +88,15 @@ export default function PostDetailScreen({ route }: any) {
   }, [id, localUserId]);
 
   const addComment = useCallback(async () => {
+    if (isGuest) {
+      import('react-native').then(({ Alert }) => {
+        Alert.alert('Login Required', 'You need an account to post comments.', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In', onPress: () => signOut() },
+        ]);
+      });
+      return;
+    }
     if (!content.trim()) return;
 
     if (getBackend() === 'sqlite') {
@@ -103,6 +112,15 @@ export default function PostDetailScreen({ route }: any) {
   }, [content, id, replyTo, localUserId]);
 
   const onVote = async (val: -1 | 1) => {
+    if (isGuest) {
+      import('react-native').then(({ Alert }) => {
+        Alert.alert('Login Required', 'You need an account to vote on issues.', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In', onPress: () => signOut() },
+        ]);
+      });
+      return;
+    }
     const prev = vote;
     if (val === 1) {
       if (prev === 1) { setVote(0); setUp(Math.max(0, up - 1)); }
@@ -184,7 +202,18 @@ export default function PostDetailScreen({ route }: any) {
           </View>
           <Text style={{ color: '#23272F', fontSize: 15, lineHeight: 22 }}>{c.content}</Text>
           <View style={{ flexDirection: 'row', gap: 16, marginTop: 8 }}>
-            <Pressable onPress={() => setReplyTo(c.id)}>
+            <Pressable onPress={() => {
+              if (isGuest) {
+                import('react-native').then(({ Alert }) => {
+                  Alert.alert('Login Required', 'You need an account to reply.', [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Sign In', onPress: () => signOut() },
+                  ]);
+                });
+                return;
+              }
+              setReplyTo(c.id);
+            }}>
               <Text style={{ color: '#2563EB', fontWeight: '600', fontSize: 14 }}>Reply</Text>
             </Pressable>
           </View>

@@ -31,6 +31,7 @@ interface AuthContextType {
   session: AuthSession;
   profile: ProfileUser | null;
   isLoading: boolean;
+  isGuest: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string; code?: string } | undefined>;
   signInAsGuest: () => Promise<{ error?: string; code?: string } | undefined>;
   signUp: (email: string, password: string) => Promise<{ data?: any; error?: string; code?: string }>;
@@ -140,6 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     profile,
     isLoading,
+    isGuest: session?.user?.email === '__guest__',
 
     refreshProfile: async () => {
       if (session?.user.id) {

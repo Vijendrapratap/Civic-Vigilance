@@ -5,8 +5,11 @@ import { castVote, getUserVote } from '../lib/votes';
 import { composePostText, shareImageWithText, openTweetComposer } from '../lib/sharing';
 import ActionBar from './ActionBar';
 import { Colors } from '../constants/DesignSystem';
+import { useAuth } from '../hooks/useAuth';
+import { Alert } from 'react-native';
 
 export default function IssueCard({ item, onPress }: { item: IssueWithUserData; onPress?: () => void }) {
+  const { isGuest, signOut } = useAuth();
   const [vote, setVote] = useState<-1 | 0 | 1>(0);
   const [up, setUp] = useState(item.upvotes ?? 0);
   const [down, setDown] = useState(item.downvotes ?? 0);
@@ -16,6 +19,13 @@ export default function IssueCard({ item, onPress }: { item: IssueWithUserData; 
   }, [item.id]);
 
   const onVote = async (val: -1 | 1) => {
+    if (isGuest) {
+      Alert.alert('Login Required', 'You need an account to vote on issues.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign In', onPress: () => signOut() },
+      ]);
+      return;
+    }
     const prev = vote;
     // optimistic update
     if (val === 1) {

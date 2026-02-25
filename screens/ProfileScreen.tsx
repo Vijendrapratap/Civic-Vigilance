@@ -9,7 +9,7 @@ import { loadProfile, saveProfile, pickAvatar } from '../lib/profile';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen({ navigation }: any) {
-  const { session, profile: authProfile, signOut } = useAuth();
+  const { session, profile: authProfile, signOut, isGuest } = useAuth();
   const userId = session?.user?.id || 'demo-user';
   const email = session?.user?.email || 'demo@example.com';
   const [name, setName] = useState<string>('Civic User');
@@ -28,6 +28,7 @@ export default function ProfileScreen({ navigation }: any) {
   }, [userId]);
 
   const onChangeAvatar = async () => {
+    if (isGuest) return;
     const uri = await pickAvatar();
     if (!uri) return;
     const updated = await saveProfile({ id: userId, full_name: name, photoURL: uri } as any);
@@ -67,9 +68,11 @@ export default function ProfileScreen({ navigation }: any) {
                 <Ionicons name="person" size={50} color={Colors.primary} />
               </View>
             )}
-            <View style={styles.cameraIcon}>
-              <Ionicons name="camera" size={16} color="white" />
-            </View>
+            {!isGuest && (
+              <View style={styles.cameraIcon}>
+                <Ionicons name="camera" size={16} color="white" />
+              </View>
+            )}
           </Pressable>
 
           <Text style={styles.name}>{name}</Text>
@@ -97,12 +100,16 @@ export default function ProfileScreen({ navigation }: any) {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Account</Text>
-        <View style={styles.menuCard}>
-          <ListItem icon="document-text-outline" title="My Reports" onPress={() => navigation.navigate('MyReports')} />
-          <ListItem icon="settings-outline" title="Settings" onPress={() => navigation.navigate('Settings')} />
-          <ListItem icon="notifications-outline" title="Notifications" onPress={() => navigation.navigate('Notifications')} />
-        </View>
+        {!isGuest && (
+          <>
+            <Text style={styles.sectionTitle}>Account</Text>
+            <View style={styles.menuCard}>
+              <ListItem icon="document-text-outline" title="My Reports" onPress={() => navigation.navigate('MyReports')} />
+              <ListItem icon="settings-outline" title="Settings" onPress={() => navigation.navigate('Settings')} />
+              <ListItem icon="notifications-outline" title="Notifications" onPress={() => navigation.navigate('Notifications')} />
+            </View>
+          </>
+        )}
 
         <Text style={styles.sectionTitle}>Support</Text>
         <View style={styles.menuCard}>
@@ -114,7 +121,11 @@ export default function ProfileScreen({ navigation }: any) {
         </View>
 
         <View style={{ height: 24 }} />
-        <Button title="Log Out" onPress={onLogout} variant="danger" />
+        {isGuest ? (
+          <Button title="Sign In / Create Account" onPress={() => signOut()} variant="primary" />
+        ) : (
+          <Button title="Log Out" onPress={onLogout} variant="danger" />
+        )}
         <View style={{ height: 40 }} />
       </ScrollView>
     </View>
