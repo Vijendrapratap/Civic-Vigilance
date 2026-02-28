@@ -9,92 +9,118 @@ import { Platform, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
+export const colors = {
+    // Brand Colors
+    primaryTeal: '#27A590',   // The main action color (Camera button, "View Post" button)
+    trustBlue: '#1254A1',     // Used for the "Civic Impact Score" card and top headers
+    twitterBlue: '#1DA1F2',   // Specific to X/Twitter amplification status
+
+    // Status & Feedback Colors
+    statusResolved: '#D4F0DF', // Light green background for "Resolved" or "Fixed" tags
+    textResolved: '#1A7D40',   // Dark green text for "Resolved"
+    statusPending: '#FDF1D6',  // Light amber background for "Pending"
+    textPending: '#A3680A',    // Dark amber text for "Pending"
+    statusReview: '#D6E4FF',   // Light blue background for "In Review"
+    textReview: '#104494',     // Dark blue text for "In Review"
+
+    // Backgrounds & Surfaces
+    backgroundMain: '#F8F9FA', // The slight off-white app background
+    surfaceWhite: '#FFFFFF',   // Pure white for report cards, modal popups, and bottom tabs
+    divider: '#E5E7EB',        // Light grey for separating comments and settings list items
+};
+
+export const textColors = {
+    // Heading & High Emphasis
+    display: '#111827',       // Almost black. Use for: "Deep Pothole on 5th...", "Alex Citizen", Modal titles
+
+    // Body & Medium Emphasis
+    bodyPrimary: '#374151',   // Dark slate. Use for: Discussion thread comments, report descriptions, settings titles
+
+    // Subtext & Low Emphasis
+    bodySecondary: '#6B7280', // Medium grey. Use for: "2h ago", "Sector 4", "@alex_vigilant", settings subtext
+
+    // Interactive & Special
+    actionText: '#27A590',    // Teal text. Use for: The "Share" button, "View All" links
+    whiteText: '#FFFFFF',     // Use for: Text inside the solid Teal buttons or the Blue Impact card
+};
+
 export const Colors = {
-    // Brand Identity (Vibrant Sky & Deep Slate)
-    primary: '#0EA5E9', // Sky-500: Vibrant, trustworthy blue
-    primaryDark: '#0284C7', // Sky-600: Deeper interaction state
-    primaryLight: '#E0F2FE', // Sky-100: Soft backgrounds
-    primarySemibold: '#38BDF8', // Sky-400: Bright accents
+    // Brand Identity (Mapped to new colors for compatibility)
+    primary: colors.primaryTeal,
+    primaryDark: '#1E8271',
+    primaryLight: '#E6F4F1',
+    primarySemibold: colors.primaryTeal,
 
     // Gradient Stops (for LinearGradient usage)
-    gradientPrimaryStart: '#0EA5E9',
-    gradientPrimaryEnd: '#2563EB', // Blue-600
+    gradientPrimaryStart: colors.trustBlue,
+    gradientPrimaryEnd: '#0B3B75',
 
-    // Neutral Base (Slate - Cool & clean)
-    background: '#F8FAFC', // Slate-50: Crisp paper-like background
-    surface: '#FFFFFF',
-    surfaceHighlight: '#F1F5F9', // Slate-100: Hover/Active states
+    // Neutral Base
+    background: colors.backgroundMain,
+    surface: colors.surfaceWhite,
+    surfaceHighlight: '#F3F4F6',
 
     // Text Hierarchy
-    textMain: '#0F172A', // Slate-900: Almost black, very sharp
-    textSecondary: '#475569', // Slate-600: Refined gray
-    textMuted: '#94A3B8', // Slate-400: Low contrast data
-    textInverse: '#FFFFFF',
+    textMain: textColors.display,
+    textSecondary: textColors.bodyPrimary,
+    textMuted: textColors.bodySecondary,
+    textInverse: textColors.whiteText,
 
     // Semantic Status Colors (Tailored)
-    success: '#10B981', // Emerald-500: Modern green
-    error: '#EF4444', // Red-500: Clear alert
-    errorLight: '#FEF2F2', // Red-50: Error backgrounds
-    errorBorder: '#FCA5A5', // Red-300: Error borders
-    warning: '#F59E0B', // Amber-500
-    info: '#3B82F6', // Blue-500
+    success: colors.statusResolved,
+    error: '#EF4444',
+    errorLight: '#FEF2F2',
+    errorBorder: '#FCA5A5',
+    warning: colors.statusPending,
+    info: colors.statusReview,
 
     // Transparency & Overlays
-    overlay: 'rgba(15, 23, 42, 0.4)', // Slate-900 fade
-    glass: 'rgba(255, 255, 255, 0.85)', // High opacity glass
+    overlay: 'rgba(17, 24, 39, 0.4)',
+    glass: 'rgba(255, 255, 255, 0.85)',
     glassBorder: 'rgba(255, 255, 255, 0.5)',
-    glassDark: 'rgba(15, 23, 42, 0.85)', // Slate glass
+    glassDark: 'rgba(17, 24, 39, 0.85)',
 
-    border: '#E2E8F0', // Slate-200: Subtle separation
-    borderDark: '#CBD5E1', // Slate-300: Inputs/Cards
+    border: colors.divider,
+    borderDark: '#D1D5DB',
+};
+
+const unifiedShadow = {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
 };
 
 export const Shadows = {
-    // Soft, diffuse shadows for "Floaty" feel
-    sm: {
-        shadowColor: '#64748B', // Slate-500 equivalent
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
-        elevation: 2,
-    },
-    md: {
-        shadowColor: '#64748B',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    lg: {
-        shadowColor: '#0EA5E9', // Subtle blue tint on large shadows
+    // Soft, diffused drop shadows unified so all cards appear to float at the exact same depth
+    card: unifiedShadow,
+    sm: unifiedShadow,
+    md: unifiedShadow,
+    lg: unifiedShadow,
+    hover: {
+        shadowColor: '#000000',
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
+        shadowOpacity: 0.12,
         shadowRadius: 20,
         elevation: 10,
-    },
-    hover: {
-        shadowColor: '#0EA5E9',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-        elevation: 8,
     }
 };
 
 export const Typography = {
     // Consistent hierarchy
-    h1: { fontSize: 32, fontWeight: '800' as const, color: Colors.textMain, letterSpacing: -0.8, lineHeight: 40 },
-    h2: { fontSize: 24, fontWeight: '700' as const, color: Colors.textMain, letterSpacing: -0.5, lineHeight: 32 },
-    h3: { fontSize: 20, fontWeight: '600' as const, color: Colors.textMain, letterSpacing: -0.3, lineHeight: 28 },
-    h4: { fontSize: 18, fontWeight: '600' as const, color: Colors.textMain, lineHeight: 24 },
+    h1: { fontSize: 32, fontWeight: '800' as const, color: textColors.display, letterSpacing: -0.8, lineHeight: 40 },
+    h2: { fontSize: 24, fontWeight: '700' as const, color: textColors.display, letterSpacing: -0.5, lineHeight: 32 },
+    h3: { fontSize: 20, fontWeight: '600' as const, color: textColors.display, letterSpacing: -0.3, lineHeight: 28 },
+    h4: { fontSize: 18, fontWeight: '600' as const, color: textColors.display, lineHeight: 24 },
 
-    body: { fontSize: 16, lineHeight: 24, color: Colors.textSecondary },
-    bodySm: { fontSize: 14, lineHeight: 20, color: Colors.textSecondary },
-    caption: { fontSize: 12, lineHeight: 16, color: Colors.textMuted },
+    body: { fontSize: 16, lineHeight: 24, color: textColors.bodyPrimary },
+    bodySm: { fontSize: 14, lineHeight: 20, color: textColors.bodySecondary },
+    caption: { fontSize: 12, lineHeight: 16, color: textColors.bodySecondary },
 
     // Interactive
     button: { fontSize: 16, fontWeight: '600' as const, letterSpacing: 0.3 },
-    link: { fontSize: 14, fontWeight: '500' as const, color: Colors.primary },
+    link: { fontSize: 14, fontWeight: '500' as const, color: colors.primaryTeal },
 };
 
 export const Spacing = {

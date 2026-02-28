@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, Pressable, Alert, ScrollView, StatusBar, SafeAreaView, Linking } from 'react-native';
-import { Colors, Typography, Spacing, Shadows, BorderRadius, Layout } from '../constants/DesignSystem';
+import { Colors, Typography, Spacing, Shadows, BorderRadius, Layout, colors, textColors } from '../constants/DesignSystem';
 import { useAuth } from '../hooks/useAuth';
 import ListItem from '../components/ListItem';
 import Button from '../components/ui/Button';
@@ -44,17 +44,9 @@ export default function ProfileScreen({ navigation }: any) {
 
   return (
     <View style={styles.mainContainer}>
-      <StatusBar barStyle="light-content" />
-      {/* Premium Header Background */}
-      <View style={styles.headerBackground}>
-        <LinearGradient
-          colors={[Colors.primaryDark, Colors.primary]}
-          style={StyleSheet.absoluteFill}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
-        <View style={styles.headerGlass} />
-      </View>
+      <StatusBar barStyle="dark-content" />
+      {/* White Header Background */}
+      <View style={styles.headerBackground} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
@@ -82,7 +74,7 @@ export default function ProfileScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Statistics Row */}
+        {/* Statistics Row / Civic Impact Score */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{authProfile?.stats?.totalPosts ?? 0}</Text>
@@ -135,18 +127,17 @@ export default function ProfileScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.backgroundMain,
   },
   headerBackground: {
-    height: 180,
+    height: 160,
     width: '100%',
     position: 'absolute',
     top: 0,
     zIndex: 0,
-  },
-  headerGlass: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: colors.surfaceWhite,
+    borderBottomWidth: 1,
+    borderColor: colors.divider,
   },
   scrollContent: {
     paddingTop: 100, // Push content down to overlap header
@@ -214,11 +205,11 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.trustBlue, // Deep Blue Civic Impact Score card
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
     marginBottom: Spacing.xl,
-    ...Shadows.sm,
+    ...Shadows.md,
   },
   statItem: {
     flex: 1,
@@ -227,16 +218,17 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: Colors.textMain,
+    color: textColors.whiteText,
   },
   statLabel: {
     ...Typography.caption,
     marginTop: 2,
+    color: 'rgba(255,255,255,0.8)', // Lighter text on the dark blue
   },
   verticalDivider: {
     width: 1,
     height: '60%',
-    backgroundColor: Colors.border,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignSelf: 'center',
   },
   sectionTitle: {
