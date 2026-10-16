@@ -2,7 +2,7 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Run full test suite before push
-npm test -- --coverage --watchAll=false
+npm --prefix frontend test -- --coverage --watchAll=false
 
 # Run type check
-npm run typecheck
+npm --prefix frontend run typecheck

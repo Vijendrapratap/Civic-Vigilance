@@ -13,9 +13,11 @@ ENVIRONMENT=$1
 
 echo "🚀 Deploying to $ENVIRONMENT environment..."
 
-# Load environment variables
-if [ -f ".env.$ENVIRONMENT" ]; then
-  export $(cat .env.$ENVIRONMENT | grep -v '^#' | xargs)
+# Load the single frontend environment file
+if [ -f ".env" ]; then
+  set -a
+  source .env
+  set +a
 fi
 
 # Run tests

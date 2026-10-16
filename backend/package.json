@@ -1,0 +1,19 @@
+{
+  "name": "civic-vigilance-backend",
+  "version": "1.0.0",
+  "description": "Node.js API for Civic Vigilance.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "jest": "^27.0.6"
+  }
+}

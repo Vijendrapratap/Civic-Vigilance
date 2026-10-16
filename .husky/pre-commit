@@ -2,10 +2,10 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Run type check
-npm run typecheck
+npm --prefix frontend run typecheck
 
 # Run tests
-npm test -- --bail --findRelatedTests --passWithNoTests
+npm --prefix frontend test -- --bail --findRelatedTests --passWithNoTests
 
 # Run lint if available
-npm run lint --if-present
+npm --prefix frontend run lint --if-present

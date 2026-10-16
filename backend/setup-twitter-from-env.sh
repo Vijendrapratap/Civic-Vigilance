@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Twitter Credentials Setup - Load from File
-# This script reads credentials from twitter-credentials.txt and stores them in Supabase
+# Twitter Credentials Setup - Load from .env
+# This script reads credentials from .env and stores them in Supabase
 
 set -e
 
@@ -10,19 +10,21 @@ echo "║  Civic Vigilance - Twitter Credentials Setup              ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Check if credentials file exists
-if [ ! -f "twitter-credentials.txt" ]; then
-    echo "❌ Error: twitter-credentials.txt not found!"
+# Check if the environment file exists
+if [ ! -f ".env" ]; then
+    echo "❌ Error: .env not found!"
     echo ""
-    echo "Please create the file with your Twitter credentials."
+    echo "Copy .env.example to .env and add your credentials."
     exit 1
 fi
 
-echo "📋 Loading credentials from twitter-credentials.txt..."
+echo "📋 Loading credentials from .env..."
 echo ""
 
-# Source the credentials file
-source <(grep -v '^#' twitter-credentials.txt | grep '=' | sed 's/^/export /')
+# Export variables from .env
+set -a
+source .env
+set +a
 
 # Validate all credentials are set
 MISSING=0
@@ -60,7 +62,7 @@ fi
 
 if [ $MISSING -eq 1 ]; then
     echo ""
-    echo "Please fill in all required credentials in twitter-credentials.txt"
+    echo "Please fill in all required credentials in .env"
     exit 1
 fi
 
@@ -127,8 +129,8 @@ echo ""
 echo "Next steps:"
 echo ""
 echo "1. If you haven't added all API credentials yet:"
-echo "   - Fill in the missing values in twitter-credentials.txt"
-echo "   - Run this script again: ./setup-twitter-from-file.sh"
+echo "   - Fill in the missing values in .env"
+echo "   - Run this script again: ./setup-twitter-from-env.sh"
 echo ""
 echo "2. Deploy Edge Functions:"
 echo "   ./deploy-twitter-functions.sh"
@@ -137,6 +139,5 @@ echo "3. Test your app:"
 echo "   npm start"
 echo ""
 echo "4. IMPORTANT - Security:"
-echo "   Delete twitter-credentials.txt after setup is complete!"
-echo "   rm twitter-credentials.txt"
+echo "   Keep .env private; it is excluded by .gitignore."
 echo ""

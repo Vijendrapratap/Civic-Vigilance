@@ -177,7 +177,7 @@ Expo CLI
 
 ```bash
 git clone https://github.com/Vijendrapratap/Civic-Vigilance.git
-cd Civic-Vigilance
+cd Civic-Vigilance/frontend
 npm install
 ```
 
@@ -187,6 +187,8 @@ npm install
 cp .env.example .env
 # Add your API keys (Supabase, Google Maps, Twitter)
 ```
+
+Frontend variables live only in `frontend/.env`. Server-only credentials belong in `backend/.env`; never add service-role or API secrets to an `EXPO_PUBLIC_*` variable.
 
 **Required API Keys:**
 - 💚 **Supabase**: [supabase.com/dashboard](https://supabase.com/dashboard) - Follow [SUPABASE_SETUP.md](documentations/SUPABASE_SETUP.md)
@@ -203,6 +205,16 @@ npm start
 # 'a' for Android Emulator
 # 'w' for Web Browser
 ```
+
+The optional Express API is managed separately:
+
+```bash
+cd ../backend
+npm install
+npm start
+```
+
+Supabase functions, migrations, and database schemas also live in `backend/`.
 
 **Test Account:**
 ```
@@ -382,18 +394,19 @@ comments/{commentId}
 
 ```
 civic-vigilance/
-├── screens/               # Main screens (Feed, Report, Detail, Settings)
-├── components/            # Reusable UI components
-├── lib/                   # Core utilities
-│   ├── authoritiesData.ts         # Authority database (16 authorities, 6 cities)
-│   ├── smartAuthorities.ts        # Geohash matching algorithm
-│   ├── authorityContactManager.ts # Multi-platform contact utilities
-│   ├── geohash.ts                 # GPS ↔ Geohash conversion
-│   ├── seedData.ts                # Test data (10 issues, 3 users)
-│   └── supabase.ts                # Supabase client
-├── types/                 # TypeScript types
-├── documentations/        # All documentation and guides
-└── .env.example           # Environment template
+├── frontend/               # Expo / React Native application
+│   ├── screens/            # Main application screens
+│   ├── components/         # Reusable UI components
+│   ├── lib/                # Client utilities and Supabase client
+│   ├── assets/             # Images and app icons
+│   └── package.json        # Frontend scripts and dependencies
+├── backend/                # Node API and backend infrastructure
+│   ├── src/                # Express application source
+│   ├── supabase/           # Edge Functions and migrations
+│   ├── db/                 # Database schemas
+│   └── package.json        # Backend scripts and dependencies
+├── documentations/         # Project documentation and guides
+└── docker-compose.yml      # Frontend development containers
 ```
 
 ---
@@ -419,6 +432,7 @@ civic-vigilance/
 ### Run Tests
 
 ```bash
+cd frontend
 npm test           # Unit tests
 npm run lint       # Code quality
 npm run typecheck  # TypeScript validation
@@ -428,8 +442,8 @@ npm run typecheck  # TypeScript validation
 
 ## 🔒 Legal & Compliance
 
-- ✅ **Terms of Service** (`screens/TermsOfServiceScreen.tsx`)
-- ✅ **Privacy Policy** (`screens/PrivacyPolicyScreen.tsx`)
+- ✅ **Terms of Service** (`frontend/screens/TermsOfServiceScreen.tsx`)
+- ✅ **Privacy Policy** (`frontend/screens/PrivacyPolicyScreen.tsx`)
 - ✅ **GDPR Compliant** (user rights: access, delete, export, opt-out)
 - ✅ **App Store Ready** (legal requirements met)
 
